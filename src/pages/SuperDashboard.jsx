@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom'
-import { AlertTriangle, CheckCircle2, MessageSquare, ShieldCheck, Smartphone, UserCheck, Users, XCircle } from 'lucide-react'
-import { Alert, Badge, PageHeader, Progress, Spinner, StatCard, Table } from '../components/ui'
+import { AlertTriangle, CheckCircle2, LogIn, ShieldCheck, UserCheck, Users, XCircle } from 'lucide-react'
+import { Alert, Badge, PageHeader, Spinner, StatCard, Table } from '../components/ui'
 import { useAuth } from '../lib/auth'
 import { useApi } from '../lib/hooks'
-import { date, dateTime, money } from '../lib/format'
+import { date, dateTime } from '../lib/format'
 
 const CHECK = {
   ok: [CheckCircle2, 'text-emerald-600', 'green', 'OK'],
@@ -24,16 +24,16 @@ function Panel({ title, action, children, className = '' }) {
   )
 }
 
-function Line({ label, value, tone }) {
+function Line({ label, value }) {
   return (
     <div className="flex justify-between border-b border-slate-100 py-2 text-sm last:border-0">
       <span className="text-slate-600">{label}</span>
-      <span className={`font-medium ${tone === 'bad' ? 'text-red-600' : 'text-slate-900'}`}>{value}</span>
+      <span className="font-medium text-slate-900">{value}</span>
     </div>
   )
 }
 
-/** System overview for super admins: accounts, activity, and the health of payments and SMS. */
+/** System overview for super admins: admin accounts and system health. Church data stays on the admin dashboard. */
 export default function SuperDashboard() {
   const { user } = useAuth()
   const { data: d, loading, error } = useApi('/cms/super/overview/')
@@ -41,17 +41,17 @@ export default function SuperDashboard() {
   if (error) return <Alert>{error.message}</Alert>
   if (loading && !d) return <div className="py-20"><Spinner className="mx-auto h-8 w-8" /></div>
 
+  const a = d.accounts
   const problems = d.checks.filter((c) => c.state !== 'ok').length
-  const maxBranch = Math.max(1, ...d.branches.map((b) => Number(b.total)))
 
   return (
     <>
-      <PageHeader title="System overview" subtitle={`Super admin view for ${user.first_name || user.username}: accounts, activity and how payments and SMS are running.`} />
+      <PageHeader title="System overview" subtitle={`Super admin view for ${user.first_name || user.username}: admin accounts and system health.`} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={Users} label="Admin accounts" value={d.accounts.total} hint={`${d.accounts.superadmins} super admin${d.accounts.superadmins === 1 ? '' : 's'} · ${d.accounts.admins} admin${d.accounts.admins === 1 ? '' : 's'}`} />
-        <StatCard icon={UserCheck} label="New signups (30 days)" value={d.accounts.signups_30d} hint={`${d.accounts.unverified} not verified · ${d.accounts.disabled} disabled`} />
-        <StatCard icon={Smartphone} label="Paybill this month" value={money(d.payments.paybill_month.amount)} hint={`${d.payments.paybill_month.count} payments`} />
+        <StatCard icon={Users} label="Admin accounts" value={a.total} hint={`${a.superadmins} super admin${a.superadmins === 1 ? '' : 's'} · ${a.admins} admin${a.admins === 1 ? '' : 's'}`} />
+        <StatCard icon={LogIn} label="Signed in (30 days)" value={a.signed_in_30d} hint={`of ${a.active} active account${a.active === 1 ? '' : 's'}`} />
+        <StatCard icon={UserCheck} label="New signups (30 days)" value={a.signups_30d} hint={`${a.unverified} not verified`} />
         <StatCard icon={problems ? AlertTriangle : ShieldCheck} label="System checks" value={problems ? `${problems} to review` : 'All good'} hint={`${d.checks.length} checks`} />
       </div>
 
@@ -74,24 +74,18 @@ export default function SuperDashboard() {
           </ul>
         </Panel>
 
-        <div className="space-y-6">
-          <Panel title="Payments">
-            <Line label="Online payments (30 days)" value={`${d.payments.online_30d.success} paid · ${d.payments.online_30d.failed} failed`} />
-            <Line label="Pending (30 days)" value={d.payments.online_30d.pending} tone={d.payments.online_30d.pending ? 'bad' : ''} />
-            <Line label="Last Paybill payment received" value={d.payments.last_paybill_at ? dateTime(d.payments.last_paybill_at) : 'None yet'} />
-            <Link to="/paybill" className="mt-2 inline-block text-sm font-medium text-brand-700 hover:underline">Open Paybill</Link>
-          </Panel>
-          <Panel title={<span className="flex items-center gap-2"><MessageSquare className="h-4 w-4 text-slate-400" /> SMS this month</span>}>
-            <Line label="Donation receipts sent" value={d.sms.receipts_sent} />
-            <Line label="Receipts failed" value={d.sms.receipts_failed} tone={d.sms.receipts_failed ? 'bad' : ''} />
-            <Line label="Givers with no phone" value={d.sms.receipts_no_phone} />
-            <Line label="Bulk SMS" value={`${d.sms.bulk_campaigns} sends · ${d.sms.bulk_sent} delivered · ${d.sms.bulk_failed} failed`} />
-          </Panel>
-        </div>
+        <Panel title="Accounts" action={<Link to="/users" className="text-sm font-medium text-brand-700 hover:underline">Manage admins</Link>}>
+          <Line label="Super admins" value={a.superadmins} />
+          <Line label="Admins" value={a.admins} />
+          <Line label="Active" value={a.active} />
+          <Line label="Disabled" value={a.disabled} />
+          <Line label="Phone not verified" value={a.unverified} />
+          <p className="mt-3 text-xs text-slate-500">Disable accounts that are no longer needed, and remove unfinished signups you don't recognise.</p>
+        </Panel>
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-2">
-        <Panel title="Recent sign-ins" action={<Link to="/users" className="text-sm font-medium text-brand-700 hover:underline">Manage admins</Link>}>
+        <Panel title="Recent sign-ins">
           <Table rows={d.recent_logins} empty="Nobody has signed in yet." columns={[
             { key: 'name', label: 'Name', render: (p) => <><p className="font-medium text-slate-900">{p.name}</p><p className="text-xs text-slate-500">{p.username}</p></> },
             { key: 'role', label: 'Role', render: (p) => <Badge tone={p.role === 'Super admin' ? 'purple' : 'blue'}>{p.role}</Badge> },
@@ -105,33 +99,6 @@ export default function SuperDashboard() {
             { key: 'status', label: 'Status', render: (p) => <Badge tone={STATUS[p.status][0]}>{STATUS[p.status][1]}</Badge> },
             { key: 'date_joined', label: 'Created', render: (p) => date(p.date_joined) },
           ]} />
-        </Panel>
-      </div>
-
-      <div className="mt-6 grid gap-6 xl:grid-cols-2">
-        <Panel title="Donations recorded by admins (this month)">
-          {d.activity.length ? (
-            <ul className="space-y-2">
-              {d.activity.map((a) => (
-                <li key={a.username} className="flex justify-between text-sm">
-                  <span className="font-medium">{a.username}</span>
-                  <span className="text-slate-600">{a.count} record{a.count === 1 ? '' : 's'} · {money(a.total)}</span>
-                </li>
-              ))}
-            </ul>
-          ) : <p className="text-sm text-slate-500">No cash, bank or cheque donations recorded this month.</p>}
-        </Panel>
-        <Panel title="Giving by branch (this month)" action={<span className="text-xs text-slate-500">{d.totals.members} members · {d.totals.branches} branches</span>}>
-          {d.branches.length ? (
-            <ul className="space-y-3">
-              {d.branches.map((b) => (
-                <li key={b.id}>
-                  <div className="mb-1 flex justify-between text-sm"><span>{b.name} <span className="text-slate-400">· {b.member_count} members</span></span><span className="font-medium">{money(b.total)}</span></div>
-                  <Progress value={b.total} max={maxBranch} />
-                </li>
-              ))}
-            </ul>
-          ) : <p className="text-sm text-slate-500">No branches yet.</p>}
         </Panel>
       </div>
     </>
