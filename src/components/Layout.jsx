@@ -20,16 +20,16 @@ const NAV = [
 export default function Layout() {
   const { user, logout } = useAuth()
   const [open, setOpen] = useState(false)
-  const [unallocated, setUnallocated] = useState(0)
+  const [counts, setCounts] = useState({ unallocated: 0 })
   const location = useLocation()
 
-  // Count of Paybill payments waiting to be allocated, shown as a badge.
+  // Badge: Paybill payments waiting to be allocated.
   useEffect(() => {
-    const load = () => api.get('/cms/paybill-payments/', { status: 'unallocated', page_size: 1 })
-      .then((d) => setUnallocated(d.count)).catch(() => {})
-    load()
-    window.addEventListener('cms:paybill-changed', load)
-    return () => window.removeEventListener('cms:paybill-changed', load)
+    const loadPaybill = () => api.get('/cms/paybill-payments/', { status: 'unallocated', page_size: 1 })
+      .then((d) => setCounts((c) => ({ ...c, unallocated: d.count }))).catch(() => {})
+    loadPaybill()
+    window.addEventListener('cms:paybill-changed', loadPaybill)
+    return () => window.removeEventListener('cms:paybill-changed', loadPaybill)
   }, [location.pathname])
   const nav = [...NAV, ...(user?.is_superuser ? [{ to: '/users', label: 'Admin Users', icon: ShieldCheck }] : []), { to: '/settings', label: 'Settings', icon: Settings }]
 
@@ -53,8 +53,9 @@ export default function Layout() {
             }
           >
             <Icon className="h-5 w-5" /> {label}
-            {badge && unallocated > 0 && (
-              <span className="ml-auto rounded-full bg-amber-400 px-2 py-0.5 text-xs font-semibold text-amber-950" title="Payments to allocate">{unallocated}</span>
+            {badge && counts[badge] > 0 && (
+              <span className="ml-auto rounded-full bg-amber-400 px-2 py-0.5 text-xs font-semibold text-amber-950"
+                title="Payments to allocate">{counts[badge]}</span>
             )}
           </NavLink>
         ))}

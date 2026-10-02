@@ -14,6 +14,7 @@ import Projects from './pages/Projects'
 import ReceiptPrint from './pages/ReceiptPrint'
 import ServiceDetail from './pages/ServiceDetail'
 import SettingsPage from './pages/Settings'
+import Signup from './pages/Signup'
 import Sms from './pages/Sms'
 import StatementPrint from './pages/StatementPrint'
 import Users from './pages/Users'
@@ -39,6 +40,7 @@ export default function App() {
           {/* The site opens on the admin login; the public giving page lives at /give */}
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Navigate to="/" replace />} />
+          <Route path="/signup" element={<Signup />} />
           <Route path="/give" element={<Give />} />
           {/* Printable pages: no sidebar */}
           <Route path="/print/receipt/:id" element={<RequireAuth><ReceiptPrint /></RequireAuth>} />

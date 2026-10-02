@@ -38,6 +38,12 @@ function UserForm({ user, onClose, onSaved }) {
   )
 }
 
+const STATUS = {
+  active: ['green', 'Active'],
+  disabled: ['slate', 'Disabled'],
+  unverified: ['amber', 'Phone not verified'],
+}
+
 export default function Users() {
   const { user: me } = useAuth()
   const { data, loading, error, reload } = useApi('/cms/users/')
@@ -60,7 +66,7 @@ export default function Users() {
         { key: 'name', label: 'Name', render: (u) => `${u.first_name} ${u.last_name}`.trim() || '—' },
         { key: 'email', label: 'Email', render: (u) => u.email || '—' },
         { key: 'role', label: 'Role', render: (u) => <Badge tone={u.is_superuser ? 'purple' : 'blue'}>{u.is_superuser ? 'Super admin' : 'Admin'}</Badge> },
-        { key: 'is_active', label: 'Status', render: (u) => <Badge status={u.is_active ? 'active' : 'inactive'}>{u.is_active ? 'Active' : 'Disabled'}</Badge> },
+        { key: 'status', label: 'Status', render: (u) => <Badge tone={STATUS[u.status][0]}>{STATUS[u.status][1]}</Badge> },
         { key: 'last_login', label: 'Last login', render: (u) => dateTime(u.last_login) },
         { key: 'actions', label: '', render: (u) => u.id !== me.id && (
           <button className="text-sm text-red-600 hover:underline" onClick={(e) => { e.stopPropagation(); setDeleting(u) }}>Remove</button>
