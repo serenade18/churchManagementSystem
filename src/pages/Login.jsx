@@ -13,7 +13,9 @@ export default function Login() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
-  if (user) return <Navigate to="/dashboard" replace />
+  // Where to go after signing in: the admin page that sent us here, else the dashboard.
+  const next = location.state?.from?.pathname || '/dashboard'
+  if (user) return <Navigate to={next} replace />
 
   const submit = async (e) => {
     e.preventDefault()
@@ -21,7 +23,7 @@ export default function Login() {
     setError('')
     try {
       await login(form.username, form.password)
-      navigate(location.state?.from?.pathname || '/dashboard', { replace: true })
+      navigate(next, { replace: true })
     } catch (err) {
       setError(err.status === 401 ? 'Incorrect username or password.' : err.message)
     } finally {
@@ -50,7 +52,7 @@ export default function Login() {
           <button className="btn-primary w-full" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
         </form>
         <p className="mt-6 text-center text-sm text-slate-500">
-          Want to give? <Link to="/" className="font-medium text-brand-700 hover:underline">Go to the donation page</Link>
+          Want to give? <Link to="/give" className="font-medium text-brand-700 hover:underline">Go to the donation page</Link>
         </p>
       </div>
     </div>

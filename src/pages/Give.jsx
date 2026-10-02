@@ -85,7 +85,7 @@ export default function Give() {
     <div className="flex min-h-screen flex-col bg-gradient-to-br from-brand-900 via-brand-800 to-brand-700">
       <header className="flex items-center justify-between px-4 py-4 text-white sm:px-8">
         <span className="flex items-center gap-3 font-semibold"><Logo tile className="h-11 w-11" /> {CHURCH_NAME}</span>
-        <Link to="/login" className="text-sm text-brand-100 hover:text-white">Admin login</Link>
+        <Link to="/" className="text-sm text-brand-100 hover:text-white">Admin login</Link>
       </header>
       <main className="flex flex-1 items-center justify-center p-4">
         <div className="card w-full max-w-md p-6 sm:p-8">

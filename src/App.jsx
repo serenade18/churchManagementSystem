@@ -26,7 +26,7 @@ function RequireAuth({ children, superuser }) {
   const { user, loading } = useAuth()
   const location = useLocation()
   if (loading) return <div className="flex h-screen items-center justify-center"><Spinner className="h-8 w-8" /></div>
-  if (!user) return <Navigate to="/login" replace state={{ from: location }} />
+  if (!user) return <Navigate to="/" replace state={{ from: location }} />
   if (superuser && !user.is_superuser) return <Navigate to="/dashboard" replace />
   return children
 }
@@ -36,10 +36,10 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public donation page (the existing giving page lives at the site root) */}
-          <Route path="/" element={<Give />} />
+          {/* The site opens on the admin login; the public giving page lives at /give */}
+          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Navigate to="/" replace />} />
           <Route path="/give" element={<Give />} />
-          <Route path="/login" element={<Login />} />
           {/* Printable pages: no sidebar */}
           <Route path="/print/receipt/:id" element={<RequireAuth><ReceiptPrint /></RequireAuth>} />
           <Route path="/print/statement/:id" element={<RequireAuth><StatementPrint /></RequireAuth>} />
