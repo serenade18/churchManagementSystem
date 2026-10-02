@@ -34,3 +34,14 @@ export const STATUS_TONES = {
   pending: 'amber', planned: 'slate', on_hold: 'amber', inactive: 'slate',
   failed: 'red', transferred: 'purple', deceased: 'slate',
 }
+
+export const SERVICE_TYPES = {
+  sunday_service: 'Sunday Service',
+  midweek: 'Midweek Service',
+  prayer: 'Prayer Meeting',
+  bible_study: 'Bible Study',
+  youth: 'Youth Meeting',
+  fellowship: 'Fellowship',
+  special: 'Special Event',
+  other: 'Other',
+}

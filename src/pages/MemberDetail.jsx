@@ -17,6 +17,7 @@ export default function MemberDetail() {
   const [deleteError, setDeleteError] = useState('')
   const { data: member, error, reload } = useApi(`/cms/members/${id}/`)
   const donations = useApi(`/cms/members/${id}/donations/`, { page })
+  const attendance = useApi(`/cms/members/${id}/attendance-summary/`)
 
   if (error) return <Alert>{error.message}</Alert>
   if (!member) return <div className="py-20"><Spinner className="mx-auto h-8 w-8" /></div>
@@ -68,6 +69,16 @@ export default function MemberDetail() {
           <div className="rounded-lg bg-brand-50 p-3">
             <dt className="text-xs text-brand-700">Total given</dt>
             <dd className="text-lg font-semibold text-brand-900">{money(member.total_given)}</dd>
+          </div>
+          <div className="rounded-lg bg-emerald-50 p-3">
+            <dt className="text-xs text-emerald-700">Attendance (last 90 days)</dt>
+            <dd className="text-lg font-semibold text-emerald-900">
+              {attendance.data?.rate != null ? `${attendance.data.rate}%` : '—'}
+              {attendance.data?.services_last_90_days > 0 && (
+                <span className="ml-1 text-xs font-normal text-emerald-700">{attendance.data.attended_last_90_days} of {attendance.data.services_last_90_days}</span>
+              )}
+            </dd>
+            <dd className="text-xs text-emerald-700">Last attended: {attendance.data?.last_attended ? date(attendance.data.last_attended) : 'never recorded'}</dd>
           </div>
           {details.map(([label, value]) => (
             <div key={label}>

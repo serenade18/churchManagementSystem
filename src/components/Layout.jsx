@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { Building2, Church, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Users, X } from 'lucide-react'
+import { Building2, CalendarCheck, Church, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Users, X } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { CHURCH_NAME } from '../lib/format'
 
@@ -8,6 +8,7 @@ const NAV = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/members', label: 'Members', icon: Users },
   { to: '/donations', label: 'Donations', icon: HandCoins },
+  { to: '/attendance', label: 'Attendance', icon: CalendarCheck },
   { to: '/branches', label: 'Branches', icon: Building2 },
   { to: '/projects', label: 'Projects', icon: FolderKanban },
   { to: '/sms', label: 'Bulk SMS', icon: MessageSquare },
