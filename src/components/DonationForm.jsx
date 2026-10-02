@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MessageSquare } from 'lucide-react'
+import { MessageSquare, Printer } from 'lucide-react'
 import MemberPicker from './MemberPicker'
 import { Alert, Badge, Field, Modal, Select } from './ui'
 import { api } from '../lib/api'
@@ -112,9 +112,14 @@ export default function DonationForm({ donation, onClose, onSaved, onResent }) {
             SMS receipt: <ReceiptSmsBadge donation={donation} />
             {resent && <span className="text-slate-600">{resent}</span>}
           </span>
-          <button type="button" className="btn-secondary px-3 py-1.5" onClick={resend} disabled={resending}>
-            {resending ? 'Sending…' : donation.receipt_sms_status ? 'Resend receipt' : 'Send receipt'}
-          </button>
+          <div className="flex gap-2">
+            <a className="btn-secondary px-3 py-1.5" href={`/print/receipt/${donation.id}`} target="_blank" rel="noreferrer">
+              <Printer className="h-4 w-4" /> Print receipt
+            </a>
+            <button type="button" className="btn-secondary px-3 py-1.5" onClick={resend} disabled={resending}>
+              {resending ? 'Sending…' : donation.receipt_sms_status ? 'Resend SMS' : 'Send SMS'}
+            </button>
+          </div>
         </div>
       )}
     </Modal>

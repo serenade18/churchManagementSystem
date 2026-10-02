@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Download, Plus, Search, Trash2 } from 'lucide-react'
+import { Download, Plus, Printer, Search, Trash2 } from 'lucide-react'
 import DonationForm, { ReceiptSmsBadge } from '../components/DonationForm'
 import { Alert, Badge, ConfirmDialog, PageHeader, Pagination, Select, StatCard, Table } from '../components/ui'
 import { api, downloadCsv } from '../lib/api'
@@ -46,9 +46,19 @@ export default function Donations() {
     { key: 'status', label: 'Status', render: (d) => <Badge status={d.status}>{DONATION_STATUS[d.status]}</Badge> },
     { key: 'receipt_sms_status', label: 'SMS', render: (d) => d.status === 'success' ? <ReceiptSmsBadge donation={d} /> : '—' },
     { key: 'amount', label: 'Amount', className: 'text-right font-medium', render: (d) => money(d.amount) },
-    { key: 'actions', label: '', render: (d) => !MPESA_CHANNELS.includes(d.channel) && (
-      <button className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600" aria-label="Delete donation"
-        onClick={(e) => { e.stopPropagation(); setDeleting(d) }}><Trash2 className="h-4 w-4" /></button>
+    { key: 'actions', label: '', render: (d) => (
+      <div className="flex justify-end gap-1">
+        {d.status === 'success' && (
+          <a href={`/print/receipt/${d.id}`} target="_blank" rel="noreferrer" title="Print receipt" aria-label="Print receipt"
+            className="rounded p-1 text-slate-400 hover:bg-brand-50 hover:text-brand-700" onClick={(e) => e.stopPropagation()}>
+            <Printer className="h-4 w-4" />
+          </a>
+        )}
+        {!MPESA_CHANNELS.includes(d.channel) && (
+          <button className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600" aria-label="Delete donation"
+            onClick={(e) => { e.stopPropagation(); setDeleting(d) }}><Trash2 className="h-4 w-4" /></button>
+        )}
+      </div>
     ) },
   ]
 
