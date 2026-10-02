@@ -31,12 +31,18 @@ export function AuthProvider({ children }) {
     await loadUser()
   }
 
+  // Sign in with tokens issued elsewhere (e.g. right after verifying a signup code).
+  const acceptTokens = async (data) => {
+    tokens.set(data)
+    await loadUser()
+  }
+
   const logout = () => {
     tokens.clear()
     setUser(null)
   }
 
-  return <AuthContext.Provider value={{ user, loading, login, logout, reload: loadUser }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ user, loading, login, acceptTokens, logout, reload: loadUser }}>{children}</AuthContext.Provider>
 }
 
 export const useAuth = () => useContext(AuthContext)

@@ -41,51 +41,7 @@ function UserForm({ user, onClose, onSaved }) {
 const STATUS = {
   active: ['green', 'Active'],
   disabled: ['slate', 'Disabled'],
-  pending: ['amber', 'Awaiting approval'],
-  rejected: ['red', 'Rejected'],
-}
-
-function PendingApprovals({ onChanged }) {
-  const { data, reload } = useApi('/cms/users/', { status: 'pending' })
-  const [busy, setBusy] = useState(null)
-  const [error, setError] = useState('')
-  const pending = data?.results || []
-  if (!pending.length) return null
-
-  const review = async (u, decision) => {
-    setBusy(u.id); setError('')
-    try {
-      await api.post(`/cms/users/${u.id}/${decision}/`)
-      reload(); onChanged()
-      window.dispatchEvent(new Event('cms:users-changed'))
-    } catch (e) {
-      setError(e.message)
-    } finally {
-      setBusy(null)
-    }
-  }
-
-  return (
-    <div className="card mb-6 border-amber-200 p-5">
-      <h2 className="font-semibold">Awaiting approval <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">{pending.length}</span></h2>
-      <p className="mb-4 text-sm text-slate-500">People who requested admin access. Approve only those you know should see member and giving data.</p>
-      <Alert>{error}</Alert>
-      <ul className="divide-y divide-slate-100">
-        {pending.map((u) => (
-          <li key={u.id} className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm">
-              <p className="font-medium text-slate-900">{`${u.first_name} ${u.last_name}`.trim()} <span className="font-normal text-slate-500">· {u.username}</span></p>
-              <p className="text-slate-500">{u.email} · {u.phone_number} · requested {dateTime(u.date_joined)}</p>
-            </div>
-            <div className="flex gap-2">
-              <button className="btn-secondary text-red-600" disabled={busy === u.id} onClick={() => review(u, 'reject')}>Reject</button>
-              <button className="btn-primary" disabled={busy === u.id} onClick={() => review(u, 'approve')}>{busy === u.id ? 'Saving…' : 'Approve'}</button>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
+  unverified: ['amber', 'Phone not verified'],
 }
 
 export default function Users() {
@@ -105,7 +61,6 @@ export default function Users() {
       <PageHeader title="Admin users" subtitle="People who can sign in to this portal."
         actions={<button className="btn-primary" onClick={() => setEditing('new')}><Plus className="h-4 w-4" /> Add admin</button>} />
       <Alert>{error?.message || actionError}</Alert>
-      <PendingApprovals onChanged={reload} />
       <Table loading={loading} rows={data?.results} onRowClick={setEditing} columns={[
         { key: 'username', label: 'Username', render: (u) => <span className="font-medium">{u.username}</span> },
         { key: 'name', label: 'Name', render: (u) => `${u.first_name} ${u.last_name}`.trim() || '—' },

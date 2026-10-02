@@ -20,24 +20,18 @@ const NAV = [
 export default function Layout() {
   const { user, logout } = useAuth()
   const [open, setOpen] = useState(false)
-  const [counts, setCounts] = useState({ unallocated: 0, pendingUsers: 0 })
+  const [counts, setCounts] = useState({ unallocated: 0 })
   const location = useLocation()
 
-  // Badges: Paybill payments waiting to be allocated, and (super admins) signups awaiting approval.
+  // Badge: Paybill payments waiting to be allocated.
   useEffect(() => {
     const loadPaybill = () => api.get('/cms/paybill-payments/', { status: 'unallocated', page_size: 1 })
       .then((d) => setCounts((c) => ({ ...c, unallocated: d.count }))).catch(() => {})
-    const loadUsers = () => user?.is_superuser && api.get('/cms/users/', { status: 'pending', page_size: 1 })
-      .then((d) => setCounts((c) => ({ ...c, pendingUsers: d.count }))).catch(() => {})
-    loadPaybill(); loadUsers()
+    loadPaybill()
     window.addEventListener('cms:paybill-changed', loadPaybill)
-    window.addEventListener('cms:users-changed', loadUsers)
-    return () => {
-      window.removeEventListener('cms:paybill-changed', loadPaybill)
-      window.removeEventListener('cms:users-changed', loadUsers)
-    }
-  }, [location.pathname, user?.is_superuser])
-  const nav = [...NAV, ...(user?.is_superuser ? [{ to: '/users', label: 'Admin Users', icon: ShieldCheck, badge: 'pendingUsers' }] : []), { to: '/settings', label: 'Settings', icon: Settings }]
+    return () => window.removeEventListener('cms:paybill-changed', loadPaybill)
+  }, [location.pathname])
+  const nav = [...NAV, ...(user?.is_superuser ? [{ to: '/users', label: 'Admin Users', icon: ShieldCheck }] : []), { to: '/settings', label: 'Settings', icon: Settings }]
 
   const sidebar = (
     <div className="flex h-full flex-col bg-brand-900 text-brand-100">
@@ -61,7 +55,7 @@ export default function Layout() {
             <Icon className="h-5 w-5" /> {label}
             {badge && counts[badge] > 0 && (
               <span className="ml-auto rounded-full bg-amber-400 px-2 py-0.5 text-xs font-semibold text-amber-950"
-                title={badge === 'pendingUsers' ? 'Requests awaiting approval' : 'Payments to allocate'}>{counts[badge]}</span>
+                title="Payments to allocate">{counts[badge]}</span>
             )}
           </NavLink>
         ))}

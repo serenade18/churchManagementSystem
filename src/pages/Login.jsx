@@ -11,6 +11,7 @@ export default function Login() {
   const location = useLocation()
   const [form, setForm] = useState({ username: '', password: '' })
   const [error, setError] = useState('')
+  const [unverified, setUnverified] = useState(false)
   const [busy, setBusy] = useState(false)
 
   // Where to go after signing in: the admin page that sent us here, else the dashboard.
@@ -21,11 +22,13 @@ export default function Login() {
     e.preventDefault()
     setBusy(true)
     setError('')
+    setUnverified(false)
     try {
       await login(form.username, form.password)
       navigate(next, { replace: true })
     } catch (err) {
-      setError(err.status === 401 ? 'Incorrect username or password.' : err.message)
+      setUnverified([].concat(err.data?.code || []).includes('unverified'))
+      setError(err.status === 401 ? 'Incorrect username or password.' : err.data?.detail ? [].concat(err.data.detail).join(' ') : err.message)
     } finally {
       setBusy(false)
     }
@@ -40,6 +43,9 @@ export default function Login() {
           <p className="text-sm text-slate-500">Sign in to the admin portal</p>
         </div>
         <Alert>{error}</Alert>
+        {unverified && (
+          <Link to={`/signup?verify=${encodeURIComponent(form.username)}`} className="btn-secondary mb-4 w-full">Verify my phone</Link>
+        )}
         <form onSubmit={submit} className="space-y-4">
           <label className="block">
             <span className="label">Username</span>
@@ -52,7 +58,7 @@ export default function Login() {
           <button className="btn-primary w-full" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
         </form>
         <p className="mt-6 text-center text-sm text-slate-500">
-          Need an admin account? <Link to="/signup" className="font-medium text-brand-700 hover:underline">Request access</Link>
+          Need an admin account? <Link to="/signup" className="font-medium text-brand-700 hover:underline">Create one</Link>
         </p>
         <p className="mt-2 text-center text-sm text-slate-500">
           Want to give? <Link to="/give" className="font-medium text-brand-700 hover:underline">Go to the donation page</Link>
