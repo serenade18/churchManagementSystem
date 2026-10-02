@@ -64,11 +64,12 @@ export async function request(path, { method = 'GET', body, params, raw = false,
     if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v)
   })
 
+  const isForm = body instanceof FormData
   const send = () => {
     const headers = {}
-    if (body !== undefined) headers['Content-Type'] = 'application/json'
+    if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json'
     if (auth && tokens.access) headers.Authorization = `Bearer ${tokens.access}`
-    return fetch(url, { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined })
+    return fetch(url, { method, headers, body: body === undefined ? undefined : isForm ? body : JSON.stringify(body) })
   }
 
   let res = await send()
@@ -90,6 +91,7 @@ export const api = {
   patch: (path, body) => request(path, { method: 'PATCH', body }),
   put: (path, body) => request(path, { method: 'PUT', body }),
   del: (path) => request(path, { method: 'DELETE' }),
+  upload: (path, formData) => request(path, { method: 'POST', body: formData }),
 }
 
 export async function downloadCsv(path, params, filename) {

@@ -29,6 +29,21 @@ export default function DonationForm({ donation, onClose, onSaved, onResent }) {
     notes: donation?.notes || '',
     send_receipt: true,
   })
+  const [checking, setChecking] = useState(false)
+  const [checkResult, setCheckResult] = useState('')
+  const checkWithMpesa = async () => {
+    setChecking(true)
+    setCheckResult('')
+    try {
+      const res = await api.post(`/cms/donations/${donation.id}/check_payment/`)
+      setCheckResult(res.message)
+      if (res.outcome === 'success' || res.outcome === 'failed') onResent?.(res.donation)
+    } catch (e) {
+      setCheckResult(e.message)
+    } finally {
+      setChecking(false)
+    }
+  }
   const [resending, setResending] = useState(false)
   const [resent, setResent] = useState('')
 
@@ -68,7 +83,7 @@ export default function DonationForm({ donation, onClose, onSaved, onResent }) {
       <Alert>{error}</Alert>
       {isMpesa && (
         <p className="mb-4 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
-          M-PESA donation of <strong>{money(donation.amount)}</strong> from {donation.phone_number}
+          M-PESA donation of <strong>{money(donation.amount)}</strong> from {donation.phone_number || donation.payment?.phone_number || 'an M-PESA number'}
           {donation.receipt && <> · receipt <span className="font-mono">{donation.receipt}</span></>}. You can re-assign the member, branch, project or type.
         </p>
       )}
@@ -105,6 +120,14 @@ export default function DonationForm({ donation, onClose, onSaved, onResent }) {
           </label>
         )}
       </form>
+      {donation && donation.status === 'pending' && donation.payment && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
+          <span className="text-amber-800">{checkResult || "M-PESA hasn't confirmed this online payment yet."}</span>
+          <button type="button" className="btn-secondary px-3 py-1.5" onClick={checkWithMpesa} disabled={checking}>
+            {checking ? 'Checking…' : 'Check with M-PESA'}
+          </button>
+        </div>
+      )}
       {donation && donation.status === 'success' && (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 p-3 text-sm">
           <span className="flex items-center gap-2">

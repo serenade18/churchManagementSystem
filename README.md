@@ -13,7 +13,7 @@ It talks to the Django API in [`pceaBackend`](https://github.com/serenade18/pcea
 - **Printable receipts & statements**: print (or save as PDF) an official receipt for any successful donation, and a giving statement for any member and period, from the Donations list, the donation editor and member profiles.
 - **Branches**: congregations with member counts and total giving.
 - **Projects**: fundraising target vs. amount raised, branch-specific or church-wide.
-- **Paybill**: members pay to the Paybill with their phone number + a donation code as the account (e.g. `0712345678SCP`); payments are allocated and receipted automatically. Manage donation codes and allocate anything unrecognised from the Paybill page (the sidebar shows how many are waiting).
+- **Paybill**: members pay to the Paybill with their phone number + a donation code as the account (e.g. `0712345678SCP`); payments are allocated and receipted automatically. Manage donation codes and allocate anything unrecognised from the Paybill page (the sidebar shows how many are waiting). A **Reconcile statement** tab imports any payments the system missed from an uploaded M-PESA statement.
 - **Attendance**: create services (per branch or church-wide), tick members present or check them in by membership number, record visitors, export to CSV, see trends, and follow up (or SMS) members who have been away.
 - **Bulk SMS**: message groups of members (by branch, status, gender) or specific people, with personalised placeholders, a live preview and a delivery log of sent and failed messages. Also reachable from the Members list and member profiles.
 - **Admin users** (super admins only) and **Settings** (change password).

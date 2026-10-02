@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AlertTriangle, CheckCircle2, Pencil, Plus, Search, Smartphone } from 'lucide-react'
 import MemberPicker from '../components/MemberPicker'
+import Reconcile from '../components/Reconcile'
 import { Alert, Badge, Field, Modal, PageHeader, Pagination, Select, Table } from '../components/ui'
 import { api } from '../lib/api'
 import { useApi, useDebounced, useOptions } from '../lib/hooks'
@@ -143,7 +144,7 @@ export default function Paybill() {
       <HowToGive codes={codeList} />
 
       <div className="mb-4 flex gap-1 border-b border-slate-200">
-        {[['payments', 'Payments'], ['codes', 'Donation codes']].map(([k, label]) => (
+        {[['payments', 'Payments'], ['codes', 'Donation codes'], ['reconcile', 'Reconcile statement']].map(([k, label]) => (
           <button key={k} onClick={() => setTab(k)}
             className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${tab === k ? 'border-brand-700 text-brand-800' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>{label}</button>
         ))}
@@ -151,7 +152,9 @@ export default function Paybill() {
 
       {notice && <Alert tone="green">{notice}</Alert>}
 
-      {tab === 'payments' ? (
+      {tab === 'reconcile' ? (
+        <Reconcile onImported={() => { payments.reload(); codes.reload(); window.dispatchEvent(new Event('cms:paybill-changed')) }} />
+      ) : tab === 'payments' ? (
         <>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row">
             <div className="w-48"><Select value={status} onChange={(v) => { setStatus(v); setPage(1) }} options={{ unallocated: 'Unallocated', allocated: 'Allocated', ignored: 'Set aside' }} placeholder="All payments" /></div>
