@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { ArrowLeft, Printer } from 'lucide-react'
+import Logo from './Logo'
 import { Alert, Spinner } from './ui'
 
 /** Paper-like page with a toolbar that disappears when printing. */
@@ -32,17 +33,21 @@ export default function PrintLayout({ title, pageSize = 'A4', loading, error, ch
 
 export function ChurchHeader({ church, title, subtitle }) {
   return (
-    <div className="mb-6 flex items-start justify-between gap-6 border-b-2 border-slate-800 pb-4">
-      <div>
+    <div className="mb-6 flex items-start justify-between gap-4 border-b-2 border-slate-800 pb-4">
+      <div className="flex min-w-0 flex-1 items-start gap-3">
+        <Logo className="h-20 shrink-0" />
+        <div className="min-w-0">
         <p className="text-xl font-bold uppercase tracking-wide text-slate-900">{church.name}</p>
         <div className="mt-1 space-y-0.5 text-xs text-slate-600">
           {church.address && <p>{church.address}</p>}
-          {(church.phone || church.email) && <p>{[church.phone, church.email].filter(Boolean).join(' · ')}</p>}
+          {church.phone && <p>Tel: {church.phone}</p>}
+          {church.email && <p>{church.email}</p>}
           {church.paybill && <p>M-PESA Paybill: {church.paybill}</p>}
         </div>
+        </div>
       </div>
-      <div className="text-right">
-        <p className="text-lg font-bold uppercase tracking-wider text-slate-900">{title}</p>
+      <div className="shrink-0 whitespace-nowrap text-right">
+        <p className="text-base font-bold uppercase tracking-wide text-slate-900">{title}</p>
         {subtitle}
       </div>
     </div>

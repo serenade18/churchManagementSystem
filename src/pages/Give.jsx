@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CheckCircle2, Church, Loader2, Smartphone, XCircle } from 'lucide-react'
+import { CheckCircle2, Loader2, Smartphone, XCircle } from 'lucide-react'
+import Logo from '../components/Logo'
 import { Alert, Field, Select } from '../components/ui'
 import { request } from '../lib/api'
 import { CHURCH_NAME, DONATION_TYPES, money } from '../lib/format'
@@ -83,7 +84,7 @@ export default function Give() {
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-br from-brand-900 via-brand-800 to-brand-700">
       <header className="flex items-center justify-between px-4 py-4 text-white sm:px-8">
-        <span className="flex items-center gap-2 font-semibold"><Church className="h-6 w-6" /> {CHURCH_NAME}</span>
+        <span className="flex items-center gap-3 font-semibold"><Logo tile className="h-11 w-11" /> {CHURCH_NAME}</span>
         <Link to="/login" className="text-sm text-brand-100 hover:text-white">Admin login</Link>
       </header>
       <main className="flex flex-1 items-center justify-center p-4">
