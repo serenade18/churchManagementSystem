@@ -11,6 +11,7 @@ import MemberDetail from './pages/MemberDetail'
 import Members from './pages/Members'
 import Projects from './pages/Projects'
 import SettingsPage from './pages/Settings'
+import Sms from './pages/Sms'
 import Users from './pages/Users'
 
 // Charts are heavy; keep them out of the public donation page bundle.
@@ -41,6 +42,7 @@ export default function App() {
             <Route path="/donations" element={<Donations />} />
             <Route path="/branches" element={<Branches />} />
             <Route path="/projects" element={<Projects />} />
+            <Route path="/sms" element={<Sms />} />
             <Route path="/users" element={<RequireAuth superuser><Users /></RequireAuth>} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
