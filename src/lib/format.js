@@ -25,7 +25,7 @@ export const DONATION_TYPES = {
 export const CHANNELS = { mpesa: 'M-PESA', paybill: 'M-PESA Paybill', cash: 'Cash', bank: 'Bank', cheque: 'Cheque' }
 // Donations that come from Safaricom can't be edited (amount/status) or deleted.
 export const MPESA_CHANNELS = ['mpesa', 'paybill']
-export const PAYBILL_NUMBER = import.meta.env.VITE_PAYBILL_NUMBER || '4156467'
+export const PAYBILL_NUMBER = import.meta.env.VITE_PAYBILL_NUMBER || '785610'
 export const DONATION_STATUS = { success: 'Success', pending: 'Pending', failed: 'Failed' }
 export const MEMBER_STATUS = { active: 'Active', inactive: 'Inactive', transferred: 'Transferred', deceased: 'Deceased' }
 export const GENDERS = { male: 'Male', female: 'Female' }
