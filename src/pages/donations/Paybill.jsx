@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { AlertTriangle, CheckCircle2, Pencil, Plus, Search, Smartphone } from 'lucide-react'
+import { AlertTriangle, Pencil, Plus, Search, Smartphone, Trash2 } from 'lucide-react'
 import MemberPicker from '../../components/MemberPicker'
 import Reconcile from '../../components/Reconcile'
-import { Alert, Badge, Field, Modal, PageHeader, Pagination, Select, Table } from '../../components/ui'
+import { Alert, Badge, ConfirmDialog, Field, Modal, PageHeader, Pagination, Select, Table } from '../../components/ui'
 import { api } from '../../lib/api'
 import { useApi, useDebounced, useOptions } from '../../lib/hooks'
 import { DONATION_TYPES, PAYBILL_NUMBER, dateTime, money } from '../../lib/format'
@@ -47,6 +47,11 @@ function CodeForm({ code, onClose, onSaved }) {
     <Modal open onClose={onClose} title={code ? 'Edit donation code' : 'New donation code'}
       footer={<><button className="btn-secondary" onClick={onClose}>Cancel</button><button className="btn-primary" form="code-form" disabled={busy}>{busy ? 'Saving…' : 'Save'}</button></>}>
       <Alert>{error}</Alert>
+      {code && values.code !== code.code && (
+        <Alert tone="amber">
+          Givers who still type {code.code} will land in Unallocated. Tell the congregation about the new code{code.payment_count > 0 ? '; past payments keep their allocation' : ''}.
+        </Alert>
+      )}
       <form id="code-form" onSubmit={save} className="grid gap-4 sm:grid-cols-2">
         <Field label="Code *" error={errors.code} hint="2-6 letters/digits, ideally 3. Avoid O and I: they look like 0 and 1 (the system treats them as the same).">
           <input className="input font-mono uppercase" required maxLength={6} value={values.code} onChange={(e) => set('code')(e.target.value.toUpperCase())} placeholder="SCP" />
@@ -133,9 +138,23 @@ export default function Paybill() {
   const [allocating, setAllocating] = useState(null)
   const [editingCode, setEditingCode] = useState(null)
   const [notice, setNotice] = useState('')
+  const [deletingCode, setDeletingCode] = useState(null)
+  const [codeBusy, setCodeBusy] = useState(false)
+  const [codeError, setCodeError] = useState('')
   const payments = useApi('/cms/paybill-payments/', { status, search: useDebounced(search), page })
   const codes = useApi('/cms/donation-codes/', { page_size: 500 })
   const codeList = codes.data?.results || []
+
+  const toggleCode = async (c) => {
+    setCodeError('')
+    try { await api.patch(`/cms/donation-codes/${c.id}/`, { is_active: !c.is_active }); codes.reload() } catch (e) { setCodeError(e.message) }
+  }
+  const deleteCode = async () => {
+    setCodeBusy(true)
+    try { await api.del(`/cms/donation-codes/${deletingCode.id}/`); setNotice(`Code ${deletingCode.code} deleted.`); codes.reload() } catch (e) { setCodeError(e.message) }
+    setCodeBusy(false)
+    setDeletingCode(null)
+  }
 
   return (
     <>
@@ -187,6 +206,8 @@ export default function Paybill() {
           <Pagination page={page} count={payments.data?.count} onChange={setPage} />
         </>
       ) : (
+        <>
+        <Alert>{codeError}</Alert>
         <Table loading={codes.loading} rows={codeList} onRowClick={setEditingCode} empty="No donation codes yet. Create one for each purpose, e.g. TTH for Tithe."
           columns={[
             { key: 'code', label: 'Code', render: (c) => <span className="rounded bg-slate-100 px-2 py-0.5 font-mono font-semibold">{c.code}</span> },
@@ -194,13 +215,30 @@ export default function Paybill() {
             { key: 'donation_type', label: 'Allocates to', render: (c) => <>{DONATION_TYPES[c.donation_type]}{c.project_name && <span className="text-slate-500"> · {c.project_name}</span>}{c.branch_name && <span className="text-slate-500"> · {c.branch_name}</span>}</> },
             { key: 'example', label: 'Account example', render: (c) => <span className="font-mono text-xs text-slate-500">0712345678{c.code}</span> },
             { key: 'total_received', label: 'Received via Paybill', className: 'text-right', render: (c) => <>{money(c.total_received)} <span className="text-xs text-slate-400">({c.payment_count})</span></> },
-            { key: 'is_active', label: '', render: (c) => c.is_active ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> : <Badge>Inactive</Badge> },
-            { key: 'edit', label: '', render: () => <Pencil className="h-4 w-4 text-slate-400" /> },
+            { key: 'is_active', label: 'Status', render: (c) => (
+              <button type="button" title={c.is_active ? 'Turn off' : 'Turn on'} onClick={(e) => { e.stopPropagation(); toggleCode(c) }}>
+                <Badge tone={c.is_active ? 'green' : 'slate'}>{c.is_active ? 'On' : 'Off'}</Badge>
+              </button>
+            ) },
+            { key: 'actions', label: '', render: (c) => (
+              <div className="flex justify-end gap-1">
+                <button type="button" className="btn-secondary px-2.5 py-1.5" onClick={(e) => { e.stopPropagation(); setEditingCode(c) }}>
+                  <Pencil className="h-4 w-4" /> Edit
+                </button>
+                <button type="button" className="btn-secondary px-2.5 py-1.5 text-red-600" title={c.payment_count ? 'Has payments: turn it off instead' : 'Delete'}
+                  disabled={c.payment_count > 0} onClick={(e) => { e.stopPropagation(); setDeletingCode(c) }}>
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ) },
           ]} />
+        </>
       )}
 
       {allocating && <AllocateModal payment={allocating} codes={codeList.filter((c) => c.is_active)} onClose={() => setAllocating(null)}
         onDone={() => { setAllocating(null); setNotice('Payment updated.'); payments.reload(); codes.reload(); window.dispatchEvent(new Event('cms:paybill-changed')) }} />}
+      <ConfirmDialog open={!!deletingCode} busy={codeBusy} onClose={() => setDeletingCode(null)} onConfirm={deleteCode} title="Delete donation code"
+        message={`Delete ${deletingCode?.code} (${deletingCode?.name})? Payments typed with this code will go to Unallocated.`} />
       {editingCode && <CodeForm code={editingCode === 'new' ? null : editingCode} onClose={() => setEditingCode(null)} onSaved={() => { setEditingCode(null); codes.reload() }} />}
     </>
   )
