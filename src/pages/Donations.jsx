@@ -4,7 +4,7 @@ import DonationForm, { ReceiptSmsBadge } from '../components/DonationForm'
 import { Alert, Badge, ConfirmDialog, PageHeader, Pagination, Select, StatCard, Table } from '../components/ui'
 import { api, downloadCsv } from '../lib/api'
 import { useApi, useDebounced, useOptions } from '../lib/hooks'
-import { CHANNELS, DONATION_STATUS, DONATION_TYPES, dateTime, money } from '../lib/format'
+import { CHANNELS, DONATION_STATUS, DONATION_TYPES, MPESA_CHANNELS, dateTime, money } from '../lib/format'
 
 const EMPTY_FILTERS = { status: '', channel: '', donation_type: '', branch: '', project: '', date_from: '', date_to: '' }
 
@@ -46,7 +46,7 @@ export default function Donations() {
     { key: 'status', label: 'Status', render: (d) => <Badge status={d.status}>{DONATION_STATUS[d.status]}</Badge> },
     { key: 'receipt_sms_status', label: 'SMS', render: (d) => d.status === 'success' ? <ReceiptSmsBadge donation={d} /> : '—' },
     { key: 'amount', label: 'Amount', className: 'text-right font-medium', render: (d) => money(d.amount) },
-    { key: 'actions', label: '', render: (d) => d.channel !== 'mpesa' && (
+    { key: 'actions', label: '', render: (d) => !MPESA_CHANNELS.includes(d.channel) && (
       <button className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600" aria-label="Delete donation"
         onClick={(e) => { e.stopPropagation(); setDeleting(d) }}><Trash2 className="h-4 w-4" /></button>
     ) },

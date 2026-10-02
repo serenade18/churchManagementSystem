@@ -9,6 +9,7 @@ import Give from './pages/Give'
 import Login from './pages/Login'
 import MemberDetail from './pages/MemberDetail'
 import Members from './pages/Members'
+import Paybill from './pages/Paybill'
 import Projects from './pages/Projects'
 import ServiceDetail from './pages/ServiceDetail'
 import SettingsPage from './pages/Settings'
@@ -45,6 +46,7 @@ export default function App() {
             <Route path="/branches" element={<Branches />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/sms" element={<Sms />} />
+            <Route path="/paybill" element={<Paybill />} />
             <Route path="/attendance" element={<Suspense fallback={<Spinner className="mx-auto mt-20 h-8 w-8" />}><Attendance /></Suspense>} />
             <Route path="/attendance/:id" element={<ServiceDetail />} />
             <Route path="/users" element={<RequireAuth superuser><Users /></RequireAuth>} />

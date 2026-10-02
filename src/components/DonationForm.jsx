@@ -4,13 +4,13 @@ import MemberPicker from './MemberPicker'
 import { Alert, Badge, Field, Modal, Select } from './ui'
 import { api } from '../lib/api'
 import { useOptions } from '../lib/hooks'
-import { CHANNELS, DONATION_STATUS, DONATION_TYPES, money } from '../lib/format'
+import { CHANNELS, DONATION_STATUS, DONATION_TYPES, MPESA_CHANNELS, money } from '../lib/format'
 import { clean, useForm } from '../lib/useForm'
 
-const MANUAL_CHANNELS = Object.fromEntries(Object.entries(CHANNELS).filter(([k]) => k !== 'mpesa'))
+const MANUAL_CHANNELS = Object.fromEntries(Object.entries(CHANNELS).filter(([k]) => !MPESA_CHANNELS.includes(k)))
 
 export default function DonationForm({ donation, onClose, onSaved, onResent }) {
-  const isMpesa = donation?.channel === 'mpesa'
+  const isMpesa = MPESA_CHANNELS.includes(donation?.channel)
   const branches = useOptions('/cms/branches/')
   const projects = useOptions('/cms/projects/')
   const [member, setMember] = useState(
