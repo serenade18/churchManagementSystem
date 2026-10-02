@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
-import { Alert, Badge, ConfirmDialog, Field, Modal, PageHeader, PasswordInput, Table } from '../components/ui'
-import { api } from '../lib/api'
-import { useAuth } from '../lib/auth'
-import { useApi } from '../lib/hooks'
-import { dateTime } from '../lib/format'
-import { useForm } from '../lib/useForm'
+import { Alert, Badge, ConfirmDialog, Field, Modal, PageHeader, PasswordInput, Table } from '../../components/ui'
+import { api } from '../../lib/api'
+import { useAuth } from '../../lib/auth'
+import { useApi } from '../../lib/hooks'
+import { dateTime } from '../../lib/format'
+import { useForm } from '../../lib/useForm'
 
 function UserForm({ user, onClose, onSaved }) {
   const { values, set, errors, error, busy, submit } = useForm({

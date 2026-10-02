@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
 import { KeyRound, Smartphone } from 'lucide-react'
-import Logo from '../components/Logo'
-import { Alert, Field, PasswordInput } from '../components/ui'
-import { request } from '../lib/api'
-import { homeFor, useAuth } from '../lib/auth'
-import { CHURCH_NAME } from '../lib/format'
-import { useForm } from '../lib/useForm'
+import Logo from '../../components/Logo'
+import { Alert, Field, PasswordInput } from '../../components/ui'
+import { request } from '../../lib/api'
+import { homeFor, useAuth } from '../../lib/auth'
+import { CHURCH_NAME } from '../../lib/format'
+import { useForm } from '../../lib/useForm'
 
 const RESEND_SECONDS = 60
 

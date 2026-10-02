@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom'
 import { AlertTriangle, CheckCircle2, MessageSquare, ShieldCheck, Smartphone, UserCheck, Users, XCircle } from 'lucide-react'
-import { Alert, Badge, PageHeader, Progress, Spinner, StatCard, Table } from '../components/ui'
-import { useAuth } from '../lib/auth'
-import { useApi } from '../lib/hooks'
-import { date, dateTime, money } from '../lib/format'
+import { Alert, Badge, PageHeader, Progress, Spinner, StatCard, Table } from '../../components/ui'
+import { useAuth } from '../../lib/auth'
+import { useApi } from '../../lib/hooks'
+import { date, dateTime, money } from '../../lib/format'
 
 const CHECK = {
   ok: [CheckCircle2, 'text-emerald-600', 'green', 'OK'],

@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
-import Logo from '../components/Logo'
-import { Alert, PasswordInput } from '../components/ui'
-import { homeFor, useAuth } from '../lib/auth'
-import { CHURCH_NAME } from '../lib/format'
+import Logo from '../../components/Logo'
+import { Alert, PasswordInput } from '../../components/ui'
+import { homeFor, useAuth } from '../../lib/auth'
+import { CHURCH_NAME } from '../../lib/format'
 
 export default function Login() {
   const { user, login } = useAuth()
