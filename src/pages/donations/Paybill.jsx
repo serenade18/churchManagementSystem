@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { AlertTriangle, CheckCircle2, Pencil, Plus, Search, Smartphone } from 'lucide-react'
-import MemberPicker from '../components/MemberPicker'
-import Reconcile from '../components/Reconcile'
-import { Alert, Badge, Field, Modal, PageHeader, Pagination, Select, Table } from '../components/ui'
-import { api } from '../lib/api'
-import { useApi, useDebounced, useOptions } from '../lib/hooks'
-import { DONATION_TYPES, PAYBILL_NUMBER, dateTime, money } from '../lib/format'
-import { clean, useForm } from '../lib/useForm'
+import MemberPicker from '../../components/MemberPicker'
+import Reconcile from '../../components/Reconcile'
+import { Alert, Badge, Field, Modal, PageHeader, Pagination, Select, Table } from '../../components/ui'
+import { api } from '../../lib/api'
+import { useApi, useDebounced, useOptions } from '../../lib/hooks'
+import { DONATION_TYPES, PAYBILL_NUMBER, dateTime, money } from '../../lib/format'
+import { clean, useForm } from '../../lib/useForm'
 
 const STATUS = { unallocated: ['amber', 'Unallocated'], allocated: ['green', 'Allocated'], ignored: ['slate', 'Ignored'] }
 const PHONE_CHECK = { match: ['green', 'Phone verified'], mismatch: ['red', 'Phone mismatch'], unknown: ['slate', 'Phone not verified'] }

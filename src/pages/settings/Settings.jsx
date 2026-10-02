@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Alert, Field, PageHeader, PasswordInput } from '../components/ui'
-import { api } from '../lib/api'
-import { useAuth } from '../lib/auth'
-import { useForm } from '../lib/useForm'
+import { Alert, Field, PageHeader, PasswordInput } from '../../components/ui'
+import { api } from '../../lib/api'
+import { useAuth } from '../../lib/auth'
+import { useForm } from '../../lib/useForm'
 
 export default function SettingsPage() {
   const { user } = useAuth()

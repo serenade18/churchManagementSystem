@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Check, Download, Pencil, Search, Trash2, UserCheck } from 'lucide-react'
-import ServiceForm from '../components/ServiceForm'
-import { Alert, ConfirmDialog, Spinner } from '../components/ui'
-import { api, downloadCsv } from '../lib/api'
-import { useApi, useDebounced } from '../lib/hooks'
-import { SERVICE_TYPES, date } from '../lib/format'
+import ServiceForm from '../../components/ServiceForm'
+import { Alert, ConfirmDialog, Spinner } from '../../components/ui'
+import { api, downloadCsv } from '../../lib/api'
+import { useApi, useDebounced } from '../../lib/hooks'
+import { SERVICE_TYPES, date } from '../../lib/format'
 
 function Stat({ label, value }) {
   return (

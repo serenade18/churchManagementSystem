@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { MapPin, Pencil, Phone, Plus, Trash2, User } from 'lucide-react'
-import { Alert, Badge, ConfirmDialog, Field, Modal, PageHeader, Spinner } from '../components/ui'
-import { api } from '../lib/api'
-import { useApi } from '../lib/hooks'
-import { money } from '../lib/format'
-import { useForm } from '../lib/useForm'
+import { Alert, Badge, ConfirmDialog, Field, Modal, PageHeader, Spinner } from '../../components/ui'
+import { api } from '../../lib/api'
+import { useApi } from '../../lib/hooks'
+import { money } from '../../lib/format'
+import { useForm } from '../../lib/useForm'
 
 function BranchForm({ branch, onClose, onSaved }) {
   const { values, set, errors, error, busy, submit } = useForm({

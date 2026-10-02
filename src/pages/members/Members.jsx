@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Download, MessageSquare, Plus, Search } from 'lucide-react'
-import MemberForm from '../components/MemberForm'
-import { Alert, Badge, PageHeader, Pagination, Select, Table } from '../components/ui'
-import { downloadCsv } from '../lib/api'
-import { useApi, useDebounced, useOptions } from '../lib/hooks'
-import { MEMBER_STATUS, GENDERS, money } from '../lib/format'
+import MemberForm from '../../components/MemberForm'
+import { Alert, Badge, PageHeader, Pagination, Select, Table } from '../../components/ui'
+import { downloadCsv } from '../../lib/api'
+import { useApi, useDebounced, useOptions } from '../../lib/hooks'
+import { MEMBER_STATUS, GENDERS, money } from '../../lib/format'
 
 export default function Members() {
   const navigate = useNavigate()

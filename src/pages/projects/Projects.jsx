@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { CalendarDays, Pencil, Plus, Trash2 } from 'lucide-react'
-import { Alert, Badge, ConfirmDialog, Field, Modal, PageHeader, Progress, Select, Spinner } from '../components/ui'
-import { api } from '../lib/api'
-import { useApi, useOptions } from '../lib/hooks'
-import { PROJECT_STATUS, date, money } from '../lib/format'
-import { clean, useForm } from '../lib/useForm'
+import { Alert, Badge, ConfirmDialog, Field, Modal, PageHeader, Progress, Select, Spinner } from '../../components/ui'
+import { api } from '../../lib/api'
+import { useApi, useOptions } from '../../lib/hooks'
+import { PROJECT_STATUS, date, money } from '../../lib/format'
+import { clean, useForm } from '../../lib/useForm'
 
 function ProjectForm({ project, onClose, onSaved }) {
   const branches = useOptions('/cms/branches/')

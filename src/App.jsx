@@ -3,27 +3,27 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-route
 import Layout from './components/Layout'
 import { Spinner } from './components/ui'
 import { AuthProvider, useAuth } from './lib/auth'
-import Branches from './pages/Branches'
-import Donations from './pages/Donations'
+import Branches from './pages/branches/Branches'
+import Donations from './pages/donations/Donations'
 import ForgotPassword from './pages/auth/ForgotPassword'
-import Give from './pages/Give'
+import Give from './pages/give/Give'
 import Login from './pages/auth/Login'
-import MemberDetail from './pages/MemberDetail'
-import Members from './pages/Members'
-import Paybill from './pages/Paybill'
-import Projects from './pages/Projects'
-import ReceiptPrint from './pages/ReceiptPrint'
-import ServiceDetail from './pages/ServiceDetail'
-import SettingsPage from './pages/Settings'
+import MemberDetail from './pages/members/MemberDetail'
+import Members from './pages/members/Members'
+import Paybill from './pages/donations/Paybill'
+import Projects from './pages/projects/Projects'
+import ReceiptPrint from './pages/print/ReceiptPrint'
+import ServiceDetail from './pages/attendance/ServiceDetail'
+import SettingsPage from './pages/settings/Settings'
 import Signup from './pages/auth/Signup'
-import Sms from './pages/Sms'
+import Sms from './pages/sms/Sms'
 import SuperDashboard from './pages/admin/SuperDashboard'
-import StatementPrint from './pages/StatementPrint'
+import StatementPrint from './pages/print/StatementPrint'
 import Users from './pages/admin/Users'
 
 // Charts are heavy; keep them out of the public donation page bundle.
-const Dashboard = lazy(() => import('./pages/Dashboard'))
-const Attendance = lazy(() => import('./pages/Attendance'))
+const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'))
+const Attendance = lazy(() => import('./pages/attendance/Attendance'))
 
 function RequireAuth({ children, superuser }) {
   const { user, loading } = useAuth()

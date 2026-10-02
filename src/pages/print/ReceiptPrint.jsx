@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
-import PrintLayout, { ChurchHeader } from '../components/PrintLayout'
-import { useApi } from '../lib/hooks'
-import { dateTime, money } from '../lib/format'
+import PrintLayout, { ChurchHeader } from '../../components/PrintLayout'
+import { useApi } from '../../lib/hooks'
+import { dateTime, money } from '../../lib/format'
 
 function Row({ label, children }) {
   if (!children) return null

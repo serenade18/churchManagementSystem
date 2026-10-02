@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Building2, CalendarDays, FolderKanban, HandCoins, Users } from 'lucide-react'
-import { Alert, Badge, PageHeader, Progress, Spinner, StatCard } from '../components/ui'
-import { useApi } from '../lib/hooks'
-import { CHANNELS, DONATION_STATUS, DONATION_TYPES, compactMoney, date, dateTime, money } from '../lib/format'
+import { Alert, Badge, PageHeader, Progress, Spinner, StatCard } from '../../components/ui'
+import { useApi } from '../../lib/hooks'
+import { CHANNELS, DONATION_STATUS, DONATION_TYPES, compactMoney, date, dateTime, money } from '../../lib/format'
 
 const BAR = '#2453d9'
 const AXIS = { fontSize: 12, fill: '#64748b' }

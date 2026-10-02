@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { CalendarCheck, CalendarDays, MessageSquare, Plus, UserX, Users } from 'lucide-react'
-import ServiceForm from '../components/ServiceForm'
-import { Alert, PageHeader, Pagination, Select, StatCard, Table } from '../components/ui'
-import { useApi, useOptions } from '../lib/hooks'
-import { SERVICE_TYPES, date } from '../lib/format'
+import ServiceForm from '../../components/ServiceForm'
+import { Alert, PageHeader, Pagination, Select, StatCard, Table } from '../../components/ui'
+import { useApi, useOptions } from '../../lib/hooks'
+import { SERVICE_TYPES, date } from '../../lib/format'
 
 const AXIS = { fontSize: 12, fill: '#64748b' }
 

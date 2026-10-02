@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { CheckCircle2, MessageSquare, Send, Users, X } from 'lucide-react'
-import MemberPicker from '../components/MemberPicker'
-import { Alert, Badge, Field, Modal, PageHeader, Pagination, Select, Table } from '../components/ui'
-import { api } from '../lib/api'
-import { useApi, useDebounced, useOptions } from '../lib/hooks'
-import { GENDERS, MEMBER_STATUS, dateTime } from '../lib/format'
+import MemberPicker from '../../components/MemberPicker'
+import { Alert, Badge, Field, Modal, PageHeader, Pagination, Select, Table } from '../../components/ui'
+import { api } from '../../lib/api'
+import { useApi, useDebounced, useOptions } from '../../lib/hooks'
+import { GENDERS, MEMBER_STATUS, dateTime } from '../../lib/format'
 
 const PLACEHOLDERS = [
   ['{first_name}', 'First name'],

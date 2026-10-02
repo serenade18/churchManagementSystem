@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CheckCircle2, Loader2, Smartphone, XCircle } from 'lucide-react'
-import Logo from '../components/Logo'
-import { Alert, Field, Select } from '../components/ui'
-import { request } from '../lib/api'
-import { CHURCH_NAME, DONATION_TYPES, money } from '../lib/format'
+import Logo from '../../components/Logo'
+import { Alert, Field, Select } from '../../components/ui'
+import { request } from '../../lib/api'
+import { CHURCH_NAME, DONATION_TYPES, money } from '../../lib/format'
 
 const PUBLIC_TYPES = Object.fromEntries(Object.entries(DONATION_TYPES).filter(([k]) => k !== 'other'))
 const POLL_MS = 4000

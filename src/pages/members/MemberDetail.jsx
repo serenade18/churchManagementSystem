@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, FileText, MessageSquare, Pencil, Printer, Trash2 } from 'lucide-react'
-import MemberForm from '../components/MemberForm'
-import { Alert, Badge, ConfirmDialog, Field, Modal, Pagination, Spinner, Table } from '../components/ui'
-import { api } from '../lib/api'
-import { useApi } from '../lib/hooks'
-import { CHANNELS, DONATION_STATUS, DONATION_TYPES, GENDERS, MARITAL, MEMBER_STATUS, date, dateTime, money, today } from '../lib/format'
+import MemberForm from '../../components/MemberForm'
+import { Alert, Badge, ConfirmDialog, Field, Modal, Pagination, Spinner, Table } from '../../components/ui'
+import { api } from '../../lib/api'
+import { useApi } from '../../lib/hooks'
+import { CHANNELS, DONATION_STATUS, DONATION_TYPES, GENDERS, MARITAL, MEMBER_STATUS, date, dateTime, money, today } from '../../lib/format'
 
 export default function MemberDetail() {
   const { id } = useParams()

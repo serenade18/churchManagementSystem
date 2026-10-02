@@ -1,7 +1,7 @@
 import { useParams, useSearchParams } from 'react-router-dom'
-import PrintLayout, { ChurchHeader } from '../components/PrintLayout'
-import { useApi } from '../lib/hooks'
-import { date, dateTime, money } from '../lib/format'
+import PrintLayout, { ChurchHeader } from '../../components/PrintLayout'
+import { useApi } from '../../lib/hooks'
+import { date, dateTime, money } from '../../lib/format'
 
 export default function StatementPrint() {
   const { id } = useParams()
