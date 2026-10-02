@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { MessageSquare } from 'lucide-react'
 import MemberPicker from './MemberPicker'
-import { Alert, Field, Modal, Select } from './ui'
+import { Alert, Badge, Field, Modal, Select } from './ui'
 import { api } from '../lib/api'
 import { useOptions } from '../lib/hooks'
 import { CHANNELS, DONATION_STATUS, DONATION_TYPES, money } from '../lib/format'
@@ -8,7 +9,7 @@ import { clean, useForm } from '../lib/useForm'
 
 const MANUAL_CHANNELS = Object.fromEntries(Object.entries(CHANNELS).filter(([k]) => k !== 'mpesa'))
 
-export default function DonationForm({ donation, onClose, onSaved }) {
+export default function DonationForm({ donation, onClose, onSaved, onResent }) {
   const isMpesa = donation?.channel === 'mpesa'
   const branches = useOptions('/cms/branches/')
   const projects = useOptions('/cms/projects/')
@@ -26,7 +27,24 @@ export default function DonationForm({ donation, onClose, onSaved }) {
     branch: donation?.branch || '',
     project: donation?.project || '',
     notes: donation?.notes || '',
+    send_receipt: true,
   })
+  const [resending, setResending] = useState(false)
+  const [resent, setResent] = useState('')
+
+  const resend = async () => {
+    setResending(true)
+    setResent('')
+    try {
+      const d = await api.post(`/cms/donations/${donation.id}/send_receipt/`)
+      setResent(d.receipt_sms_status === 'sent' ? 'Receipt SMS sent.' : d.receipt_sms_error || 'Could not send the SMS.')
+      onResent?.(d)
+    } catch (e) {
+      setResent(e.message)
+    } finally {
+      setResending(false)
+    }
+  }
 
   const save = async (e) => {
     e.preventDefault()
@@ -38,7 +56,7 @@ export default function DonationForm({ donation, onClose, onSaved }) {
     if (isMpesa) {
       // Amount, status and channel come from Safaricom; only allocation fields are editable.
       const { member: m, membership_number, branch, project, notes, donation_type } = payload
-      payload = { member: m, membership_number, branch, project, notes, donation_type }
+      payload = { member: m, membership_number, branch, project, notes, donation_type, send_receipt: false }
     }
     const saved = await submit(() => (donation ? api.patch(`/cms/donations/${donation.id}/`, payload) : api.post('/cms/donations/', payload))).catch(() => null)
     if (saved) onSaved(saved)
@@ -80,7 +98,36 @@ export default function DonationForm({ donation, onClose, onSaved }) {
           <Select value={values.project} onChange={set('project')} options={projects.map((p) => ({ value: p.id, label: p.name }))} placeholder="— None —" />
         </Field>
         <Field label="Notes" error={errors.notes} className="sm:col-span-2"><textarea className="input" rows={2} value={values.notes} onChange={set('notes')} /></Field>
+        {!donation && (
+          <label className="flex items-center gap-2 text-sm sm:col-span-2">
+            <input type="checkbox" checked={values.send_receipt} onChange={set('send_receipt')} />
+            Send an SMS receipt to the giver (when the status is Success)
+          </label>
+        )}
       </form>
+      {donation && donation.status === 'success' && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 p-3 text-sm">
+          <span className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4 text-slate-400" />
+            SMS receipt: <ReceiptSmsBadge donation={donation} />
+            {resent && <span className="text-slate-600">{resent}</span>}
+          </span>
+          <button type="button" className="btn-secondary px-3 py-1.5" onClick={resend} disabled={resending}>
+            {resending ? 'Sending…' : donation.receipt_sms_status ? 'Resend receipt' : 'Send receipt'}
+          </button>
+        </div>
+      )}
     </Modal>
   )
+}
+
+const RECEIPT_SMS = {
+  sent: ['green', 'Sent'],
+  failed: ['red', 'Failed'],
+  no_phone: ['amber', 'No phone'],
+}
+
+export function ReceiptSmsBadge({ donation }) {
+  const [tone, label] = RECEIPT_SMS[donation.receipt_sms_status] || ['slate', 'Not sent']
+  return <span title={donation.receipt_sms_error || ''}><Badge tone={tone}>{label}</Badge></span>
 }

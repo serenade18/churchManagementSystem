@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Download, Plus, Search, Trash2 } from 'lucide-react'
-import DonationForm from '../components/DonationForm'
+import DonationForm, { ReceiptSmsBadge } from '../components/DonationForm'
 import { Alert, Badge, ConfirmDialog, PageHeader, Pagination, Select, StatCard, Table } from '../components/ui'
 import { api, downloadCsv } from '../lib/api'
 import { useApi, useDebounced, useOptions } from '../lib/hooks'
@@ -44,6 +44,7 @@ export default function Donations() {
     { key: 'branch_name', label: 'Branch', render: (d) => d.branch_name || '—' },
     { key: 'channel', label: 'Channel', render: (d) => <>{CHANNELS[d.channel]}{d.receipt && <p className="font-mono text-xs text-slate-500">{d.receipt}</p>}</> },
     { key: 'status', label: 'Status', render: (d) => <Badge status={d.status}>{DONATION_STATUS[d.status]}</Badge> },
+    { key: 'receipt_sms_status', label: 'SMS', render: (d) => d.status === 'success' ? <ReceiptSmsBadge donation={d} /> : '—' },
     { key: 'amount', label: 'Amount', className: 'text-right font-medium', render: (d) => money(d.amount) },
     { key: 'actions', label: '', render: (d) => d.channel !== 'mpesa' && (
       <button className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600" aria-label="Delete donation"
@@ -89,7 +90,7 @@ export default function Donations() {
       <Table columns={columns} rows={data?.results} loading={loading} empty="No donations match these filters." onRowClick={setEditing} />
       <Pagination page={page} count={data?.count} onChange={setPage} />
 
-      {editing && <DonationForm donation={editing === 'new' ? null : editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); refresh() }} />}
+      {editing && <DonationForm donation={editing === 'new' ? null : editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); refresh() }} onResent={(d) => { setEditing(d); reload() }} />}
       <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)} onConfirm={remove} title="Delete donation"
         message={deleting && `Delete this ${money(deleting.amount)} ${CHANNELS[deleting.channel]} donation? This cannot be undone.`} />
     </>
