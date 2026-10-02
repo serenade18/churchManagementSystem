@@ -52,6 +52,9 @@ export default function Login() {
           <button className="btn-primary w-full" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
         </form>
         <p className="mt-6 text-center text-sm text-slate-500">
+          Need an admin account? <Link to="/signup" className="font-medium text-brand-700 hover:underline">Request access</Link>
+        </p>
+        <p className="mt-2 text-center text-sm text-slate-500">
           Want to give? <Link to="/give" className="font-medium text-brand-700 hover:underline">Go to the donation page</Link>
         </p>
       </div>
