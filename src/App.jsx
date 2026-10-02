@@ -5,6 +5,7 @@ import { Spinner } from './components/ui'
 import { AuthProvider, useAuth } from './lib/auth'
 import Branches from './pages/Branches'
 import Donations from './pages/Donations'
+import ForgotPassword from './pages/ForgotPassword'
 import Give from './pages/Give'
 import Login from './pages/Login'
 import MemberDetail from './pages/MemberDetail'
@@ -41,6 +42,7 @@ export default function App() {
           {/* The site opens on the admin login; the public giving page lives at /give */}
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Navigate to="/" replace />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/signup/superadmin" element={<Signup superadmin />} />
           <Route path="/give" element={<Give />} />

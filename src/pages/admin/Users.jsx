@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
-import { Alert, Badge, ConfirmDialog, Field, Modal, PageHeader, Table } from '../components/ui'
+import { Alert, Badge, ConfirmDialog, Field, Modal, PageHeader, PasswordInput, Table } from '../components/ui'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { useApi } from '../lib/hooks'
@@ -29,7 +29,7 @@ function UserForm({ user, onClose, onSaved }) {
         <Field label="First name" error={errors.first_name}><input className="input" value={values.first_name} onChange={set('first_name')} /></Field>
         <Field label="Last name" error={errors.last_name}><input className="input" value={values.last_name} onChange={set('last_name')} /></Field>
         <Field label={user ? 'New password' : 'Password *'} error={errors.password} hint={user ? 'Leave blank to keep the current password.' : 'At least 8 characters.'} className="sm:col-span-2">
-          <input className="input" type="password" autoComplete="new-password" required={!user} value={values.password} onChange={set('password')} />
+          <PasswordInput autoComplete="new-password" required={!user} value={values.password} onChange={set('password')} />
         </Field>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={values.is_active} onChange={set('is_active')} /> Account active</label>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={values.is_superuser} onChange={set('is_superuser')} /> Super admin (can manage admins)</label>

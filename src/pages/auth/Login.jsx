@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
 import Logo from '../components/Logo'
-import { Alert } from '../components/ui'
+import { Alert, PasswordInput } from '../components/ui'
 import { homeFor, useAuth } from '../lib/auth'
 import { CHURCH_NAME } from '../lib/format'
 
@@ -48,10 +48,13 @@ export default function Login() {
             <span className="label">Username</span>
             <input className="input" autoComplete="username" autoFocus required value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
           </label>
-          <label className="block">
-            <span className="label">Password</span>
-            <input className="input" type="password" autoComplete="current-password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-          </label>
+          <div>
+            <div className="flex items-baseline justify-between">
+              <label htmlFor="password" className="label">Password</label>
+              <Link to="/forgot-password" state={{ username: form.username }} className="text-xs font-medium text-brand-700 hover:underline">Forgot password?</Link>
+            </div>
+            <PasswordInput id="password" autoComplete="current-password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+          </div>
           <button className="btn-primary w-full" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
         </form>
         <p className="mt-6 text-center text-sm text-slate-500">

@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Loader2, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ChevronLeft, ChevronRight, Eye, EyeOff, Loader2, X } from 'lucide-react'
 import { STATUS_TONES } from '../lib/format'
 
 const TONES = {
@@ -40,6 +40,21 @@ export function Field({ label, children, error, className = '', hint }) {
       {hint && !error && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
       {error && <span className="mt-1 block text-xs text-red-600">{error}</span>}
     </label>
+  )
+}
+
+/** Password field with a button that shows or hides what was typed. */
+export function PasswordInput({ className = '', ...props }) {
+  const [shown, setShown] = useState(false)
+  const Icon = shown ? EyeOff : Eye
+  return (
+    <div className="relative">
+      <input {...props} type={shown ? 'text' : 'password'} className={`input pr-10! ${className}`} />
+      <button type="button" onClick={() => setShown((s) => !s)} aria-label={shown ? 'Hide password' : 'Show password'} aria-pressed={shown}
+        className="absolute inset-y-0 right-0 flex items-center rounded-r-lg px-3 text-slate-400 hover:text-slate-600 focus-visible:text-brand-700 focus-visible:outline-none">
+        <Icon className="h-4 w-4" />
+      </button>
+    </div>
   )
 }
 

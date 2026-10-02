@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { Smartphone } from 'lucide-react'
 import Logo from '../components/Logo'
-import { Alert, Field } from '../components/ui'
+import { Alert, Field, PasswordInput } from '../components/ui'
 import { request } from '../lib/api'
 import { homeFor, useAuth } from '../lib/auth'
 import { CHURCH_NAME } from '../lib/format'
@@ -60,9 +60,11 @@ function DetailsStep({ onCreated, superadmin }) {
     const res = await submit((v) => request(endpoint, { method: 'POST', body: v, auth: false })).catch(() => null)
     if (res) onCreated(res)
   }
-  const input = (key, label, props = {}) => (
+  const input = (key, label, { type, ...props } = {}) => (
     <Field label={label} error={errors[key]}>
-      <input className="input" required value={values[key]} onChange={set(key)} {...props} />
+      {type === 'password'
+        ? <PasswordInput required value={values[key]} onChange={set(key)} {...props} />
+        : <input className="input" type={type} required value={values[key]} onChange={set(key)} {...props} />}
     </Field>
   )
   return (
