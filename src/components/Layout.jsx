@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { Building2, CalendarCheck, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Users, X } from 'lucide-react'
+import { Building2, CalendarCheck, Gauge, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Users, X } from 'lucide-react'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import Logo from './Logo'
@@ -31,7 +31,7 @@ export default function Layout() {
     window.addEventListener('cms:paybill-changed', loadPaybill)
     return () => window.removeEventListener('cms:paybill-changed', loadPaybill)
   }, [location.pathname])
-  const nav = [...NAV, ...(user?.is_superuser ? [{ to: '/users', label: 'Admin Users', icon: ShieldCheck }] : []), { to: '/settings', label: 'Settings', icon: Settings }]
+  const nav = [...(user?.is_superuser ? [{ to: '/super', label: 'System', icon: Gauge }] : []), ...NAV, ...(user?.is_superuser ? [{ to: '/users', label: 'Admin Users', icon: ShieldCheck }] : []), { to: '/settings', label: 'Settings', icon: Settings }]
 
   const sidebar = (
     <div className="flex h-full flex-col bg-brand-900 text-brand-100">
