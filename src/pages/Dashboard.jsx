@@ -3,7 +3,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { Building2, CalendarDays, FolderKanban, HandCoins, Users } from 'lucide-react'
 import { Alert, Badge, PageHeader, Progress, Spinner, StatCard } from '../components/ui'
 import { useApi } from '../lib/hooks'
-import { CHANNELS, DONATION_STATUS, DONATION_TYPES, compactMoney, dateTime, money } from '../lib/format'
+import { CHANNELS, DONATION_STATUS, DONATION_TYPES, compactMoney, date, dateTime, money } from '../lib/format'
 
 const BAR = '#2453d9'
 const AXIS = { fontSize: 12, fill: '#64748b' }
@@ -104,6 +104,20 @@ export default function Dashboard() {
         </div>
 
         <div className="space-y-6">
+          <div className="card p-5">
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="font-semibold">Last service</h2>
+              <Link to="/attendance" className="text-sm font-medium text-brand-700 hover:underline">Attendance</Link>
+            </div>
+            {data.last_service ? (
+              <Link to={`/attendance/${data.last_service.id}`} className="block">
+                <p className="text-3xl font-semibold text-slate-900">{data.last_service.total}</p>
+                <p className="text-sm text-slate-600">{data.last_service.members_present} members · {data.last_service.visitors} visitors</p>
+                <p className="mt-1 text-xs text-slate-500">{data.last_service.name} · {date(data.last_service.date)}{data.last_service.branch_name && ` · ${data.last_service.branch_name}`}</p>
+              </Link>
+            ) : <p className="text-sm text-slate-500">No attendance recorded yet.</p>}
+          </div>
+
           <div className="card p-5">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="font-semibold">Projects</h2>
