@@ -1,24 +1,26 @@
 import { useEffect, useState } from 'react'
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { Smartphone } from 'lucide-react'
 import Logo from '../components/Logo'
 import { Alert, Field } from '../components/ui'
 import { request } from '../lib/api'
-import { useAuth } from '../lib/auth'
+import { homeFor, useAuth } from '../lib/auth'
 import { CHURCH_NAME } from '../lib/format'
 import { useForm } from '../lib/useForm'
 
 const RESEND_SECONDS = 60
 
-/** Create an admin account: fill in details, then confirm the phone with the SMS code. */
-export default function Signup() {
+/**
+ * Create an account: fill in details, then confirm the phone with the SMS code.
+ * ``superadmin`` mode adds the server's setup key and creates a super admin.
+ */
+export default function Signup({ superadmin = false }) {
   const { user, acceptTokens } = useAuth()
-  const navigate = useNavigate()
   const [params] = useSearchParams()
   // Coming from the login page with an unverified account: go straight to the code step.
   const [pending, setPending] = useState(params.get('verify') ? { username: params.get('verify'), phone: '', fresh: false } : null)
 
-  if (user) return <Navigate to="/dashboard" replace />
+  if (user) return <Navigate to={homeFor(user)} replace />
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-900 to-brand-700 p-4">
@@ -26,27 +28,36 @@ export default function Signup() {
         <div className="mb-6 text-center">
           <Logo className="mx-auto mb-3 h-20" />
           <h1 className="text-xl font-semibold">{CHURCH_NAME}</h1>
-          <p className="text-sm text-slate-500">{pending ? 'Verify your phone number' : 'Create an admin account'}</p>
+          <p className="text-sm text-slate-500">{pending ? 'Verify your phone number' : superadmin ? 'Create a super admin account' : 'Create an admin account'}</p>
         </div>
         {pending
           ? <VerifyStep pending={pending} onBack={() => setPending(null)}
-              onVerified={async (tokens) => { await acceptTokens(tokens); navigate('/dashboard', { replace: true }) }} />
-          : <DetailsStep onCreated={(res) => setPending({ username: res.username, phone: res.phone, fresh: true, notice: res.detail, smsFailed: !res.sms_sent })} />}
+              onVerified={async (tokens) => { await acceptTokens(tokens) /* redirect above follows the role */ }} />
+          : <DetailsStep superadmin={superadmin} onCreated={(res) => setPending({ username: res.username, phone: res.phone, fresh: true, notice: res.detail, smsFailed: !res.sms_sent })} />}
         <p className="mt-6 text-center text-sm text-slate-500">
           Already have an account? <Link to="/" className="font-medium text-brand-700 hover:underline">Sign in</Link>
         </p>
+        {!pending && (
+          <p className="mt-2 text-center text-xs text-slate-400">
+            {superadmin
+              ? <Link to="/signup" className="hover:underline">Create a regular admin account instead</Link>
+              : <>Setting up the system? <Link to="/signup/superadmin" className="hover:underline">Create a super admin account</Link></>}
+          </p>
+        )}
       </div>
     </div>
   )
 }
 
-function DetailsStep({ onCreated }) {
+function DetailsStep({ onCreated, superadmin }) {
   const { values, set, errors, error, busy, submit } = useForm({
     first_name: '', last_name: '', username: '', email: '', phone_number: '', password: '', confirm_password: '',
+    ...(superadmin ? { setup_key: '' } : {}),
   })
   const save = async (e) => {
     e.preventDefault()
-    const res = await submit((v) => request('/auth/signup/', { method: 'POST', body: v, auth: false })).catch(() => null)
+    const endpoint = superadmin ? '/auth/superadmin-signup/' : '/auth/signup/'
+    const res = await submit((v) => request(endpoint, { method: 'POST', body: v, auth: false })).catch(() => null)
     if (res) onCreated(res)
   }
   const input = (key, label, props = {}) => (
@@ -57,11 +68,14 @@ function DetailsStep({ onCreated }) {
   return (
     <>
       <p className="mb-4 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-800">
-        We'll send a 6-digit code to your phone to confirm it's yours.
+        {superadmin
+          ? <>Super admins manage all admin accounts and system settings. You need the <strong>setup key</strong> from whoever runs the server. We'll also send a 6-digit code to your phone.</>
+          : "We'll send a 6-digit code to your phone to confirm it's yours."}
       </p>
       <Alert>{error}</Alert>
       <form onSubmit={save} className="grid gap-4 sm:grid-cols-2">
-        {input('first_name', 'First name', { autoComplete: 'given-name', autoFocus: true })}
+        {superadmin && <div className="sm:col-span-2">{input('setup_key', 'Setup key', { type: 'password', autoComplete: 'off', autoFocus: true })}</div>}
+        {input('first_name', 'First name', { autoComplete: 'given-name', autoFocus: !superadmin })}
         {input('last_name', 'Last name', { autoComplete: 'family-name' })}
         {input('email', 'Email', { type: 'email', autoComplete: 'email' })}
         {input('phone_number', 'Phone number', { inputMode: 'tel', placeholder: '0712 345 678', autoComplete: 'tel' })}

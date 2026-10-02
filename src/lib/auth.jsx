@@ -46,3 +46,6 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext)
+
+/** Landing page for a signed-in user: super admins get the system dashboard. */
+export const homeFor = (user) => (user?.is_superuser ? '/super' : '/dashboard')

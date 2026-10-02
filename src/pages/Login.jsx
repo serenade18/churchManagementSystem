@@ -1,22 +1,20 @@
 import { useState } from 'react'
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import Logo from '../components/Logo'
 import { Alert } from '../components/ui'
-import { useAuth } from '../lib/auth'
+import { homeFor, useAuth } from '../lib/auth'
 import { CHURCH_NAME } from '../lib/format'
 
 export default function Login() {
   const { user, login } = useAuth()
-  const navigate = useNavigate()
   const location = useLocation()
   const [form, setForm] = useState({ username: '', password: '' })
   const [error, setError] = useState('')
   const [unverified, setUnverified] = useState(false)
   const [busy, setBusy] = useState(false)
 
-  // Where to go after signing in: the admin page that sent us here, else the dashboard.
-  const next = location.state?.from?.pathname || '/dashboard'
-  if (user) return <Navigate to={next} replace />
+  // Where to go after signing in: the page that sent us here, else the dashboard for this role.
+  if (user) return <Navigate to={location.state?.from?.pathname || homeFor(user)} replace />
 
   const submit = async (e) => {
     e.preventDefault()
@@ -24,8 +22,7 @@ export default function Login() {
     setError('')
     setUnverified(false)
     try {
-      await login(form.username, form.password)
-      navigate(next, { replace: true })
+      await login(form.username, form.password) // the redirect above runs once the user is loaded
     } catch (err) {
       setUnverified([].concat(err.data?.code || []).includes('unverified'))
       setError(err.status === 401 ? 'Incorrect username or password.' : err.data?.detail ? [].concat(err.data.detail).join(' ') : err.message)
