@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Download, Plus, Search } from 'lucide-react'
+import { Download, MessageSquare, Plus, Search } from 'lucide-react'
 import MemberForm from '../components/MemberForm'
 import { Alert, Badge, PageHeader, Pagination, Select, Table } from '../components/ui'
 import { downloadCsv } from '../lib/api'
@@ -34,6 +34,11 @@ export default function Members() {
         title="Members"
         subtitle="Your congregation's membership register."
         actions={<>
+          <button className="btn-secondary" onClick={() => navigate('/sms', { state: {
+            branches: filters.branch ? [Number(filters.branch)] : [],
+            statuses: filters.status ? [filters.status] : ['active'],
+            gender: filters.gender,
+          } })}><MessageSquare className="h-4 w-4" /> Send SMS</button>
           <button className="btn-secondary" onClick={() => downloadCsv('/cms/members/export/', { ...filters, search }, 'members.csv')}><Download className="h-4 w-4" /> Export</button>
           <button className="btn-primary" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> Add member</button>
         </>}

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react'
+import { ArrowLeft, MessageSquare, Pencil, Trash2 } from 'lucide-react'
 import MemberForm from '../components/MemberForm'
 import { Alert, Badge, ConfirmDialog, Pagination, Spinner, Table } from '../components/ui'
 import { api } from '../lib/api'
@@ -57,6 +57,9 @@ export default function MemberDetail() {
             </div>
           </div>
           <div className="flex gap-2">
+            {member.phone_number && (
+              <button className="btn-secondary" onClick={() => navigate('/sms', { state: { members: [member] } })}><MessageSquare className="h-4 w-4" /> SMS</button>
+            )}
             <button className="btn-secondary" onClick={() => setEditing(true)}><Pencil className="h-4 w-4" /> Edit</button>
             <button className="btn-secondary text-red-600" onClick={() => setDeleting(true)}><Trash2 className="h-4 w-4" /> Delete</button>
           </div>
