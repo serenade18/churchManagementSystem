@@ -43,3 +43,14 @@ body {
 @utility td {
   @apply px-4 py-3 text-sm whitespace-nowrap;
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

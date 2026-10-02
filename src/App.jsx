@@ -11,9 +11,11 @@ import MemberDetail from './pages/MemberDetail'
 import Members from './pages/Members'
 import Paybill from './pages/Paybill'
 import Projects from './pages/Projects'
+import ReceiptPrint from './pages/ReceiptPrint'
 import ServiceDetail from './pages/ServiceDetail'
 import SettingsPage from './pages/Settings'
 import Sms from './pages/Sms'
+import StatementPrint from './pages/StatementPrint'
 import Users from './pages/Users'
 
 // Charts are heavy; keep them out of the public donation page bundle.
@@ -38,6 +40,9 @@ export default function App() {
           <Route path="/" element={<Give />} />
           <Route path="/give" element={<Give />} />
           <Route path="/login" element={<Login />} />
+          {/* Printable pages: no sidebar */}
+          <Route path="/print/receipt/:id" element={<RequireAuth><ReceiptPrint /></RequireAuth>} />
+          <Route path="/print/statement/:id" element={<RequireAuth><StatementPrint /></RequireAuth>} />
           <Route element={<RequireAuth><Layout /></RequireAuth>}>
             <Route path="/dashboard" element={<Suspense fallback={<Spinner className="mx-auto mt-20 h-8 w-8" />}><Dashboard /></Suspense>} />
             <Route path="/members" element={<Members />} />

@@ -10,6 +10,7 @@ It talks to the Django API in [`pceaBackend`](https://github.com/serenade18/pcea
 - **Dashboard**: giving today, this month, this year and all time; a 12-month trend; giving by type; top branches; project progress; recent donations.
 - **Members**: register with search and filters (branch, status, gender), member profile with full giving history, CSV export.
 - **Donations**: every M-PESA payment appears automatically. You can also record cash, bank and cheque giving, filter by date, type, status, channel, branch or project, see totals, and export to CSV. M-PESA donations can be re-assigned (member, branch, project, type) but not altered. Every successful donation sends the giver an SMS receipt; its delivery status shows in the list and can be resent.
+- **Printable receipts & statements**: print (or save as PDF) an official receipt for any successful donation, and a giving statement for any member and period, from the Donations list, the donation editor and member profiles.
 - **Branches**: congregations with member counts and total giving.
 - **Projects**: fundraising target vs. amount raised, branch-specific or church-wide.
 - **Paybill**: members pay to the Paybill with their phone number + a donation code as the account (e.g. `0712345678SCP`); payments are allocated and receipted automatically. Manage donation codes and allocate anything unrecognised from the Paybill page (the sidebar shows how many are waiting).

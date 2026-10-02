@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { Building2, CalendarCheck, Church, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Users, X } from 'lucide-react'
+import { Building2, CalendarCheck, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Users, X } from 'lucide-react'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
+import Logo from './Logo'
 import { CHURCH_NAME } from '../lib/format'
 
 const NAV = [
@@ -35,7 +36,7 @@ export default function Layout() {
   const sidebar = (
     <div className="flex h-full flex-col bg-brand-900 text-brand-100">
       <div className="flex items-center gap-3 px-5 py-5">
-        <span className="rounded-lg bg-white/10 p-2"><Church className="h-6 w-6 text-white" /></span>
+        <Logo tile className="h-12 w-12" />
         <div>
           <p className="font-semibold text-white">{CHURCH_NAME}</p>
           <p className="text-xs text-brand-200">Church Management</p>
@@ -81,6 +82,7 @@ export default function Layout() {
       <div className="lg:pl-64">
         <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
           <button onClick={() => setOpen(true)} aria-label="Open menu"><Menu className="h-6 w-6" /></button>
+          <Logo className="h-8" />
           <span className="font-semibold">{CHURCH_NAME}</span>
         </header>
         <main className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">

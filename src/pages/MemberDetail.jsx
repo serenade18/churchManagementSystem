@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, MessageSquare, Pencil, Trash2 } from 'lucide-react'
+import { ArrowLeft, FileText, MessageSquare, Pencil, Printer, Trash2 } from 'lucide-react'
 import MemberForm from '../components/MemberForm'
-import { Alert, Badge, ConfirmDialog, Pagination, Spinner, Table } from '../components/ui'
+import { Alert, Badge, ConfirmDialog, Field, Modal, Pagination, Spinner, Table } from '../components/ui'
 import { api } from '../lib/api'
 import { useApi } from '../lib/hooks'
-import { CHANNELS, DONATION_STATUS, DONATION_TYPES, GENDERS, MARITAL, MEMBER_STATUS, date, dateTime, money } from '../lib/format'
+import { CHANNELS, DONATION_STATUS, DONATION_TYPES, GENDERS, MARITAL, MEMBER_STATUS, date, dateTime, money, today } from '../lib/format'
 
 export default function MemberDetail() {
   const { id } = useParams()
@@ -15,6 +15,9 @@ export default function MemberDetail() {
   const [deleting, setDeleting] = useState(false)
   const [busy, setBusy] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+  const [statementOpen, setStatementOpen] = useState(false)
+  const thisYear = new Date().getFullYear()
+  const [period, setPeriod] = useState({ date_from: `${thisYear}-01-01`, date_to: today() })
   const { data: member, error, reload } = useApi(`/cms/members/${id}/`)
   const donations = useApi(`/cms/members/${id}/donations/`, { page })
   const attendance = useApi(`/cms/members/${id}/attendance-summary/`)
@@ -61,6 +64,7 @@ export default function MemberDetail() {
             {member.phone_number && (
               <button className="btn-secondary" onClick={() => navigate('/sms', { state: { members: [member] } })}><MessageSquare className="h-4 w-4" /> SMS</button>
             )}
+            <button className="btn-secondary" onClick={() => setStatementOpen(true)}><FileText className="h-4 w-4" /> Giving statement</button>
             <button className="btn-secondary" onClick={() => setEditing(true)}><Pencil className="h-4 w-4" /> Edit</button>
             <button className="btn-secondary text-red-600" onClick={() => setDeleting(true)}><Trash2 className="h-4 w-4" /> Delete</button>
           </div>
@@ -103,11 +107,32 @@ export default function MemberDetail() {
           { key: 'receipt', label: 'Receipt / Ref', render: (d) => d.receipt || '—' },
           { key: 'status', label: 'Status', render: (d) => <Badge status={d.status}>{DONATION_STATUS[d.status]}</Badge> },
           { key: 'amount', label: 'Amount', className: 'text-right', render: (d) => money(d.amount) },
+          { key: 'print', label: '', render: (d) => d.status === 'success' && (
+            <a href={`/print/receipt/${d.id}`} target="_blank" rel="noreferrer" title="Print receipt" aria-label="Print receipt"
+              className="inline-flex rounded p-1 text-slate-400 hover:bg-brand-50 hover:text-brand-700"><Printer className="h-4 w-4" /></a>
+          ) },
         ]}
       />
       <Pagination page={page} count={donations.data?.count} onChange={setPage} />
 
       {editing && <MemberForm member={member} onClose={() => setEditing(false)} onSaved={() => { setEditing(false); reload() }} />}
+      <Modal open={statementOpen} onClose={() => setStatementOpen(false)} title="Giving statement"
+        footer={<>
+          <button className="btn-secondary" onClick={() => setStatementOpen(false)}>Cancel</button>
+          <a className="btn-primary" target="_blank" rel="noreferrer" onClick={() => setStatementOpen(false)}
+            href={`/print/statement/${id}?date_from=${period.date_from}&date_to=${period.date_to}`}><Printer className="h-4 w-4" /> Open statement</a>
+        </>}>
+        <div className="mb-3 flex flex-wrap gap-2">
+          {[[`${thisYear}-01-01`, today(), 'This year'], [`${thisYear - 1}-01-01`, `${thisYear - 1}-12-31`, 'Last year']].map(([from, to, label]) => (
+            <button key={label} type="button" onClick={() => setPeriod({ date_from: from, date_to: to })}
+              className={`rounded-full border px-3 py-1 text-sm ${period.date_from === from && period.date_to === to ? 'border-brand-600 bg-brand-50 text-brand-800' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}>{label}</button>
+          ))}
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="From"><input className="input" type="date" value={period.date_from} onChange={(e) => setPeriod({ ...period, date_from: e.target.value })} /></Field>
+          <Field label="To"><input className="input" type="date" value={period.date_to} onChange={(e) => setPeriod({ ...period, date_to: e.target.value })} /></Field>
+        </div>
+      </Modal>
       <ConfirmDialog open={deleting} busy={busy} onClose={() => setDeleting(false)} onConfirm={remove} title="Delete member"
         message={`Delete ${member.full_name}? Their donation records are kept but will no longer be linked to them.`} />
     </>
