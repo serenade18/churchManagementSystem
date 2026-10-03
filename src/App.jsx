@@ -5,6 +5,7 @@ import { Spinner } from './components/ui'
 import { AuthProvider, useAuth } from './lib/auth'
 import Branches from './pages/branches/Branches'
 import Donations from './pages/donations/Donations'
+import DonationTypes from './pages/donations/DonationTypes'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import Give from './pages/give/Give'
 import Login from './pages/auth/Login'
@@ -59,6 +60,7 @@ export default function App() {
             <Route path="/projects" element={<Projects />} />
             <Route path="/sms" element={<Sms />} />
             <Route path="/paybill" element={<Paybill />} />
+            <Route path="/donation-types" element={<DonationTypes />} />
             <Route path="/attendance" element={<Suspense fallback={<Spinner className="mx-auto mt-20 h-8 w-8" />}><Attendance /></Suspense>} />
             <Route path="/attendance/:id" element={<ServiceDetail />} />
             <Route path="/users" element={<RequireAuth superuser><Users /></RequireAuth>} />

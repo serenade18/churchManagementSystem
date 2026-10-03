@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { MessageSquare, Printer } from 'lucide-react'
 import MemberPicker from './MemberPicker'
 import { Alert, Badge, Field, Modal, Select } from './ui'
 import { api } from '../lib/api'
-import { useOptions } from '../lib/hooks'
-import { CHANNELS, DONATION_STATUS, DONATION_TYPES, MPESA_CHANNELS, money } from '../lib/format'
+import { useDonationTypes, useOptions } from '../lib/hooks'
+import { CHANNELS, DONATION_STATUS, MPESA_CHANNELS, money } from '../lib/format'
 import { clean, useForm } from '../lib/useForm'
 
 const MANUAL_CHANNELS = Object.fromEntries(Object.entries(CHANNELS).filter(([k]) => !MPESA_CHANNELS.includes(k)))
@@ -13,11 +13,14 @@ export default function DonationForm({ donation, onClose, onSaved, onResent }) {
   const isMpesa = MPESA_CHANNELS.includes(donation?.channel)
   const branches = useOptions('/cms/branches/')
   const projects = useOptions('/cms/projects/')
+  const { types, defaultId } = useDonationTypes({ includeInactive: true })
+  // Inactive types stay selectable only on gifts already recorded against them.
+  const typeOptions = types.filter((t) => t.is_active || t.id === donation?.donation_type).map((t) => ({ value: t.id, label: t.name }))
   const [member, setMember] = useState(
     donation?.member ? { id: donation.member, full_name: donation.member_name, membership_number: donation.membership_number } : null,
   )
   const { values, set, errors, error, busy, submit } = useForm({
-    donation_type: donation?.donation_type || 'general',
+    donation_type: donation?.donation_type || '',
     amount: donation?.amount || '',
     channel: donation?.channel || 'cash',
     status: donation?.status || 'success',
@@ -29,6 +32,9 @@ export default function DonationForm({ donation, onClose, onSaved, onResent }) {
     notes: donation?.notes || '',
     send_receipt: true,
   })
+  useEffect(() => {
+    if (!values.donation_type && defaultId) set('donation_type')(defaultId)
+  }, [defaultId]) // eslint-disable-line react-hooks/exhaustive-deps
   const [checking, setChecking] = useState(false)
   const [checkResult, setCheckResult] = useState('')
   const checkWithMpesa = async () => {
@@ -96,7 +102,7 @@ export default function DonationForm({ donation, onClose, onSaved, onResent }) {
             <input className="input" value={values.membership_number} onChange={set('membership_number')} />
           </Field>
         )}
-        <Field label="Type" error={errors.donation_type}><Select value={values.donation_type} onChange={set('donation_type')} options={DONATION_TYPES} /></Field>
+        <Field label="Type *" error={errors.donation_type}><Select required value={values.donation_type} onChange={set('donation_type')} options={typeOptions} placeholder="— Choose —" /></Field>
         {!isMpesa && (
           <>
             <Field label="Amount (KES) *" error={errors.amount}><input className="input" type="number" min="1" step="0.01" required value={values.amount} onChange={set('amount')} /></Field>

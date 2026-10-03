@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { Building2, CalendarCheck, Gauge, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Users, X } from 'lucide-react'
+import { Building2, CalendarCheck, Gauge, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, Users, X } from 'lucide-react'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import Logo from './Logo'
@@ -12,6 +12,7 @@ const NAV = [
   { to: '/members', label: 'Members', icon: Users },
   { to: '/donations', label: 'Donations', icon: HandCoins },
   { to: '/paybill', label: 'Paybill', icon: Smartphone, badge: 'unallocated' },
+  { to: '/donation-types', label: 'Donation Types', icon: Tags },
   { to: '/attendance', label: 'Attendance', icon: CalendarCheck },
   { to: '/branches', label: 'Branches', icon: Building2 },
   { to: '/projects', label: 'Projects', icon: FolderKanban },
