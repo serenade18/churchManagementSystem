@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { Building2, CalendarDays, FolderKanban, HandCoins, Users } from 'lucide-react'
+import { AlertTriangle, Building2, CalendarDays, FolderKanban, HandCoins, Users } from 'lucide-react'
 import { Alert, Badge, PageHeader, Progress, Spinner, StatCard } from '../../components/ui'
 import { useApi } from '../../lib/hooks'
 import { CHANNELS, DONATION_STATUS, compactMoney, date, dateTime, money } from '../../lib/format'
@@ -35,6 +35,16 @@ export default function Dashboard() {
   return (
     <>
       <PageHeader title="Dashboard" subtitle="An overview of your church at a glance." />
+
+      {data.unallocated_payments > 0 && (
+        <Link to="/paybill" className="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 hover:bg-amber-100">
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          <span>
+            <strong>{money(data.unallocated_amount)}</strong> from {data.unallocated_payments} Paybill payment{data.unallocated_payments === 1 ? '' : 's'} is
+            counted in the totals below but not yet assigned to a giver. <span className="font-medium underline">Allocate now</span>
+          </span>
+        </Link>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard icon={HandCoins} label="Giving this month" value={money(data.donations.this_month)} hint={`${money(data.donations.today)} today`} />
@@ -91,7 +101,10 @@ export default function Dashboard() {
             {data.recent_donations.map((d) => (
               <li key={d.id} className="flex items-center justify-between gap-4 px-5 py-3">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{d.member_name || d.membership_number || d.phone_number || 'Anonymous'}</p>
+                  <p className="truncate text-sm font-medium">
+                    {d.member_name || d.membership_number || d.phone_number || (d.unallocated ? 'Giver not yet known' : 'Anonymous')}
+                    {d.unallocated && <span className="ml-2"><Badge tone="amber">Unallocated</Badge></span>}
+                  </p>
                   <p className="text-xs text-slate-500">{d.donation_type_name} · {CHANNELS[d.channel]} · {dateTime(d.created_at)}</p>
                 </div>
                 <div className="text-right">

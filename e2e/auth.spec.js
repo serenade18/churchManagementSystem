@@ -24,7 +24,7 @@ test.describe('Sign in', () => {
     await expect(page).toHaveURL(/\/dashboard$/)
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
     await expect(sidebarLinks(page)).toHaveText(
-      ['Dashboard', 'Members', 'Donations', 'Paybill', 'Attendance', 'Branches', 'Projects', 'Bulk SMS', 'Settings'],
+      ['Dashboard', 'Members', 'Donations', 'Paybill', 'Donation Types', 'Attendance', 'Branches', 'Projects', 'Bulk SMS', 'Settings'],
     )
     await page.getByRole('button', { name: 'Sign out' }).click()
     await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible()

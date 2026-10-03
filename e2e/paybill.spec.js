@@ -12,7 +12,7 @@ test('create a donation type; a Paybill payment using its code is allocated auto
   // Codes avoid O/I (read as 0/1), so build one from safe letters.
   const code = `B${unique().replace(/[^A-HJ-NP-Z]/g, '').slice(0, 4).padEnd(2, 'X')}`
   const name = `Building fund ${code}`
-  await page.getByRole('link', { name: 'Donation Types' }).click()
+  await page.getByRole('link', { name: 'Donation Types', exact: true }).click()
   await page.getByRole('button', { name: 'New type' }).click()
   await page.getByLabel('Name *').fill(name)
   await page.getByLabel('Paybill code *').fill(code)
@@ -47,10 +47,25 @@ test('an unrecognised Paybill payment waits for an admin to allocate it', async 
   await page.getByPlaceholder('Search by name or member number…').fill('Grace')
   await page.getByRole('button', { name: new RegExp(`${MEMBER.name}.*${MEMBER.number}`) }).click()
   await page.getByLabel('Donation type').selectOption({ label: 'Tithe & First Fruit (TTH)' })
-  await page.getByRole('button', { name: 'Allocate', exact: true }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Allocate', exact: true }).click()
 
   await expect(page.getByText('Payment updated.')).toBeVisible()
   await expect(page.getByRole('row', { name: new RegExp(transId) })).toHaveCount(0) // gone from Unallocated
   await page.locator('select').first().selectOption('allocated')
   await expect(page.getByRole('row', { name: new RegExp(transId) })).toContainText(MEMBER.name)
+})
+
+test('unallocated Paybill money is counted in Donations and on the dashboard', async ({ page, request }) => {
+  const transId = `E2E${unique()}`.slice(0, 12)
+  await postC2B(request, { transId, amount: 777, account: 'NOIDEA', firstName: 'UNKNOWN' })
+
+  await page.getByRole('link', { name: 'Dashboard' }).click()
+  await expect(page.getByRole('link', { name: /counted in the totals below but not yet assigned/ })).toBeVisible()
+
+  await page.getByRole('link', { name: 'Donations', exact: true }).click()
+  await page.getByPlaceholder('Search member, phone, receipt…').fill(transId)
+  const row = page.getByRole('row', { name: new RegExp(transId) })
+  await expect(row).toContainText('Unallocated')
+  await expect(row).toContainText('777')
+  await expect(row).toContainText('General Offering') // the default type until someone allocates it
 })

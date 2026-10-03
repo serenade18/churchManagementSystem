@@ -6,7 +6,7 @@ import { api, downloadCsv } from '../../lib/api'
 import { useApi, useDebounced, useDonationTypes, useOptions } from '../../lib/hooks'
 import { CHANNELS, DONATION_STATUS, MPESA_CHANNELS, dateTime, money } from '../../lib/format'
 
-const EMPTY_FILTERS = { status: '', channel: '', donation_type: '', branch: '', project: '', date_from: '', date_to: '' }
+const EMPTY_FILTERS = { status: '', channel: '', donation_type: '', branch: '', project: '', allocation: '', date_from: '', date_to: '' }
 
 export default function Donations() {
   const branches = useOptions('/cms/branches/')
@@ -38,8 +38,12 @@ export default function Donations() {
   const columns = [
     { key: 'created_at', label: 'Date', render: (d) => dateTime(d.created_at) },
     { key: 'member', label: 'Giver', render: (d) => (
-      <div><p className="font-medium text-slate-900">{d.member_name || d.membership_number || 'Anonymous'}</p>
-        <p className="text-xs text-slate-500">{d.member_name ? d.membership_number : d.phone_number}</p></div>
+      d.unallocated ? (
+        <div><Badge tone="amber">Unallocated</Badge><p className="mt-1 text-xs text-slate-500">Giver not yet known</p></div>
+      ) : (
+        <div><p className="font-medium text-slate-900">{d.member_name || d.membership_number || 'Anonymous'}</p>
+          <p className="text-xs text-slate-500">{d.member_name ? d.membership_number : d.phone_number}</p></div>
+      )
     ) },
     { key: 'donation_type', label: 'Type', render: (d) => <>{d.donation_type_name}{d.project_name && <p className="text-xs text-slate-500">{d.project_name}</p>}</> },
     { key: 'branch_name', label: 'Branch', render: (d) => d.branch_name || '—' },
@@ -76,7 +80,8 @@ export default function Donations() {
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <StatCard label="Total received (filtered)" value={money(s?.total)} hint={`${s?.count ?? 0} successful donation${s?.count === 1 ? '' : 's'}`} />
+        <StatCard label="Total received (filtered)" value={money(s?.total)}
+          hint={`${s?.count ?? 0} successful donation${s?.count === 1 ? '' : 's'}${s?.unallocated?.count ? ` · ${money(s.unallocated.total)} unallocated` : ''}`} />
         <StatCard label="Top type" value={s?.by_type?.[0]?.name || '—'} hint={s?.by_type?.[0] && money(s.by_type[0].total)} />
         <StatCard label="By channel" value={s?.by_channel?.[0] ? CHANNELS[s.by_channel[0].channel] : '—'}
           hint={s?.by_channel?.map((c) => `${CHANNELS[c.channel]} ${money(c.total)}`).join(' · ')} />
@@ -94,6 +99,7 @@ export default function Donations() {
         <Select value={filters.channel} onChange={setFilter('channel')} options={CHANNELS} placeholder="All channels" />
         <Select value={filters.branch} onChange={setFilter('branch')} options={branches.map((b) => ({ value: b.id, label: b.name }))} placeholder="All branches" />
         <Select value={filters.project} onChange={setFilter('project')} options={projects.map((p) => ({ value: p.id, label: p.name }))} placeholder="All projects" />
+        <Select value={filters.allocation} onChange={setFilter('allocation')} options={{ unallocated: 'Unallocated only' }} placeholder="Allocated & unallocated" />
         <button className="btn-secondary" onClick={() => { setFilters(EMPTY_FILTERS); setSearch(''); setPage(1) }}>Clear filters</button>
       </div>
 
