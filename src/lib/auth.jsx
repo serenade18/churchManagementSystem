@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
-import { api, request, tokens } from './api'
+import { api, request, setViewOnly, tokens } from './api'
 
 const AuthContext = createContext(null)
 
@@ -9,9 +9,12 @@ export function AuthProvider({ children }) {
 
   const loadUser = useCallback(async () => {
     try {
-      setUser(await api.get('/auth/me/'))
+      const me = await api.get('/auth/me/')
+      setViewOnly(me.view_only)
+      setUser(me)
     } catch {
       tokens.clear()
+      setViewOnly(false)
       setUser(null)
     } finally {
       setLoading(false)
@@ -31,6 +34,12 @@ export function AuthProvider({ children }) {
     await loadUser()
   }
 
+  // Demo sites: sign in to the view-only demo account.
+  const demoLogin = async () => {
+    tokens.set(await request('/auth/demo/', { method: 'POST', auth: false }))
+    await loadUser()
+  }
+
   // Sign in with tokens issued elsewhere (e.g. right after verifying a signup code).
   const acceptTokens = async (data) => {
     tokens.set(data)
@@ -39,10 +48,11 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     tokens.clear()
+    setViewOnly(false)
     setUser(null)
   }
 
-  return <AuthContext.Provider value={{ user, loading, login, acceptTokens, logout, reload: loadUser }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ user, loading, login, demoLogin, acceptTokens, logout, reload: loadUser }}>{children}</AuthContext.Provider>
 }
 
 export const useAuth = () => useContext(AuthContext)

@@ -1,12 +1,20 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
 import Logo from '../../components/Logo'
 import { Alert, PasswordInput } from '../../components/ui'
+import { request } from '../../lib/api'
 import { homeFor, useAuth } from '../../lib/auth'
 import { CHURCH_NAME } from '../../lib/format'
 
 export default function Login() {
-  const { user, login } = useAuth()
+  const { user, login, demoLogin } = useAuth()
+  const [demo, setDemo] = useState(null) // { username, password } on demo sites
+  useEffect(() => { request('/auth/demo/', { auth: false }).then((d) => setDemo(d.enabled ? d : null)).catch(() => {}) }, [])
+  const openDemo = async () => {
+    setBusy(true)
+    setError('')
+    try { await demoLogin() } catch (err) { setError(err.message); setBusy(false) }
+  }
   const location = useLocation()
   const [form, setForm] = useState({ username: '', password: '' })
   const [error, setError] = useState('')
@@ -57,9 +65,21 @@ export default function Login() {
           </div>
           <button className="btn-primary w-full" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
         </form>
-        <p className="mt-6 text-center text-sm text-slate-500">
-          Need an admin account? <Link to="/signup" className="font-medium text-brand-700 hover:underline">Create one</Link>
-        </p>
+        {demo && (
+          <div className="mt-4 rounded-lg border border-brand-200 bg-brand-50 p-3 text-center">
+            <p className="mb-2 text-sm text-slate-700">Just looking? Explore a demo with sample data.</p>
+            <button type="button" className="btn-secondary w-full" onClick={openDemo} disabled={busy}>Explore the demo (view only)</button>
+            <p className="mt-2 text-xs text-slate-600">
+              or sign in as <span className="font-mono font-semibold">{demo.username}</span> / <span className="font-mono font-semibold">{demo.password}</span>{' '}
+              <button type="button" className="font-medium text-brand-700 hover:underline" onClick={() => setForm({ username: demo.username, password: demo.password })}>(fill in)</button>
+            </p>
+          </div>
+        )}
+        {!demo && (
+          <p className="mt-6 text-center text-sm text-slate-500">
+            Need an admin account? <Link to="/signup" className="font-medium text-brand-700 hover:underline">Create one</Link>
+          </p>
+        )}
         <p className="mt-2 text-center text-sm text-slate-500">
           Want to give? <Link to="/give" className="font-medium text-brand-700 hover:underline">Go to the donation page</Link>
         </p>
