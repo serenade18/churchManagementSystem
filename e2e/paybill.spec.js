@@ -30,7 +30,7 @@ test('create a donation type; a Paybill payment using its code is allocated auto
   await expect(row).toContainText(MEMBER.name)
   await expect(row).toContainText(name)
   await expect(row).toContainText('Allocated')
-  expect((await smsTo(request, MEMBER.phone)).at(-1).text).toContain(transId)
+  expect((await smsTo(request, MEMBER.phone)).at(-1).text).toContain('we have received your generous contribution')
 })
 
 test('an unrecognised Paybill payment waits for an admin to allocate it', async ({ page, request }) => {
