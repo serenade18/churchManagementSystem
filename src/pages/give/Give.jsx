@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { CheckCircle2, Loader2, Smartphone, XCircle } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { CheckCircle2, CreditCard, Loader2, Smartphone, XCircle } from 'lucide-react'
 import Logo from '../../components/Logo'
 import { Alert, Field, Select } from '../../components/ui'
 import { request } from '../../lib/api'
-import { CHURCH_NAME, money } from '../../lib/format'
+import { CHURCH_NAME, currencyMoney, money } from '../../lib/format'
 
 const POLL_MS = 4000
 const POLL_LIMIT = 30 // ~2 minutes
@@ -19,15 +19,19 @@ function normalisePhone(raw) {
 }
 
 export default function Give() {
-  const [form, setForm] = useState({ reference: '', phone: '', description: '', amount: '', project: '' })
+  const [params] = useSearchParams()
+  const [method, setMethod] = useState('mpesa') // mpesa | paypal
+  const [paypal, setPaypal] = useState({ enabled: false, currency: 'USD', kes_rate: 0 })
+  const [form, setForm] = useState({ reference: '', phone: '', description: '', amount: '', project: '', name: '', email: '' })
   const [projects, setProjects] = useState([])
   const [types, setTypes] = useState([])
   const [state, setState] = useState('form') // form | sending | waiting | success | failed
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState(params.get('paypal') === 'cancelled' ? 'Your PayPal payment was cancelled. Nothing was charged.' : '')
   const timer = useRef(null)
 
   useEffect(() => {
     request('/public/projects/', { auth: false }).then(setProjects).catch(() => {})
+    request('/paypal/config/', { auth: false }).then(setPaypal).catch(() => {})
     request('/donation-types/', { auth: false }).then((list) => {
       setTypes(list)
       const first = list.find((t) => t.is_default) || list[0]
@@ -59,8 +63,39 @@ export default function Give() {
     }, POLL_MS)
   }
 
+  const isPaypal = method === 'paypal'
+  const giftAmount = (value) => (isPaypal ? currencyMoney(value, paypal.currency) : money(value))
+
+  const submitPaypal = async () => {
+    setState('sending')
+    try {
+      const res = await request('/paypal/orders/', {
+        method: 'POST',
+        auth: false,
+        body: {
+          amount: Number(form.amount).toFixed(2),
+          reference: form.reference.trim(),
+          name: form.name.trim(),
+          email: form.email.trim(),
+          description: form.description,
+          project: asksProject ? form.project : undefined,
+        },
+      })
+      window.location.assign(res.approve_url) // PayPal sends the giver back to /give/paypal
+    } catch (err) {
+      setMessage(err.message)
+      setState('form')
+    }
+  }
+
   const submit = async (e) => {
     e.preventDefault()
+    if (isPaypal) {
+      if (!form.description) return setMessage('Please choose what you are giving for.')
+      if (asksProject && !form.project) return setMessage('Please choose the project you are supporting.')
+      setMessage('')
+      return submitPaypal()
+    }
     const phone = normalisePhone(form.phone)
     if (!phone) return setMessage('Enter a valid Safaricom number, e.g. 0712 345 678.')
     if (!form.description) return setMessage('Please choose what you are giving for.')
@@ -90,13 +125,7 @@ export default function Give() {
   const reset = () => { clearTimeout(timer.current); setState('form'); setMessage('') }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-brand-900 via-brand-800 to-brand-700">
-      <header className="flex items-center justify-between px-4 py-4 text-white sm:px-8">
-        <span className="flex items-center gap-3 font-semibold"><Logo tile className="h-11 w-11" /> {CHURCH_NAME}</span>
-        <Link to="/" className="text-sm text-brand-100 hover:text-white">Admin login</Link>
-      </header>
-      <main className="flex flex-1 items-center justify-center p-4">
-        <div className="card w-full max-w-md p-6 sm:p-8">
+    <GiveLayout>
           {state === 'success' ? (
             <div className="py-6 text-center">
               <CheckCircle2 className="mx-auto mb-3 h-14 w-14 text-emerald-500" />
@@ -122,15 +151,36 @@ export default function Give() {
           ) : (
             <>
               <h1 className="text-xl font-semibold">Give online</h1>
-              <p className="mb-6 text-sm text-slate-500">Pay securely via M-PESA. You'll receive a prompt on your phone.</p>
+              <p className="mb-5 text-sm text-slate-500">
+                {isPaypal ? 'Pay securely with PayPal or a card. You will be taken to PayPal to complete your gift.' : "Pay securely via M-PESA. You'll receive a prompt on your phone."}
+              </p>
+              {paypal.enabled && (
+                <div className="mb-5 grid grid-cols-2 gap-2" role="radiogroup" aria-label="Payment method">
+                  {[['mpesa', 'M-PESA', Smartphone], ['paypal', 'PayPal / card', CreditCard]].map(([key, label, Icon]) => (
+                    <button key={key} type="button" role="radio" aria-checked={method === key} onClick={() => { setMethod(key); setMessage('') }}
+                      className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium ${method === key ? 'border-brand-600 bg-brand-50 text-brand-800' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
+                      <Icon className="h-4 w-4" /> {label}
+                    </button>
+                  ))}
+                </div>
+              )}
               <Alert>{message}</Alert>
               <form onSubmit={submit} className="space-y-4">
-                <Field label="Membership number" hint="Visitors may enter their name instead.">
-                  <input className="input" required value={form.reference} onChange={set('reference')} maxLength={12} />
+                <Field label={isPaypal ? 'Membership number (if you have one)' : 'Membership number'} hint={isPaypal ? undefined : 'Visitors may enter their name instead.'}>
+                  <input className="input" required={!isPaypal} value={form.reference} onChange={set('reference')} maxLength={12} />
                 </Field>
-                <Field label="M-PESA phone number">
-                  <input className="input" required inputMode="tel" placeholder="0712 345 678" value={form.phone} onChange={set('phone')} />
-                </Field>
+                {isPaypal ? (
+                  <>
+                    <Field label="Your name"><input className="input" value={form.name} onChange={set('name')} maxLength={150} autoComplete="name" /></Field>
+                    <Field label="Email for your receipt" hint="Optional: PayPal's email is used if you leave it empty.">
+                      <input className="input" type="email" value={form.email} onChange={set('email')} autoComplete="email" />
+                    </Field>
+                  </>
+                ) : (
+                  <Field label="M-PESA phone number">
+                    <input className="input" required inputMode="tel" placeholder="0712 345 678" value={form.phone} onChange={set('phone')} />
+                  </Field>
+                )}
                 <Field label="Giving towards">
                   <Select value={form.description} onChange={set('description')} options={types.map((t) => ({ value: t.id, label: t.name }))} placeholder={types.length ? undefined : 'Loading…'} />
                 </Field>
@@ -139,16 +189,30 @@ export default function Give() {
                     <Select value={form.project} onChange={set('project')} options={projects.map((p) => ({ value: p.id, label: p.name }))} placeholder="Select a project" />
                   </Field>
                 )}
-                <Field label="Amount (KES)">
-                  <input className="input" required type="number" min="1" step="1" value={form.amount} onChange={set('amount')} />
+                <Field label={`Amount (${isPaypal ? paypal.currency : 'KES'})`}
+                  hint={isPaypal && form.amount && Number(paypal.kes_rate) ? `About ${money(Number(form.amount) * Number(paypal.kes_rate))}` : undefined}>
+                  <input className="input" required type="number" min="1" step={isPaypal ? '0.01' : '1'} value={form.amount} onChange={set('amount')} />
                 </Field>
                 <button className="btn-primary w-full py-3" disabled={state === 'sending'}>
-                  {state === 'sending' ? 'Sending prompt…' : `Give ${form.amount ? money(form.amount) : ''}`}
+                  {state === 'sending' ? (isPaypal ? 'Opening PayPal…' : 'Sending prompt…') : `Give ${form.amount ? giftAmount(form.amount) : ''}${isPaypal ? ' with PayPal' : ''}`}
                 </button>
               </form>
             </>
           )}
-        </div>
+    </GiveLayout>
+  )
+}
+
+/** Page frame shared by the give page and the PayPal return page. */
+export function GiveLayout({ children }) {
+  return (
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-brand-900 via-brand-800 to-brand-700">
+      <header className="flex items-center justify-between px-4 py-4 text-white sm:px-8">
+        <span className="flex items-center gap-3 font-semibold"><Logo tile className="h-11 w-11" /> {CHURCH_NAME}</span>
+        <Link to="/" className="text-sm text-brand-100 hover:text-white">Admin login</Link>
+      </header>
+      <main className="flex flex-1 items-center justify-center p-4">
+        <div className="card w-full max-w-md p-6 sm:p-8">{children}</div>
       </main>
     </div>
   )

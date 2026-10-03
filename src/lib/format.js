@@ -2,6 +2,9 @@ export const CHURCH_NAME = import.meta.env.VITE_CHURCH_NAME || 'PCEA Milele'
 
 const kes = new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 })
 export const money = (value) => kes.format(Number(value || 0))
+/** Amount in any currency, e.g. USD 25.00 for PayPal gifts. */
+export const currencyMoney = (value, currency = 'KES') =>
+  currency === 'KES' ? money(value) : new Intl.NumberFormat('en-KE', { style: 'currency', currency }).format(Number(value || 0))
 export const compactMoney = (value) =>
   'KES ' + new Intl.NumberFormat('en-KE', { notation: 'compact', maximumFractionDigits: 1 }).format(Number(value || 0))
 
@@ -13,9 +16,9 @@ export const dateTime = (value) =>
     : '—'
 export const today = () => new Date().toISOString().slice(0, 10)
 
-export const CHANNELS = { mpesa: 'M-PESA', paybill: 'M-PESA Paybill', cash: 'Cash', bank: 'Bank', cheque: 'Cheque' }
-// Donations that come from Safaricom can't be edited (amount/status) or deleted.
-export const MPESA_CHANNELS = ['mpesa', 'paybill']
+export const CHANNELS = { mpesa: 'M-PESA', paybill: 'M-PESA Paybill', paypal: 'PayPal', cash: 'Cash', bank: 'Bank', cheque: 'Cheque' }
+// Donations confirmed by M-PESA or PayPal can't be edited (amount/status) or deleted.
+export const PROVIDER_CHANNELS = ['mpesa', 'paybill', 'paypal']
 export const PAYBILL_NUMBER = import.meta.env.VITE_PAYBILL_NUMBER || '785610'
 export const DONATION_STATUS = { success: 'Success', pending: 'Pending', failed: 'Failed' }
 export const MEMBER_STATUS = { active: 'Active', inactive: 'Inactive', transferred: 'Transferred', deceased: 'Deceased' }

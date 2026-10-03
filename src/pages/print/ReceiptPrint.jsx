@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
 import PrintLayout, { ChurchHeader } from '../../components/PrintLayout'
 import { useApi } from '../../lib/hooks'
-import { dateTime, money } from '../../lib/format'
+import { currencyMoney, dateTime, money } from '../../lib/format'
 
 function Row({ label, children }) {
   if (!children) return null
@@ -42,6 +42,9 @@ export default function ReceiptPrint() {
             <span className="text-sm font-semibold uppercase tracking-wide">Amount</span>
             <span className="text-2xl font-bold">{money(r.amount)}</span>
           </div>
+          {r.paid_currency && (
+            <p className="mb-1 text-sm"><span className="text-slate-500">Paid: </span><span className="font-medium">{currencyMoney(r.paid_amount, r.paid_currency)}</span> (shilling value above)</p>
+          )}
           <p className="text-sm"><span className="text-slate-500">Amount in words: </span><span className="font-medium italic">{r.amount_in_words}</span></p>
 
           <div className="mt-10 flex items-end justify-between gap-8 text-sm">

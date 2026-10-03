@@ -4,13 +4,13 @@ import MemberPicker from './MemberPicker'
 import { Alert, Badge, Field, Modal, Select } from './ui'
 import { api } from '../lib/api'
 import { useDonationTypes, useOptions } from '../lib/hooks'
-import { CHANNELS, DONATION_STATUS, MPESA_CHANNELS, money } from '../lib/format'
+import { CHANNELS, DONATION_STATUS, PROVIDER_CHANNELS, currencyMoney, money } from '../lib/format'
 import { clean, useForm } from '../lib/useForm'
 
-const MANUAL_CHANNELS = Object.fromEntries(Object.entries(CHANNELS).filter(([k]) => !MPESA_CHANNELS.includes(k)))
+const MANUAL_CHANNELS = Object.fromEntries(Object.entries(CHANNELS).filter(([k]) => !PROVIDER_CHANNELS.includes(k)))
 
 export default function DonationForm({ donation, onClose, onSaved, onResent }) {
-  const isMpesa = MPESA_CHANNELS.includes(donation?.channel)
+  const isProvider = PROVIDER_CHANNELS.includes(donation?.channel)
   const branches = useOptions('/cms/branches/')
   const projects = useOptions('/cms/projects/')
   const { types, defaultId } = useDonationTypes({ includeInactive: true })
@@ -74,7 +74,7 @@ export default function DonationForm({ donation, onClose, onSaved, onResent }) {
     payload.notes ??= ''
     payload.phone_number ??= ''
     payload.membership_number = member ? member.membership_number : values.membership_number || ''
-    if (isMpesa) {
+    if (isProvider) {
       // Amount, status and channel come from Safaricom; only allocation fields are editable.
       const { member: m, membership_number, branch, project, notes, donation_type } = payload
       // Choosing the giver of an unallocated Paybill payment allocates it and sends the receipt.
@@ -88,9 +88,13 @@ export default function DonationForm({ donation, onClose, onSaved, onResent }) {
     <Modal open onClose={onClose} title={donation ? 'Edit donation' : 'Record donation'} wide
       footer={<><button className="btn-secondary" onClick={onClose}>Cancel</button><button className="btn-primary" form="donation-form" disabled={busy}>{busy ? 'Saving…' : 'Save'}</button></>}>
       <Alert>{error}</Alert>
-      {isMpesa && (
+      {isProvider && (
         <p className="mb-4 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
-          M-PESA donation of <strong>{money(donation.amount)}</strong> from {donation.phone_number || donation.payment?.phone_number || 'an M-PESA number'}
+          {donation.channel === 'paypal' ? (
+            <>PayPal donation of <strong>{currencyMoney(donation.amount_original, donation.currency)}</strong> ({money(donation.amount)}) from {donation.giver_name || donation.email || 'a PayPal giver'}</>
+          ) : (
+            <>M-PESA donation of <strong>{money(donation.amount)}</strong> from {donation.phone_number || donation.payment?.phone_number || 'an M-PESA number'}</>
+          )}
           {donation.receipt && <> · receipt <span className="font-mono">{donation.receipt}</span></>}. You can re-assign the member, branch, project or type.
         </p>
       )}
@@ -110,7 +114,7 @@ export default function DonationForm({ donation, onClose, onSaved, onResent }) {
           </Field>
         )}
         <Field label="Type *" error={errors.donation_type}><Select required value={values.donation_type} onChange={set('donation_type')} options={typeOptions} placeholder="— Choose —" /></Field>
-        {!isMpesa && (
+        {!isProvider && (
           <>
             <Field label="Amount (KES) *" error={errors.amount}><input className="input" type="number" min="1" step="0.01" required value={values.amount} onChange={set('amount')} /></Field>
             <Field label="Channel" error={errors.channel}><Select value={values.channel} onChange={set('channel')} options={MANUAL_CHANNELS} /></Field>

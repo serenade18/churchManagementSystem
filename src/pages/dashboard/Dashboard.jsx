@@ -102,7 +102,7 @@ export default function Dashboard() {
               <li key={d.id} className="flex items-center justify-between gap-4 px-5 py-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">
-                    {d.member_name || d.membership_number || d.phone_number || (d.unallocated ? 'Giver not yet known' : 'Anonymous')}
+                    {d.member_name || d.giver_name || d.membership_number || d.phone_number || (d.unallocated ? 'Giver not yet known' : 'Anonymous')}
                     {d.unallocated && <span className="ml-2"><Badge tone="amber">Unallocated</Badge></span>}
                   </p>
                   <p className="text-xs text-slate-500">{d.donation_type_name} · {CHANNELS[d.channel]} · {dateTime(d.created_at)}</p>
