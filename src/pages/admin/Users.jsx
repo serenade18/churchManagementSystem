@@ -10,7 +10,7 @@ import { useForm } from '../../lib/useForm'
 function UserForm({ user, onClose, onSaved }) {
   const { values, set, errors, error, busy, submit } = useForm({
     username: user?.username || '', first_name: user?.first_name || '', last_name: user?.last_name || '',
-    email: user?.email || '', password: '', is_active: user?.is_active ?? true, is_superuser: user?.is_superuser ?? false,
+    email: user?.email || '', password: '', is_active: user?.is_active ?? true, is_superuser: user?.is_superuser ?? false, view_only: user?.view_only ?? false,
   })
   const save = async (e) => {
     e.preventDefault()
@@ -32,7 +32,8 @@ function UserForm({ user, onClose, onSaved }) {
           <PasswordInput autoComplete="new-password" required={!user} value={values.password} onChange={set('password')} />
         </Field>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={values.is_active} onChange={set('is_active')} /> Account active</label>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={values.is_superuser} onChange={set('is_superuser')} /> Super admin (can manage admins)</label>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={values.is_superuser} onChange={set('is_superuser')} disabled={values.view_only} /> Super admin (can manage admins)</label>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={values.view_only} onChange={set('view_only')} disabled={values.is_superuser} /> View only (sees everything, can't change anything, e.g. an auditor)</label>
       </form>
     </Modal>
   )
@@ -65,7 +66,7 @@ export default function Users() {
         { key: 'username', label: 'Username', render: (u) => <span className="font-medium">{u.username}</span> },
         { key: 'name', label: 'Name', render: (u) => `${u.first_name} ${u.last_name}`.trim() || '—' },
         { key: 'email', label: 'Email', render: (u) => u.email || '—' },
-        { key: 'role', label: 'Role', render: (u) => <Badge tone={u.is_superuser ? 'purple' : 'blue'}>{u.is_superuser ? 'Super admin' : 'Admin'}</Badge> },
+        { key: 'role', label: 'Role', render: (u) => <Badge tone={u.is_superuser ? 'purple' : u.view_only ? 'slate' : 'blue'}>{u.is_superuser ? 'Super admin' : u.view_only ? 'View only' : 'Admin'}</Badge> },
         { key: 'status', label: 'Status', render: (u) => <Badge tone={STATUS[u.status][0]}>{STATUS[u.status][1]}</Badge> },
         { key: 'last_login', label: 'Last login', render: (u) => dateTime(u.last_login) },
         { key: 'actions', label: '', render: (u) => u.id !== me.id && (

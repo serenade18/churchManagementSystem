@@ -25,7 +25,7 @@ test('a giver abroad pays with PayPal; the gift is confirmed and admins see it i
   // Receipts: SMS to the member's phone and an email to the address given.
   await expect.poll(async () => (await smsTo(request, MEMBER.phone)).length).toBeGreaterThan(before)
   const emails = await (await request.get(`${API}/e2e/email/`, { params: { to: email } })).json()
-  expect(emails.at(-1).body).toContain('we have received your generous contribution')
+  expect(emails.at(-1).body).toContain('with gratitude we acknowledge your')
 
   await login(page, ACCOUNTS.clerk)
   await page.getByRole('link', { name: 'Donations', exact: true }).click()

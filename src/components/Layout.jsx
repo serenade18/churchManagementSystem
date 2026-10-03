@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { Building2, CalendarCheck, Gauge, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, Users, X } from 'lucide-react'
+import { Building2, Eye, CalendarCheck, Gauge, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, Users, X } from 'lucide-react'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import Logo from './Logo'
@@ -69,7 +69,7 @@ export default function Layout() {
       </nav>
       <div className="border-t border-white/10 p-4">
         <p className="truncate text-sm font-medium text-white">{user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username}</p>
-        <p className="mb-3 text-xs text-brand-200">{user?.is_superuser ? 'Super admin' : 'Admin'}</p>
+        <p className="mb-3 text-xs text-brand-200">{user?.is_superuser ? 'Super admin' : user?.view_only ? 'View only' : 'Admin'}</p>
         <button onClick={logout} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-white/10 hover:text-white">
           <LogOut className="h-4 w-4" /> Sign out
         </button>
@@ -94,6 +94,16 @@ export default function Layout() {
           <span className="font-semibold">{CHURCH_NAME}</span>
         </header>
         <main className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+          {user?.view_only && (
+            <div className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-slate-700">
+              <Eye className="h-4 w-4 shrink-0 text-brand-700" />
+              <span>
+                {user.username === 'demo'
+                  ? <><strong>Demo, view only.</strong> Look around freely: everything here is sample data, and changes are turned off.</>
+                  : <><strong>View-only account.</strong> You can see everything, but changes are turned off.</>}
+              </span>
+            </div>
+          )}
           <Outlet />
         </main>
       </div>

@@ -29,7 +29,7 @@ test('a member gives online; the M-PESA callback confirms it and admins see it',
 
   // The giver got an SMS receipt.
   await expect.poll(async () => (await smsTo(request, MEMBER.phone)).length).toBeGreaterThan(before)
-  expect((await smsTo(request, MEMBER.phone)).at(-1).text).toContain('we have received your generous contribution')
+  expect((await smsTo(request, MEMBER.phone)).at(-1).text).toContain('with gratitude we acknowledge your')
 
   // An admin finds it in Donations.
   await login(page, ACCOUNTS.clerk)
