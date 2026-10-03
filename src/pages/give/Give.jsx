@@ -4,7 +4,8 @@ import { CheckCircle2, CreditCard, Loader2, Smartphone, XCircle } from 'lucide-r
 import Logo from '../../components/Logo'
 import { Alert, Field, Select } from '../../components/ui'
 import { request } from '../../lib/api'
-import { CHURCH_NAME, currencyMoney, money } from '../../lib/format'
+import { currencyMoney, money } from '../../lib/format'
+import { branding } from '../../lib/theme'
 
 const POLL_MS = 4000
 const POLL_LIMIT = 30 // ~2 minutes
@@ -206,9 +207,9 @@ export default function Give() {
 /** Page frame shared by the give page and the PayPal return page. */
 export function GiveLayout({ children }) {
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-brand-900 via-brand-800 to-brand-700">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-sidebar via-sidebar to-primary-hover">
       <header className="flex items-center justify-between px-4 py-4 text-white sm:px-8">
-        <span className="flex items-center gap-3 font-semibold"><Logo tile className="h-11 w-11" /> {CHURCH_NAME}</span>
+        <span className="flex items-center gap-3 font-semibold"><Logo tile className="h-11 w-11" /> {branding.name}</span>
         <Link to="/" className="text-sm text-brand-100 hover:text-white">Admin login</Link>
       </header>
       <main className="flex flex-1 items-center justify-center p-4">

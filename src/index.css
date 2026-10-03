@@ -10,6 +10,11 @@
   --color-brand-700: #1d43b0;
   --color-brand-800: #1e3a8a;
   --color-brand-900: #172e6b;
+  /* Roles the app uses. Settings > Branding overrides these (and the brand scale) at runtime. */
+  --color-primary: #1d43b0;
+  --color-primary-hover: #1e3a8a;
+  --color-on-primary: #ffffff;
+  --color-sidebar: #172e6b;
 }
 
 body {
@@ -26,7 +31,7 @@ body {
   @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60;
 }
 @utility btn-primary {
-  @apply btn bg-brand-700 text-white hover:bg-brand-800;
+  @apply btn bg-primary text-on-primary hover:bg-primary-hover;
 }
 @utility btn-secondary {
   @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;

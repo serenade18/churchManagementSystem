@@ -1,4 +1,3 @@
-export const CHURCH_NAME = import.meta.env.VITE_CHURCH_NAME || 'PCEA Milele'
 
 const kes = new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 })
 export const money = (value) => kes.format(Number(value || 0))
