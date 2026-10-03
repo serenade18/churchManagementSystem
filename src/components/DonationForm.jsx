@@ -77,7 +77,8 @@ export default function DonationForm({ donation, onClose, onSaved, onResent }) {
     if (isMpesa) {
       // Amount, status and channel come from Safaricom; only allocation fields are editable.
       const { member: m, membership_number, branch, project, notes, donation_type } = payload
-      payload = { member: m, membership_number, branch, project, notes, donation_type, send_receipt: false }
+      // Choosing the giver of an unallocated Paybill payment allocates it and sends the receipt.
+      payload = { member: m, membership_number, branch, project, notes, donation_type, send_receipt: !!donation.unallocated }
     }
     const saved = await submit(() => (donation ? api.patch(`/cms/donations/${donation.id}/`, payload) : api.post('/cms/donations/', payload))).catch(() => null)
     if (saved) onSaved(saved)
@@ -92,6 +93,12 @@ export default function DonationForm({ donation, onClose, onSaved, onResent }) {
           M-PESA donation of <strong>{money(donation.amount)}</strong> from {donation.phone_number || donation.payment?.phone_number || 'an M-PESA number'}
           {donation.receipt && <> · receipt <span className="font-mono">{donation.receipt}</span></>}. You can re-assign the member, branch, project or type.
         </p>
+      )}
+      {donation?.unallocated && (
+        <Alert tone="amber">
+          This Paybill payment isn't allocated yet. Choose the member who gave and save: it will be allocated and they'll get an SMS receipt.
+          Visitors (phone number only) are allocated from the Paybill page.
+        </Alert>
       )}
       <form id="donation-form" onSubmit={save} className="grid gap-4 sm:grid-cols-2">
         <Field label="Member" className="sm:col-span-2" hint="Leave empty for visitors / anonymous giving.">
