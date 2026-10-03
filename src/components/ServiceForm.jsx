@@ -39,7 +39,7 @@ export default function ServiceForm({ service, onClose, onSaved }) {
         <Field label="Date *" error={errors.date}><input className="input" type="date" required value={values.date} onChange={set('date')} /></Field>
         <Field label="Start time" error={errors.start_time}><input className="input" type="time" value={values.start_time} onChange={set('start_time')} /></Field>
         <Field label="Branch" error={errors.branch} hint="Members of this branch make up the attendance list.">
-          <Select value={values.branch} onChange={set('branch')} options={branches.map((b) => ({ value: b.id, label: b.name }))} placeholder="Church-wide" />
+          <Select value={values.branch} onChange={set('branch')} options={branches.map((b) => ({ value: b.id, label: b.name }))} placeholder="Organisation-wide" />
         </Field>
         <Field label="Visitors (head count)" error={errors.visitor_count}><input className="input" type="number" min="0" value={values.visitor_count} onChange={set('visitor_count')} /></Field>
         <Field label="Notes" error={errors.notes} className="sm:col-span-2"><textarea className="input" rows={2} value={values.notes} onChange={set('notes')} /></Field>

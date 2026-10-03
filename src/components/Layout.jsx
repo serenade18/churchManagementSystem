@@ -4,7 +4,7 @@ import { Building2, Eye, CalendarCheck, Gauge, FolderKanban, HandCoins, LayoutDa
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import Logo from './Logo'
-import { CHURCH_NAME } from '../lib/format'
+import { branding } from '../lib/theme'
 
 // Day-to-day church work; super admins only manage accounts and the system
 const NAV = [
@@ -41,12 +41,12 @@ export default function Layout() {
   ]
 
   const sidebar = (
-    <div className="flex h-full flex-col bg-brand-900 text-brand-100">
+    <div className="flex h-full flex-col bg-sidebar text-brand-100">
       <div className="flex items-center gap-3 px-5 py-5">
         <Logo tile className="h-12 w-12" />
         <div>
-          <p className="font-semibold text-white">{CHURCH_NAME}</p>
-          <p className="text-xs text-brand-200">Church Management</p>
+          <p className="font-semibold text-white">{branding.name}</p>
+          <p className="text-xs text-brand-200">{branding.tagline}</p>
         </div>
       </div>
       <nav className="flex-1 space-y-1 px-3">
@@ -56,12 +56,12 @@ export default function Layout() {
             to={to}
             onClick={() => setOpen(false)}
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${isActive ? 'bg-white/15 text-white' : 'hover:bg-white/10 hover:text-white'}`
+              `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${isActive ? 'bg-primary font-semibold text-on-primary' : 'hover:bg-white/10 hover:text-white'}`
             }
           >
             <Icon className="h-5 w-5" /> {label}
             {badge && counts[badge] > 0 && (
-              <span className="ml-auto rounded-full bg-amber-400 px-2 py-0.5 text-xs font-semibold text-amber-950"
+              <span className="ml-auto rounded-full bg-danger px-2 py-0.5 text-xs font-semibold text-white"
                 title="Payments to allocate">{counts[badge]}</span>
             )}
           </NavLink>
@@ -90,8 +90,8 @@ export default function Layout() {
       <div className="lg:pl-64">
         <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
           <button onClick={() => setOpen(true)} aria-label="Open menu"><Menu className="h-6 w-6" /></button>
-          <Logo className="h-8" />
-          <span className="font-semibold">{CHURCH_NAME}</span>
+          <Logo mark className="h-8" />
+          <span className="font-semibold">{branding.name}</span>
         </header>
         <main className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
           {user?.view_only && (

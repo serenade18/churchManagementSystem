@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import BrandingSettings from '../../components/BrandingSettings'
 import { Alert, Field, PageHeader, PasswordInput } from '../../components/ui'
 import { api } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
@@ -22,6 +23,7 @@ export default function SettingsPage() {
   return (
     <>
       <PageHeader title="Settings" subtitle={`Signed in as ${user.username}`} />
+      <div className="mb-6"><BrandingSettings /></div>
       <div className="card max-w-md p-6">
         <h2 className="mb-4 font-semibold">Change password</h2>
         <Alert tone="green">{done}</Alert>

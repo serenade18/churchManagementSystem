@@ -6,6 +6,7 @@ import ServiceForm from '../../components/ServiceForm'
 import { Alert, PageHeader, Pagination, Select, StatCard, Table } from '../../components/ui'
 import { useApi, useOptions } from '../../lib/hooks'
 import { SERVICE_TYPES, date } from '../../lib/format'
+import { brandColor } from '../../lib/theme'
 
 const AXIS = { fontSize: 12, fill: '#64748b' }
 
@@ -65,8 +66,8 @@ export default function Attendance() {
                   <CartesianGrid vertical={false} stroke="#e2e8f0" />
                   <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={{ stroke: '#cbd5e1' }} />
                   <YAxis tick={AXIS} tickLine={false} axisLine={false} allowDecimals={false} width={40} />
-                  <Tooltip content={<TrendTooltip />} cursor={{ fill: '#eff4ff' }} />
-                  <Bar dataKey="total" fill="#2453d9" radius={[4, 4, 0, 0]} maxBarSize={36} />
+                  <Tooltip content={<TrendTooltip />} cursor={{ fill: brandColor(50) }} />
+                  <Bar dataKey="total" fill={brandColor(600)} radius={[4, 4, 0, 0]} maxBarSize={36} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -105,7 +106,7 @@ export default function Attendance() {
         columns={[
           { key: 'date', label: 'Date', render: (r) => <>{date(r.date)}{r.start_time && <span className="text-slate-400"> · {r.start_time.slice(0, 5)}</span>}</> },
           { key: 'name', label: 'Service', render: (r) => <span className="font-medium text-slate-900">{r.name}</span> },
-          { key: 'branch_name', label: 'Branch', render: (r) => r.branch_name || 'Church-wide' },
+          { key: 'branch_name', label: 'Branch', render: (r) => r.branch_name || 'Organisation-wide' },
           { key: 'members_present', label: 'Members', className: 'text-right' },
           { key: 'visitor_count', label: 'Visitors', className: 'text-right' },
           { key: 'total_attendance', label: 'Total', className: 'text-right font-semibold' },

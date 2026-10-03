@@ -4,8 +4,8 @@ import { AlertTriangle, Building2, CalendarDays, FolderKanban, HandCoins, Users 
 import { Alert, Badge, PageHeader, Progress, Spinner, StatCard } from '../../components/ui'
 import { useApi } from '../../lib/hooks'
 import { CHANNELS, DONATION_STATUS, compactMoney, date, dateTime, money } from '../../lib/format'
+import { brandColor } from '../../lib/theme'
 
-const BAR = '#2453d9'
 const AXIS = { fontSize: 12, fill: '#64748b' }
 
 function ChartTooltip({ active, payload, label }) {
@@ -34,7 +34,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <PageHeader title="Dashboard" subtitle="An overview of your church at a glance." />
+      <PageHeader title="Dashboard" subtitle="An overview of your giving and donors at a glance." />
 
       {data.unallocated_payments > 0 && (
         <Link to="/paybill" className="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 hover:bg-amber-100">
@@ -63,8 +63,8 @@ export default function Dashboard() {
                 <CartesianGrid vertical={false} stroke="#e2e8f0" />
                 <XAxis dataKey="month" tick={AXIS} tickLine={false} axisLine={{ stroke: '#cbd5e1' }} />
                 <YAxis tick={AXIS} tickLine={false} axisLine={false} tickFormatter={compactMoney} width={80} />
-                <Tooltip content={<ChartTooltip />} cursor={{ fill: '#eff4ff' }} />
-                <Bar dataKey="total" fill={BAR} radius={[4, 4, 0, 0]} maxBarSize={36} />
+                <Tooltip content={<ChartTooltip />} cursor={{ fill: brandColor(50) }} />
+                <Bar dataKey="total" fill={brandColor(600)} radius={[4, 4, 0, 0]} maxBarSize={36} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -79,8 +79,8 @@ export default function Dashboard() {
                 <BarChart data={byType} layout="vertical" margin={{ left: 0, right: 16 }}>
                   <XAxis type="number" hide />
                   <YAxis type="category" dataKey="type" tick={AXIS} tickLine={false} axisLine={false} width={130} />
-                  <Tooltip content={<ChartTooltip />} cursor={{ fill: '#eff4ff' }} />
-                  <Bar dataKey="total" fill={BAR} radius={[0, 4, 4, 0]} maxBarSize={22} />
+                  <Tooltip content={<ChartTooltip />} cursor={{ fill: brandColor(50) }} />
+                  <Bar dataKey="total" fill={brandColor(600)} radius={[0, 4, 4, 0]} maxBarSize={22} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
