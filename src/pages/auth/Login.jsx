@@ -8,8 +8,8 @@ import { CHURCH_NAME } from '../../lib/format'
 
 export default function Login() {
   const { user, login, demoLogin } = useAuth()
-  const [demo, setDemo] = useState(false)
-  useEffect(() => { request('/auth/demo/', { auth: false }).then((d) => setDemo(d.enabled)).catch(() => {}) }, [])
+  const [demo, setDemo] = useState(null) // { username, password } on demo sites
+  useEffect(() => { request('/auth/demo/', { auth: false }).then((d) => setDemo(d.enabled ? d : null)).catch(() => {}) }, [])
   const openDemo = async () => {
     setBusy(true)
     setError('')
@@ -69,6 +69,10 @@ export default function Login() {
           <div className="mt-4 rounded-lg border border-brand-200 bg-brand-50 p-3 text-center">
             <p className="mb-2 text-sm text-slate-700">Just looking? Explore a demo with sample data.</p>
             <button type="button" className="btn-secondary w-full" onClick={openDemo} disabled={busy}>Explore the demo (view only)</button>
+            <p className="mt-2 text-xs text-slate-600">
+              or sign in as <span className="font-mono font-semibold">{demo.username}</span> / <span className="font-mono font-semibold">{demo.password}</span>{' '}
+              <button type="button" className="font-medium text-brand-700 hover:underline" onClick={() => setForm({ username: demo.username, password: demo.password })}>(fill in)</button>
+            </p>
           </div>
         )}
         {!demo && (
