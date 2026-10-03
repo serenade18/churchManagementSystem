@@ -4,7 +4,7 @@ import App from './App'
 import './index.css'
 import { CHURCH_NAME } from './lib/format'
 
-document.title = `${CHURCH_NAME} - Church Management`
+document.title = `${CHURCH_NAME} - Donor Management`
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

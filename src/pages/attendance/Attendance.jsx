@@ -105,7 +105,7 @@ export default function Attendance() {
         columns={[
           { key: 'date', label: 'Date', render: (r) => <>{date(r.date)}{r.start_time && <span className="text-slate-400"> · {r.start_time.slice(0, 5)}</span>}</> },
           { key: 'name', label: 'Service', render: (r) => <span className="font-medium text-slate-900">{r.name}</span> },
-          { key: 'branch_name', label: 'Branch', render: (r) => r.branch_name || 'Church-wide' },
+          { key: 'branch_name', label: 'Branch', render: (r) => r.branch_name || 'Organisation-wide' },
           { key: 'members_present', label: 'Members', className: 'text-right' },
           { key: 'visitor_count', label: 'Visitors', className: 'text-right' },
           { key: 'total_attendance', label: 'Total', className: 'text-right font-semibold' },

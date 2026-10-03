@@ -33,7 +33,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <PageHeader title="Dashboard" subtitle="An overview of your church at a glance." />
+      <PageHeader title="Dashboard" subtitle="An overview of your giving and donors at a glance." />
 
       {data.unallocated_payments > 0 && (
         <Link to="/paybill" className="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 hover:bg-amber-100">

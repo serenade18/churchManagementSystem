@@ -46,7 +46,7 @@ export default function Layout() {
         <Logo tile className="h-12 w-12" />
         <div>
           <p className="font-semibold text-white">{CHURCH_NAME}</p>
-          <p className="text-xs text-brand-200">Church Management</p>
+          <p className="text-xs text-brand-200">Donor Management</p>
         </div>
       </div>
       <nav className="flex-1 space-y-1 px-3">
