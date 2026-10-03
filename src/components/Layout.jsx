@@ -56,12 +56,12 @@ export default function Layout() {
             to={to}
             onClick={() => setOpen(false)}
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${isActive ? 'bg-white/15 text-white' : 'hover:bg-white/10 hover:text-white'}`
+              `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${isActive ? 'bg-brand-500 font-semibold text-slate-900' : 'hover:bg-white/10 hover:text-white'}`
             }
           >
             <Icon className="h-5 w-5" /> {label}
             {badge && counts[badge] > 0 && (
-              <span className="ml-auto rounded-full bg-amber-400 px-2 py-0.5 text-xs font-semibold text-amber-950"
+              <span className="ml-auto rounded-full bg-danger px-2 py-0.5 text-xs font-semibold text-white"
                 title="Payments to allocate">{counts[badge]}</span>
             )}
           </NavLink>
