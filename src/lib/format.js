@@ -1,8 +1,3 @@
-export const CHURCH_NAME = import.meta.env.VITE_CHURCH_NAME || 'JDO Africa'
-
-/** A colour from the brand palette in index.css (charts need real values, not classes). */
-export const brandColor = (shade = 600) =>
-  getComputedStyle(document.documentElement).getPropertyValue(`--color-brand-${shade}`).trim() || '#2453d9'
 
 const kes = new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 })
 export const money = (value) => kes.format(Number(value || 0))

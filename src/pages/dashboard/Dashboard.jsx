@@ -3,7 +3,8 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { AlertTriangle, Building2, CalendarDays, FolderKanban, HandCoins, Users } from 'lucide-react'
 import { Alert, Badge, PageHeader, Progress, Spinner, StatCard } from '../../components/ui'
 import { useApi } from '../../lib/hooks'
-import { brandColor, CHANNELS, DONATION_STATUS, compactMoney, date, dateTime, money } from '../../lib/format'
+import { CHANNELS, DONATION_STATUS, compactMoney, date, dateTime, money } from '../../lib/format'
+import { brandColor } from '../../lib/theme'
 
 const AXIS = { fontSize: 12, fill: '#64748b' }
 

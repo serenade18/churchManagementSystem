@@ -1,12 +1,12 @@
-import { CHURCH_NAME } from '../lib/format'
+import { branding } from '../lib/theme'
 
 /**
- * The organisation's logo. The full logo (public/logo.png) where there is room; the emblem
- * (public/logo-mark.png) in small square spots. Tiles sit on white so they stay legible on dark backgrounds.
+ * The organisation's logo (Settings > Branding, else public/logo.png): the full logo where there is room,
+ * the square mark in small spots. Tiles sit on white so they stay legible on dark backgrounds.
  */
 export default function Logo({ className = 'h-12', tile = false, mark = tile }) {
   const img = (
-    <img src={mark ? '/logo-mark.png' : '/logo.png'} alt={`${CHURCH_NAME} logo`}
+    <img src={mark ? branding.logoMark : branding.logo} alt={`${branding.name} logo`}
       className={`${tile ? 'h-full' : className} w-auto object-contain`} />
   )
   if (!tile) return img

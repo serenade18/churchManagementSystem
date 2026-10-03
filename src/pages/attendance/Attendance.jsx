@@ -5,7 +5,8 @@ import { CalendarCheck, CalendarDays, MessageSquare, Plus, UserX, Users } from '
 import ServiceForm from '../../components/ServiceForm'
 import { Alert, PageHeader, Pagination, Select, StatCard, Table } from '../../components/ui'
 import { useApi, useOptions } from '../../lib/hooks'
-import { brandColor, SERVICE_TYPES, date } from '../../lib/format'
+import { SERVICE_TYPES, date } from '../../lib/format'
+import { brandColor } from '../../lib/theme'
 
 const AXIS = { fontSize: 12, fill: '#64748b' }
 

@@ -5,7 +5,7 @@ import Logo from '../../components/Logo'
 import { Alert, Field, PasswordInput } from '../../components/ui'
 import { request } from '../../lib/api'
 import { homeFor, useAuth } from '../../lib/auth'
-import { CHURCH_NAME } from '../../lib/format'
+import { branding } from '../../lib/theme'
 import { useForm } from '../../lib/useForm'
 
 const RESEND_SECONDS = 60
@@ -20,11 +20,11 @@ export default function ForgotPassword() {
   if (user) return <Navigate to={homeFor(user)} replace />
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-ink via-ink to-brand-800 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-sidebar via-sidebar to-primary-hover p-4">
       <div className="card w-full max-w-sm p-8">
         <div className="mb-6 text-center">
           <Logo className="mx-auto mb-3 h-20" />
-          <h1 className="text-xl font-semibold">{CHURCH_NAME}</h1>
+          <h1 className="text-xl font-semibold">{branding.name}</h1>
           <p className="text-sm text-slate-500">{sentTo ? 'Choose a new password' : 'Reset your password'}</p>
         </div>
         {sentTo
