@@ -58,7 +58,13 @@ async function refreshAccess() {
   return refreshing
 }
 
+// View-only accounts (e.g. the demo) can't change anything; the API refuses too, this just answers sooner.
+export const VIEW_ONLY_MESSAGE = 'This is a view-only demo: you can look around, but changes are turned off.'
+let viewOnly = false
+export const setViewOnly = (value) => { viewOnly = Boolean(value) }
+
 export async function request(path, { method = 'GET', body, params, raw = false, auth = true } = {}) {
+  if (viewOnly && auth && method !== 'GET') throw new ApiError(403, { detail: VIEW_ONLY_MESSAGE })
   const url = new URL(`${API_URL}${path}`)
   Object.entries(params || {}).forEach(([k, v]) => {
     if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v)
