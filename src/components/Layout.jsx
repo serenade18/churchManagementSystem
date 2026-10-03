@@ -6,6 +6,7 @@ import { useAuth } from '../lib/auth'
 import Logo from './Logo'
 import { CHURCH_NAME } from '../lib/format'
 
+// Day-to-day church work; super admins only manage accounts and the system
 const NAV = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/members', label: 'Members', icon: Users },
@@ -31,7 +32,12 @@ export default function Layout() {
     window.addEventListener('cms:paybill-changed', loadPaybill)
     return () => window.removeEventListener('cms:paybill-changed', loadPaybill)
   }, [location.pathname])
-  const nav = [...(user?.is_superuser ? [{ to: '/super', label: 'System', icon: Gauge }] : []), ...NAV, ...(user?.is_superuser ? [{ to: '/users', label: 'Admin Users', icon: ShieldCheck }] : []), { to: '/settings', label: 'Settings', icon: Settings }]
+  const nav = [
+    ...(user?.is_superuser
+      ? [{ to: '/super', label: 'System', icon: Gauge }, { to: '/users', label: 'Admin Users', icon: ShieldCheck }]
+      : NAV),
+    { to: '/settings', label: 'Settings', icon: Settings },
+  ]
 
   const sidebar = (
     <div className="flex h-full flex-col bg-brand-900 text-brand-100">

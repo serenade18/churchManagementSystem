@@ -38,3 +38,20 @@ npm run build             # outputs to dist/
 Upload the contents of `dist/` to the web root of `cms.pceamilele.or.ke`. The included
 `.htaccess` routes every page to `index.html`, so links like `/members/12` work on Apache/cPanel.
 `VITE_*` variables are baked in at build time, so set `.env` **before** building.
+
+## End-to-end tests
+
+Playwright drives this app against the real Django API in `../pceaBackend`. The backend runs with
+`config.settings_e2e`: a throwaway SQLite database, fake SMS and M-PESA, and no outbound network.
+Nobody gets texted or charged.
+
+```bash
+npx playwright install chromium   # once
+npm run test:e2e                  # starts both servers, runs everything in e2e/
+npm run test:e2e:ui               # same, in Playwright's UI mode
+```
+
+- Set `BACKEND_DIR` if the backend isn't at `../pceaBackend`, and `BACKEND_PYTHON` if its virtualenv isn't `.venv`.
+- Set `E2E_BROWSER_PATH` to use an installed Chromium-based browser instead of Playwright's Chromium.
+- Each run resets the database to the seed data in `pceaBackend/apps/e2e/management/commands/e2e_seed.py`.
+- `e2e/api.spec.js` tests the backend's public M-PESA and auth endpoints over HTTP, the way Safaricom and the browser call them.
