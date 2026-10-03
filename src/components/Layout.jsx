@@ -90,7 +90,7 @@ export default function Layout() {
       <div className="lg:pl-64">
         <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
           <button onClick={() => setOpen(true)} aria-label="Open menu"><Menu className="h-6 w-6" /></button>
-          <Logo className="h-8" />
+          <Logo mark className="h-8" />
           <span className="font-semibold">{CHURCH_NAME}</span>
         </header>
         <main className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
