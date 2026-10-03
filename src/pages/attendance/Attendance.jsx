@@ -5,7 +5,7 @@ import { CalendarCheck, CalendarDays, MessageSquare, Plus, UserX, Users } from '
 import ServiceForm from '../../components/ServiceForm'
 import { Alert, PageHeader, Pagination, Select, StatCard, Table } from '../../components/ui'
 import { useApi, useOptions } from '../../lib/hooks'
-import { SERVICE_TYPES, date } from '../../lib/format'
+import { brandColor, SERVICE_TYPES, date } from '../../lib/format'
 
 const AXIS = { fontSize: 12, fill: '#64748b' }
 
@@ -65,8 +65,8 @@ export default function Attendance() {
                   <CartesianGrid vertical={false} stroke="#e2e8f0" />
                   <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={{ stroke: '#cbd5e1' }} />
                   <YAxis tick={AXIS} tickLine={false} axisLine={false} allowDecimals={false} width={40} />
-                  <Tooltip content={<TrendTooltip />} cursor={{ fill: '#eff4ff' }} />
-                  <Bar dataKey="total" fill="#2453d9" radius={[4, 4, 0, 0]} maxBarSize={36} />
+                  <Tooltip content={<TrendTooltip />} cursor={{ fill: brandColor(50) }} />
+                  <Bar dataKey="total" fill={brandColor(600)} radius={[4, 4, 0, 0]} maxBarSize={36} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
