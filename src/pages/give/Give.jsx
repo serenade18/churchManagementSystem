@@ -206,7 +206,7 @@ export default function Give() {
 /** Page frame shared by the give page and the PayPal return page. */
 export function GiveLayout({ children }) {
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-brand-900 via-brand-800 to-brand-700">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-ink via-ink to-brand-800">
       <header className="flex items-center justify-between px-4 py-4 text-white sm:px-8">
         <span className="flex items-center gap-3 font-semibold"><Logo tile className="h-11 w-11" /> {CHURCH_NAME}</span>
         <Link to="/" className="text-sm text-brand-100 hover:text-white">Admin login</Link>

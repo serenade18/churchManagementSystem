@@ -23,7 +23,7 @@ export default function Signup({ superadmin = false }) {
   if (user) return <Navigate to={homeFor(user)} replace />
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-900 to-brand-700 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-ink via-ink to-brand-800 p-4">
       <div className="card w-full max-w-lg p-8">
         <div className="mb-6 text-center">
           <Logo className="mx-auto mb-3 h-20" />

@@ -2,7 +2,7 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  /* JDO Africa: gold #EAB200, bronze #B2883E, red #dc3545 (https://jdo.africa).
+  /* JDO Africa: gold #EAB200, bronze #B2883E, red #dc3545, charcoal #343a40, grey #6c757d (https://jdo.africa).
      White text is unreadable on gold, so gold buttons carry dark text; text and links use 700+. */
   --color-brand-50: #fef8e6;
   --color-brand-100: #fcedbf;
@@ -13,6 +13,10 @@
   --color-brand-800: #5f4720;
   --color-brand-900: #3a2b14;
   --color-danger: #dc3545;
+  /* JDO greys: charcoal #343a40 for dark surfaces and body text, grey #6c757d for secondary text. */
+  --color-ink: #343a40;
+  --color-slate-800: #343a40;
+  --color-slate-500: #6c757d;
   --color-danger-dark: #b02a37;
 }
 

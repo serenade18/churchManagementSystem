@@ -41,7 +41,7 @@ export default function Layout() {
   ]
 
   const sidebar = (
-    <div className="flex h-full flex-col bg-brand-900 text-brand-100">
+    <div className="flex h-full flex-col bg-ink text-brand-100">
       <div className="flex items-center gap-3 px-5 py-5">
         <Logo tile className="h-12 w-12" />
         <div>
