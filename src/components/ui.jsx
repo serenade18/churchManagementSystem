@@ -114,7 +114,7 @@ export function ConfirmDialog({ open, title, message, onConfirm, onClose, busy }
 
 export function Alert({ children, tone = 'red' }) {
   if (!children) return null
-  const cls = tone === 'red' ? 'border-red-200 bg-red-50 text-red-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+  const cls = { red: 'border-red-200 bg-red-50 text-red-700', amber: 'border-amber-200 bg-amber-50 text-amber-800' }[tone] || 'border-emerald-200 bg-emerald-50 text-emerald-700'
   return <div className={`mb-4 rounded-lg border px-3 py-2 text-sm ${cls}`}>{children}</div>
 }
 

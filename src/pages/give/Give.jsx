@@ -4,9 +4,8 @@ import { CheckCircle2, Loader2, Smartphone, XCircle } from 'lucide-react'
 import Logo from '../../components/Logo'
 import { Alert, Field, Select } from '../../components/ui'
 import { request } from '../../lib/api'
-import { CHURCH_NAME, DONATION_TYPES, money } from '../../lib/format'
+import { CHURCH_NAME, money } from '../../lib/format'
 
-const PUBLIC_TYPES = Object.fromEntries(Object.entries(DONATION_TYPES).filter(([k]) => k !== 'other'))
 const POLL_MS = 4000
 const POLL_LIMIT = 30 // ~2 minutes
 
@@ -20,16 +19,24 @@ function normalisePhone(raw) {
 }
 
 export default function Give() {
-  const [form, setForm] = useState({ reference: '', phone: '', description: 'general', amount: '', project: '' })
+  const [form, setForm] = useState({ reference: '', phone: '', description: '', amount: '', project: '' })
   const [projects, setProjects] = useState([])
+  const [types, setTypes] = useState([])
   const [state, setState] = useState('form') // form | sending | waiting | success | failed
   const [message, setMessage] = useState('')
   const timer = useRef(null)
 
   useEffect(() => {
     request('/public/projects/', { auth: false }).then(setProjects).catch(() => {})
+    request('/donation-types/', { auth: false }).then((list) => {
+      setTypes(list)
+      const first = list.find((t) => t.is_default) || list[0]
+      if (first) setForm((f) => (f.description ? f : { ...f, description: String(first.id) }))
+    }).catch(() => {})
     return () => clearTimeout(timer.current)
   }, [])
+
+  const asksProject = types.find((t) => String(t.id) === String(form.description))?.asks_project
 
   const set = (key) => (e) => setForm({ ...form, [key]: e?.target ? e.target.value : e })
 
@@ -56,7 +63,8 @@ export default function Give() {
     e.preventDefault()
     const phone = normalisePhone(form.phone)
     if (!phone) return setMessage('Enter a valid Safaricom number, e.g. 0712 345 678.')
-    if (form.description === 'project' && !form.project) return setMessage('Please choose the project you are supporting.')
+    if (!form.description) return setMessage('Please choose what you are giving for.')
+    if (asksProject && !form.project) return setMessage('Please choose the project you are supporting.')
     setMessage('')
     setState('sending')
     try {
@@ -68,7 +76,7 @@ export default function Give() {
           amount: Math.round(Number(form.amount)),
           reference: form.reference.trim(),
           description: form.description,
-          project: form.description === 'project' ? form.project : undefined,
+          project: asksProject ? form.project : undefined,
         },
       })
       setState('waiting')
@@ -124,9 +132,9 @@ export default function Give() {
                   <input className="input" required inputMode="tel" placeholder="0712 345 678" value={form.phone} onChange={set('phone')} />
                 </Field>
                 <Field label="Giving towards">
-                  <Select value={form.description} onChange={set('description')} options={PUBLIC_TYPES} />
+                  <Select value={form.description} onChange={set('description')} options={types.map((t) => ({ value: t.id, label: t.name }))} placeholder={types.length ? undefined : 'Loading…'} />
                 </Field>
-                {form.description === 'project' && (
+                {asksProject && (
                   <Field label="Project">
                     <Select value={form.project} onChange={set('project')} options={projects.map((p) => ({ value: p.id, label: p.name }))} placeholder="Select a project" />
                   </Field>

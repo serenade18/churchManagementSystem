@@ -5,7 +5,7 @@ import MemberForm from '../../components/MemberForm'
 import { Alert, Badge, ConfirmDialog, Field, Modal, Pagination, Spinner, Table } from '../../components/ui'
 import { api } from '../../lib/api'
 import { useApi } from '../../lib/hooks'
-import { CHANNELS, DONATION_STATUS, DONATION_TYPES, GENDERS, MARITAL, MEMBER_STATUS, date, dateTime, money, today } from '../../lib/format'
+import { CHANNELS, DONATION_STATUS, GENDERS, MARITAL, MEMBER_STATUS, date, dateTime, money, today } from '../../lib/format'
 
 export default function MemberDetail() {
   const { id } = useParams()
@@ -101,7 +101,7 @@ export default function MemberDetail() {
         empty="No donations recorded for this member yet."
         columns={[
           { key: 'created_at', label: 'Date', render: (d) => dateTime(d.created_at) },
-          { key: 'donation_type', label: 'Type', render: (d) => DONATION_TYPES[d.donation_type] || d.donation_type },
+          { key: 'donation_type', label: 'Type', render: (d) => d.donation_type_name },
           { key: 'project_name', label: 'Project', render: (d) => d.project_name || '—' },
           { key: 'channel', label: 'Channel', render: (d) => CHANNELS[d.channel] },
           { key: 'receipt', label: 'Receipt / Ref', render: (d) => d.receipt || '—' },

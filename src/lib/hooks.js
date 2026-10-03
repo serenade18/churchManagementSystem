@@ -35,6 +35,13 @@ export function useDebounced(value, delay = 350) {
   return debounced
 }
 
+/** Donation types (admin-managed, each with its Paybill code) as select options. */
+export function useDonationTypes({ includeInactive = false } = {}) {
+  const types = useOptions('/cms/donation-codes/')
+  const shown = includeInactive ? types : types.filter((t) => t.is_active)
+  return { types, options: shown.map((t) => ({ value: t.id, label: t.name })), defaultId: types.find((t) => t.is_default)?.id || '' }
+}
+
 /** Branch / project options for select inputs (fetched once, all pages). */
 export function useOptions(path) {
   const { data } = useApi(path, { page_size: 500 })

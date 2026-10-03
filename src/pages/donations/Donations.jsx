@@ -3,14 +3,15 @@ import { Download, Plus, Printer, Search, Trash2 } from 'lucide-react'
 import DonationForm, { ReceiptSmsBadge } from '../../components/DonationForm'
 import { Alert, Badge, ConfirmDialog, PageHeader, Pagination, Select, StatCard, Table } from '../../components/ui'
 import { api, downloadCsv } from '../../lib/api'
-import { useApi, useDebounced, useOptions } from '../../lib/hooks'
-import { CHANNELS, DONATION_STATUS, DONATION_TYPES, MPESA_CHANNELS, dateTime, money } from '../../lib/format'
+import { useApi, useDebounced, useDonationTypes, useOptions } from '../../lib/hooks'
+import { CHANNELS, DONATION_STATUS, MPESA_CHANNELS, dateTime, money } from '../../lib/format'
 
 const EMPTY_FILTERS = { status: '', channel: '', donation_type: '', branch: '', project: '', date_from: '', date_to: '' }
 
 export default function Donations() {
   const branches = useOptions('/cms/branches/')
   const projects = useOptions('/cms/projects/')
+  const { options: typeOptions } = useDonationTypes({ includeInactive: true })
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState(EMPTY_FILTERS)
   const [page, setPage] = useState(1)
@@ -40,7 +41,7 @@ export default function Donations() {
       <div><p className="font-medium text-slate-900">{d.member_name || d.membership_number || 'Anonymous'}</p>
         <p className="text-xs text-slate-500">{d.member_name ? d.membership_number : d.phone_number}</p></div>
     ) },
-    { key: 'donation_type', label: 'Type', render: (d) => <>{DONATION_TYPES[d.donation_type] || d.donation_type}{d.project_name && <p className="text-xs text-slate-500">{d.project_name}</p>}</> },
+    { key: 'donation_type', label: 'Type', render: (d) => <>{d.donation_type_name}{d.project_name && <p className="text-xs text-slate-500">{d.project_name}</p>}</> },
     { key: 'branch_name', label: 'Branch', render: (d) => d.branch_name || '—' },
     { key: 'channel', label: 'Channel', render: (d) => <>{CHANNELS[d.channel]}{d.receipt && <p className="font-mono text-xs text-slate-500">{d.receipt}</p>}</> },
     { key: 'status', label: 'Status', render: (d) => <Badge status={d.status}>{DONATION_STATUS[d.status]}</Badge> },
@@ -76,7 +77,7 @@ export default function Donations() {
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <StatCard label="Total received (filtered)" value={money(s?.total)} hint={`${s?.count ?? 0} successful donation${s?.count === 1 ? '' : 's'}`} />
-        <StatCard label="Top type" value={s?.by_type?.[0] ? DONATION_TYPES[s.by_type[0].donation_type] : '—'} hint={s?.by_type?.[0] && money(s.by_type[0].total)} />
+        <StatCard label="Top type" value={s?.by_type?.[0]?.name || '—'} hint={s?.by_type?.[0] && money(s.by_type[0].total)} />
         <StatCard label="By channel" value={s?.by_channel?.[0] ? CHANNELS[s.by_channel[0].channel] : '—'}
           hint={s?.by_channel?.map((c) => `${CHANNELS[c.channel]} ${money(c.total)}`).join(' · ')} />
       </div>
@@ -88,7 +89,7 @@ export default function Donations() {
         </div>
         <input className="input" type="date" value={filters.date_from} onChange={(e) => setFilter('date_from')(e.target.value)} aria-label="From date" />
         <input className="input" type="date" value={filters.date_to} onChange={(e) => setFilter('date_to')(e.target.value)} aria-label="To date" />
-        <Select value={filters.donation_type} onChange={setFilter('donation_type')} options={DONATION_TYPES} placeholder="All types" />
+        <Select value={filters.donation_type} onChange={setFilter('donation_type')} options={typeOptions} placeholder="All types" />
         <Select value={filters.status} onChange={setFilter('status')} options={DONATION_STATUS} placeholder="All statuses" />
         <Select value={filters.channel} onChange={setFilter('channel')} options={CHANNELS} placeholder="All channels" />
         <Select value={filters.branch} onChange={setFilter('branch')} options={branches.map((b) => ({ value: b.id, label: b.name }))} placeholder="All branches" />

@@ -3,7 +3,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { Building2, CalendarDays, FolderKanban, HandCoins, Users } from 'lucide-react'
 import { Alert, Badge, PageHeader, Progress, Spinner, StatCard } from '../../components/ui'
 import { useApi } from '../../lib/hooks'
-import { CHANNELS, DONATION_STATUS, DONATION_TYPES, compactMoney, date, dateTime, money } from '../../lib/format'
+import { CHANNELS, DONATION_STATUS, compactMoney, date, dateTime, money } from '../../lib/format'
 
 const BAR = '#2453d9'
 const AXIS = { fontSize: 12, fill: '#64748b' }
@@ -30,7 +30,7 @@ export default function Dashboard() {
   if (error) return <Alert>{error.message}</Alert>
 
   const trend = data.trend.map((t) => ({ month: monthLabel(t.month), total: Number(t.total) }))
-  const byType = data.by_type.map((t) => ({ type: DONATION_TYPES[t.donation_type] || t.donation_type, total: Number(t.total) }))
+  const byType = data.by_type.map((t) => ({ type: t.name || 'Unspecified', total: Number(t.total) }))
 
   return (
     <>
@@ -92,7 +92,7 @@ export default function Dashboard() {
               <li key={d.id} className="flex items-center justify-between gap-4 px-5 py-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{d.member_name || d.membership_number || d.phone_number || 'Anonymous'}</p>
-                  <p className="text-xs text-slate-500">{DONATION_TYPES[d.donation_type] || d.donation_type} · {CHANNELS[d.channel]} · {dateTime(d.created_at)}</p>
+                  <p className="text-xs text-slate-500">{d.donation_type_name} · {CHANNELS[d.channel]} · {dateTime(d.created_at)}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold">{money(d.amount)}</p>

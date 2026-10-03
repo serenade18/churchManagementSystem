@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { AlertTriangle, CheckCircle2, Pencil, Plus, Search, Smartphone } from 'lucide-react'
+import { AlertTriangle, Search, Smartphone, Tags } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import MemberPicker from '../../components/MemberPicker'
 import Reconcile from '../../components/Reconcile'
 import { Alert, Badge, Field, Modal, PageHeader, Pagination, Select, Table } from '../../components/ui'
 import { api } from '../../lib/api'
 import { useApi, useDebounced, useOptions } from '../../lib/hooks'
-import { DONATION_TYPES, PAYBILL_NUMBER, dateTime, money } from '../../lib/format'
+import { PAYBILL_NUMBER, dateTime, money } from '../../lib/format'
 import { clean, useForm } from '../../lib/useForm'
 
 const STATUS = { unallocated: ['amber', 'Unallocated'], allocated: ['green', 'Allocated'], ignored: ['slate', 'Ignored'] }
@@ -30,53 +31,20 @@ function HowToGive({ codes }) {
   )
 }
 
-function CodeForm({ code, onClose, onSaved }) {
-  const projects = useOptions('/cms/projects/')
-  const branches = useOptions('/cms/branches/')
-  const { values, set, errors, error, busy, submit } = useForm({
-    code: code?.code || '', name: code?.name || '', donation_type: code?.donation_type || 'general',
-    project: code?.project || '', branch: code?.branch || '', is_active: code?.is_active ?? true,
-  })
-  const save = async (e) => {
-    e.preventDefault()
-    const payload = clean(values)
-    const saved = await submit(() => (code ? api.patch(`/cms/donation-codes/${code.id}/`, payload) : api.post('/cms/donation-codes/', payload))).catch(() => null)
-    if (saved) onSaved()
-  }
-  return (
-    <Modal open onClose={onClose} title={code ? 'Edit donation code' : 'New donation code'}
-      footer={<><button className="btn-secondary" onClick={onClose}>Cancel</button><button className="btn-primary" form="code-form" disabled={busy}>{busy ? 'Saving…' : 'Save'}</button></>}>
-      <Alert>{error}</Alert>
-      <form id="code-form" onSubmit={save} className="grid gap-4 sm:grid-cols-2">
-        <Field label="Code *" error={errors.code} hint="2-6 letters/digits, ideally 3. Avoid O and I: they look like 0 and 1 (the system treats them as the same).">
-          <input className="input font-mono uppercase" required maxLength={6} value={values.code} onChange={(e) => set('code')(e.target.value.toUpperCase())} placeholder="SCP" />
-        </Field>
-        <Field label="Name *" error={errors.name}><input className="input" required value={values.name} onChange={set('name')} placeholder="Sanctuary Construction Project" /></Field>
-        <Field label="Donation type" error={errors.donation_type}><Select value={values.donation_type} onChange={set('donation_type')} options={DONATION_TYPES} /></Field>
-        <Field label="Project" error={errors.project}><Select value={values.project} onChange={set('project')} options={projects.map((p) => ({ value: p.id, label: p.name }))} placeholder="— None —" /></Field>
-        <Field label="Branch" error={errors.branch} hint="Leave empty to credit the giver's own branch.">
-          <Select value={values.branch} onChange={set('branch')} options={branches.map((b) => ({ value: b.id, label: b.name }))} placeholder="Giver's branch" />
-        </Field>
-        <label className="flex items-center gap-2 self-end pb-2 text-sm"><input type="checkbox" checked={values.is_active} onChange={set('is_active')} /> Active</label>
-      </form>
-    </Modal>
-  )
-}
-
 function AllocateModal({ payment, codes, onClose, onDone }) {
   const projects = useOptions('/cms/projects/')
   const [mode, setMode] = useState(payment.parsed_member ? 'member' : payment.parsed_phone ? 'phone' : 'member')
   const [member, setMember] = useState(payment.parsed_member ? { id: payment.parsed_member, full_name: payment.parsed_member_name, membership_number: '' } : null)
   const { values, set, error, busy, submit } = useForm({
     phone_number: payment.parsed_phone ? `0${payment.parsed_phone.slice(3)}` : '',
-    code: payment.parsed_code || '', donation_type: 'general', project: '', send_receipt: true,
+    code: payment.parsed_code || codes.find((c) => c.is_default)?.id || '', project: '', send_receipt: true,
   })
   const save = async () => {
     const body = { send_receipt: values.send_receipt }
     if (mode === 'member' && member) body.member = member.id
     if (mode === 'phone' && values.phone_number) body.phone_number = values.phone_number
     if (values.code) body.code = Number(values.code)
-    else { body.donation_type = values.donation_type; if (values.project) body.project = Number(values.project) }
+    if (values.project) body.project = Number(values.project)
     const done = await submit(() => api.post(`/cms/paybill-payments/${payment.id}/allocate/`, body)).catch(() => null)
     if (done) onDone()
   }
@@ -89,7 +57,7 @@ function AllocateModal({ payment, codes, onClose, onDone }) {
       footer={<>
         <button className="btn-secondary mr-auto text-slate-500" onClick={ignore} disabled={busy}>Set aside (not a donation)</button>
         <button className="btn-secondary" onClick={onClose}>Cancel</button>
-        <button className="btn-primary" onClick={save} disabled={busy || (mode === 'member' && !member) || (mode === 'phone' && !values.phone_number)}>{busy ? 'Saving…' : 'Allocate'}</button>
+        <button className="btn-primary" onClick={save} disabled={busy || !values.code || (mode === 'member' && !member) || (mode === 'phone' && !values.phone_number)}>{busy ? 'Saving…' : 'Allocate'}</button>
       </>}>
       <Alert>{error}</Alert>
       <div className="mb-4 grid gap-3 rounded-lg bg-slate-50 p-4 text-sm sm:grid-cols-4">
@@ -114,11 +82,10 @@ function AllocateModal({ payment, codes, onClose, onDone }) {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Donation code"><Select value={values.code} onChange={set('code')} options={codes.map((c) => ({ value: c.id, label: `${c.code} · ${c.name}` }))} placeholder="— Choose type instead —" /></Field>
-        {!values.code && <>
-          <Field label="Type"><Select value={values.donation_type} onChange={set('donation_type')} options={DONATION_TYPES} /></Field>
-          <Field label="Project"><Select value={values.project} onChange={set('project')} options={projects.map((p) => ({ value: p.id, label: p.name }))} placeholder="— None —" /></Field>
-        </>}
+        <Field label="Donation type"><Select value={values.code} onChange={set('code')} options={codes.map((c) => ({ value: c.id, label: `${c.name} (${c.code})` }))} placeholder="— Choose —" /></Field>
+        <Field label="Project" hint="Only if different from the type's own project.">
+          <Select value={values.project} onChange={set('project')} options={projects.map((p) => ({ value: p.id, label: p.name }))} placeholder="— None —" />
+        </Field>
       </div>
       <label className="mt-4 flex items-center gap-2 text-sm"><input type="checkbox" checked={values.send_receipt} onChange={set('send_receipt')} /> Send SMS receipt to the giver</label>
     </Modal>
@@ -131,7 +98,6 @@ export default function Paybill() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [allocating, setAllocating] = useState(null)
-  const [editingCode, setEditingCode] = useState(null)
   const [notice, setNotice] = useState('')
   const payments = useApi('/cms/paybill-payments/', { status, search: useDebounced(search), page })
   const codes = useApi('/cms/donation-codes/', { page_size: 500 })
@@ -139,12 +105,12 @@ export default function Paybill() {
 
   return (
     <>
-      <PageHeader title="Paybill" subtitle="Payments made straight to the Paybill, and the donation codes givers use."
-        actions={tab === 'codes' && <button className="btn-primary" onClick={() => setEditingCode('new')}><Plus className="h-4 w-4" /> New code</button>} />
+      <PageHeader title="Paybill" subtitle="Payments made straight to the Paybill."
+        actions={<Link to="/donation-types" className="btn-secondary"><Tags className="h-4 w-4" /> Donation types &amp; codes</Link>} />
       <HowToGive codes={codeList} />
 
       <div className="mb-4 flex gap-1 border-b border-slate-200">
-        {[['payments', 'Payments'], ['codes', 'Donation codes'], ['reconcile', 'Reconcile statement']].map(([k, label]) => (
+        {[['payments', 'Payments'], ['reconcile', 'Reconcile statement']].map(([k, label]) => (
           <button key={k} onClick={() => setTab(k)}
             className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${tab === k ? 'border-brand-700 text-brand-800' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>{label}</button>
         ))}
@@ -154,7 +120,7 @@ export default function Paybill() {
 
       {tab === 'reconcile' ? (
         <Reconcile onImported={() => { payments.reload(); codes.reload(); window.dispatchEvent(new Event('cms:paybill-changed')) }} />
-      ) : tab === 'payments' ? (
+      ) : (
         <>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row">
             <div className="w-48"><Select value={status} onChange={(v) => { setStatus(v); setPage(1) }} options={{ unallocated: 'Unallocated', allocated: 'Allocated', ignored: 'Set aside' }} placeholder="All payments" /></div>
@@ -173,7 +139,7 @@ export default function Paybill() {
               { key: 'account', label: 'Account typed', render: (p) => <span className="font-mono">{p.account || '(blank)'}</span> },
               { key: 'allocation', label: 'Allocation', className: 'whitespace-normal', render: (p) => p.donation_summary ? (
                 <span className="text-sm">{p.donation_summary.member_name || (p.parsed_phone ? `Visitor ${p.parsed_phone}` : 'Anonymous')}
-                  <span className="text-slate-500"> · {p.donation_summary.project_name || DONATION_TYPES[p.donation_summary.donation_type]}</span></span>
+                  <span className="text-slate-500"> · {p.donation_summary.donation_type_name}{p.donation_summary.project_name && ` · ${p.donation_summary.project_name}`}</span></span>
               ) : <span className="text-xs text-amber-700">{p.reason}</span> },
               { key: 'checks', label: 'Status', render: (p) => (
                 <div className="flex flex-col items-start gap-1">
@@ -186,22 +152,10 @@ export default function Paybill() {
             ]} />
           <Pagination page={page} count={payments.data?.count} onChange={setPage} />
         </>
-      ) : (
-        <Table loading={codes.loading} rows={codeList} onRowClick={setEditingCode} empty="No donation codes yet. Create one for each purpose, e.g. TTH for Tithe."
-          columns={[
-            { key: 'code', label: 'Code', render: (c) => <span className="rounded bg-slate-100 px-2 py-0.5 font-mono font-semibold">{c.code}</span> },
-            { key: 'name', label: 'Name', render: (c) => <span className="font-medium text-slate-900">{c.name}</span> },
-            { key: 'donation_type', label: 'Allocates to', render: (c) => <>{DONATION_TYPES[c.donation_type]}{c.project_name && <span className="text-slate-500"> · {c.project_name}</span>}{c.branch_name && <span className="text-slate-500"> · {c.branch_name}</span>}</> },
-            { key: 'example', label: 'Account example', render: (c) => <span className="font-mono text-xs text-slate-500">0712345678{c.code}</span> },
-            { key: 'total_received', label: 'Received via Paybill', className: 'text-right', render: (c) => <>{money(c.total_received)} <span className="text-xs text-slate-400">({c.payment_count})</span></> },
-            { key: 'is_active', label: '', render: (c) => c.is_active ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> : <Badge>Inactive</Badge> },
-            { key: 'edit', label: '', render: () => <Pencil className="h-4 w-4 text-slate-400" /> },
-          ]} />
       )}
 
       {allocating && <AllocateModal payment={allocating} codes={codeList.filter((c) => c.is_active)} onClose={() => setAllocating(null)}
         onDone={() => { setAllocating(null); setNotice('Payment updated.'); payments.reload(); codes.reload(); window.dispatchEvent(new Event('cms:paybill-changed')) }} />}
-      {editingCode && <CodeForm code={editingCode === 'new' ? null : editingCode} onClose={() => setEditingCode(null)} onSaved={() => { setEditingCode(null); codes.reload() }} />}
     </>
   )
 }
