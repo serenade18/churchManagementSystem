@@ -8,6 +8,7 @@ import Donations from './pages/donations/Donations'
 import DonationTypes from './pages/donations/DonationTypes'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import Give from './pages/give/Give'
+import PaypalReturn from './pages/give/PaypalReturn'
 import Login from './pages/auth/Login'
 import MemberDetail from './pages/members/MemberDetail'
 import Members from './pages/members/Members'
@@ -47,6 +48,7 @@ export default function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/signup/superadmin" element={<Signup superadmin />} />
           <Route path="/give" element={<Give />} />
+          <Route path="/give/paypal" element={<PaypalReturn />} />
           {/* Printable pages: no sidebar */}
           <Route path="/print/receipt/:id" element={<RequireAuth><ReceiptPrint /></RequireAuth>} />
           <Route path="/print/statement/:id" element={<RequireAuth><StatementPrint /></RequireAuth>} />

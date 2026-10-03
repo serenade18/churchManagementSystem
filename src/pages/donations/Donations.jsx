@@ -4,7 +4,7 @@ import DonationForm, { ReceiptSmsBadge } from '../../components/DonationForm'
 import { Alert, Badge, ConfirmDialog, PageHeader, Pagination, Select, StatCard, Table } from '../../components/ui'
 import { api, downloadCsv } from '../../lib/api'
 import { useApi, useDebounced, useDonationTypes, useOptions } from '../../lib/hooks'
-import { CHANNELS, DONATION_STATUS, MPESA_CHANNELS, dateTime, money } from '../../lib/format'
+import { CHANNELS, DONATION_STATUS, PROVIDER_CHANNELS, currencyMoney, dateTime, money } from '../../lib/format'
 
 const EMPTY_FILTERS = { status: '', channel: '', donation_type: '', branch: '', project: '', allocation: '', date_from: '', date_to: '' }
 
@@ -41,7 +41,7 @@ export default function Donations() {
       d.unallocated ? (
         <div><Badge tone="amber">Unallocated</Badge><p className="mt-1 text-xs text-slate-500">Giver not yet known</p></div>
       ) : (
-        <div><p className="font-medium text-slate-900">{d.member_name || d.membership_number || 'Anonymous'}</p>
+        <div><p className="font-medium text-slate-900">{d.member_name || d.giver_name || d.membership_number || 'Anonymous'}</p>
           <p className="text-xs text-slate-500">{d.member_name ? d.membership_number : d.phone_number}</p></div>
       )
     ) },
@@ -50,7 +50,9 @@ export default function Donations() {
     { key: 'channel', label: 'Channel', render: (d) => <>{CHANNELS[d.channel]}{d.receipt && <p className="font-mono text-xs text-slate-500">{d.receipt}</p>}</> },
     { key: 'status', label: 'Status', render: (d) => <Badge status={d.status}>{DONATION_STATUS[d.status]}</Badge> },
     { key: 'receipt_sms_status', label: 'SMS', render: (d) => d.status === 'success' ? <ReceiptSmsBadge donation={d} /> : '—' },
-    { key: 'amount', label: 'Amount', className: 'text-right font-medium', render: (d) => money(d.amount) },
+    { key: 'amount', label: 'Amount', className: 'text-right font-medium', render: (d) => (
+      <>{money(d.amount)}{d.currency !== 'KES' && d.amount_original && <p className="text-xs font-normal text-slate-500">{currencyMoney(d.amount_original, d.currency)}</p>}</>
+    ) },
     { key: 'actions', label: '', render: (d) => (
       <div className="flex justify-end gap-1">
         {d.status === 'success' && (
@@ -59,7 +61,7 @@ export default function Donations() {
             <Printer className="h-4 w-4" />
           </a>
         )}
-        {!MPESA_CHANNELS.includes(d.channel) && (
+        {!PROVIDER_CHANNELS.includes(d.channel) && (
           <button className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600" aria-label="Delete donation"
             onClick={(e) => { e.stopPropagation(); setDeleting(d) }}><Trash2 className="h-4 w-4" /></button>
         )}
