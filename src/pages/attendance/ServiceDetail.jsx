@@ -86,7 +86,7 @@ export default function ServiceDetail() {
           <div>
             <h1 className="text-xl font-semibold">{service.name}</h1>
             <p className="text-sm text-slate-500">
-              {SERVICE_TYPES[service.service_type]} · {date(service.date)}{service.start_time && ` · ${service.start_time.slice(0, 5)}`} · {service.branch_name || 'Organisation-wide'}
+              {SERVICE_TYPES[service.service_type]} · {date(service.date)}{service.start_time && ` · ${service.start_time.slice(0, 5)}`} · {service.branch_name || 'Church-wide'}
             </p>
             {service.notes && <p className="mt-2 text-sm text-slate-600">{service.notes}</p>}
           </div>

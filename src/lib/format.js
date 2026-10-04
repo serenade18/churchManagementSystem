@@ -1,3 +1,4 @@
+import { BRAND } from '../brand'
 
 const kes = new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 })
 export const money = (value) => kes.format(Number(value || 0))
@@ -18,8 +19,7 @@ export const today = () => new Date().toISOString().slice(0, 10)
 export const CHANNELS = { mpesa: 'M-PESA', paybill: 'M-PESA Paybill', paypal: 'PayPal', cash: 'Cash', bank: 'Bank', cheque: 'Cheque' }
 // Donations confirmed by M-PESA or PayPal can't be edited (amount/status) or deleted.
 export const PROVIDER_CHANNELS = ['mpesa', 'paybill', 'paypal']
-// Each organisation's own Paybill: never fall back to another's number.
-export const PAYBILL_NUMBER = import.meta.env.VITE_PAYBILL_NUMBER || '(Paybill not set)'
+export const PAYBILL_NUMBER = BRAND.paybill
 export const DONATION_STATUS = { success: 'Success', pending: 'Pending', failed: 'Failed' }
 export const MEMBER_STATUS = { active: 'Active', inactive: 'Inactive', transferred: 'Transferred', deceased: 'Deceased' }
 export const GENDERS = { male: 'Male', female: 'Female' }

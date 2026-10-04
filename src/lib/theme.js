@@ -5,13 +5,9 @@
  */
 import { API_URL } from './api'
 import { setDemoContext } from './demo'
+import { BRAND } from '../brand'
 
-const DEFAULTS = {
-  name: import.meta.env.VITE_CHURCH_NAME || 'JDO Africa',
-  tagline: 'Donor Management',
-  logo: '/logo.png',
-  logoMark: '/logo-mark.png',
-}
+const DEFAULTS = { name: BRAND.name, tagline: BRAND.tagline, logo: BRAND.logo, logoMark: BRAND.logoMark }
 
 // Current branding; read at render time (set once at startup, then the page reloads after edits).
 export const branding = { ...DEFAULTS }
@@ -70,7 +66,7 @@ export function applyTheme(primary, sidebar, root = document.documentElement) {
 
 /** A colour from the live palette (charts need real values, not classes). */
 export const brandColor = (shade = 600) =>
-  getComputedStyle(document.documentElement).getPropertyValue(`--color-brand-${shade}`).trim() || '#b2883e'
+  getComputedStyle(document.documentElement).getPropertyValue(`--color-brand-${shade}`).trim() || BRAND.chart
 
 // --- loading ------------------------------------------------------------------------------------
 
