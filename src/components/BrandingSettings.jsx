@@ -4,9 +4,10 @@ import { Alert, Field } from './ui'
 import { api, request } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { assetUrl, branding, isHex, sidebarAdjusted, themeTokens } from '../lib/theme'
+import { BRAND } from '../brand'
 
-const DEFAULT_PRIMARY = '#eab200'
-const DEFAULT_SIDEBAR = '#343a40'
+const DEFAULT_PRIMARY = BRAND.primary
+const DEFAULT_SIDEBAR = BRAND.sidebar
 
 function ColorField({ label, value, onChange, fallback, hint }) {
   const shown = isHex(value) ? value : fallback
@@ -106,7 +107,7 @@ export default function BrandingSettings() {
               <input className="input" maxLength={150} placeholder={current.name} value={values.name} onChange={(e) => set('name')(e.target.value)} />
             </Field>
             <Field label="Tagline" error={errors.tagline} hint="Under the name in the sidebar.">
-              <input className="input" maxLength={100} placeholder="Donor Management" value={values.tagline} onChange={(e) => set('tagline')(e.target.value)} />
+              <input className="input" maxLength={100} placeholder={BRAND.tagline} value={values.tagline} onChange={(e) => set('tagline')(e.target.value)} />
             </Field>
             <ColorField label="Main colour" value={values.primary_color} onChange={set('primary_color')} fallback={DEFAULT_PRIMARY}
               hint={errors.primary_color || 'Buttons, highlights and charts.'} />
@@ -129,7 +130,7 @@ export default function BrandingSettings() {
                 <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white p-1"><img src={previewMark} alt="" className="h-full w-auto object-contain" /></span>
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-white">{previewName}</p>
-                  <p className="truncate text-xs text-brand-200">{values.tagline.trim() || 'Donor Management'}</p>
+                  <p className="truncate text-xs text-brand-200">{values.tagline.trim() || BRAND.tagline}</p>
                 </div>
               </div>
               <div className="space-y-3 bg-white p-4 text-sm">

@@ -28,8 +28,8 @@ function ProjectForm({ project, onClose, onSaved }) {
         <Field label="Description" error={errors.description} className="sm:col-span-2"><textarea className="input" rows={3} value={values.description} onChange={set('description')} /></Field>
         <Field label="Fundraising target (KES)" error={errors.target_amount}><input className="input" type="number" min="0" step="1" value={values.target_amount} onChange={set('target_amount')} /></Field>
         <Field label="Status" error={errors.status}><Select value={values.status} onChange={set('status')} options={PROJECT_STATUS} /></Field>
-        <Field label="Branch" error={errors.branch} hint="Leave empty for an organisation-wide project.">
-          <Select value={values.branch} onChange={set('branch')} options={branches.map((b) => ({ value: b.id, label: b.name }))} placeholder="Organisation-wide" />
+        <Field label="Branch" error={errors.branch} hint="Leave empty for a church-wide project.">
+          <Select value={values.branch} onChange={set('branch')} options={branches.map((b) => ({ value: b.id, label: b.name }))} placeholder="Church-wide" />
         </Field>
         <div />
         <Field label="Start date" error={errors.start_date}><input className="input" type="date" value={values.start_date} onChange={set('start_date')} /></Field>
@@ -53,7 +53,7 @@ export default function Projects() {
 
   return (
     <>
-      <PageHeader title="Projects" subtitle="Track projects and how much has been raised for each."
+      <PageHeader title="Projects" subtitle="Track church projects and how much has been raised for each."
         actions={<>
           <div className="w-44"><Select value={status} onChange={setStatus} options={PROJECT_STATUS} placeholder="All statuses" /></div>
           <button className="btn-primary" onClick={() => setEditing('new')}><Plus className="h-4 w-4" /> New project</button>
@@ -71,7 +71,7 @@ export default function Projects() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h3 className="font-semibold text-slate-900">{p.name}</h3>
-                    <p className="text-xs text-slate-500">{p.branch_name || 'Organisation-wide'}</p>
+                    <p className="text-xs text-slate-500">{p.branch_name || 'Church-wide'}</p>
                   </div>
                   <Badge status={p.status}>{PROJECT_STATUS[p.status]}</Badge>
                 </div>
