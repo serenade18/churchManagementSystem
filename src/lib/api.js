@@ -1,3 +1,4 @@
+import { demoRequest, isDemo } from './demo'
 export const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/$/, '')
 
 const ACCESS = 'cms.access'
@@ -64,6 +65,16 @@ let viewOnly = false
 export const setViewOnly = (value) => { viewOnly = Boolean(value) }
 
 export async function request(path, { method = 'GET', body, params, raw = false, auth = true } = {}) {
+  // Demo: admin requests are answered from built-in sample data, never the server.
+  if (auth && isDemo()) {
+    await new Promise((resolve) => setTimeout(resolve, 120))
+    try {
+      const data = demoRequest(path, { method, params, body })
+      return data instanceof Response && !raw ? data.text() : data
+    } catch (e) {
+      throw new ApiError(e.status || 400, { detail: e.message })
+    }
+  }
   if (viewOnly && auth && method !== 'GET') throw new ApiError(403, { detail: VIEW_ONLY_MESSAGE })
   const url = new URL(`${API_URL}${path}`)
   Object.entries(params || {}).forEach(([k, v]) => {

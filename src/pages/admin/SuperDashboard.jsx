@@ -1,9 +1,47 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { AlertTriangle, CheckCircle2, LogIn, ShieldCheck, UserCheck, Users, XCircle } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, LogIn, MonitorPlay, ShieldCheck, UserCheck, Users, XCircle } from 'lucide-react'
 import { Alert, Badge, PageHeader, Spinner, StatCard, Table } from '../../components/ui'
 import { useAuth } from '../../lib/auth'
+import { api } from '../../lib/api'
 import { useApi } from '../../lib/hooks'
+import { branding } from '../../lib/theme'
 import { date, dateTime } from '../../lib/format'
+
+/** Super admins offer (or stop offering) "Explore the demo" on the sign-in page. */
+function DemoSwitch() {
+  const [enabled, setEnabled] = useState(Boolean(branding.raw?.demo_enabled))
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const toggle = async () => {
+    setBusy(true)
+    setError('')
+    try {
+      const res = await api.patch('/cms/demo/', { enabled: !enabled })
+      setEnabled(res.demo_enabled)
+      if (branding.raw) branding.raw.demo_enabled = res.demo_enabled
+    } catch (e) {
+      setError(e.message)
+    }
+    setBusy(false)
+  }
+  return (
+    <div className="card mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700"><MonitorPlay /></span>
+      <div className="flex-1 text-sm">
+        <p className="font-semibold text-slate-900">Demo mode <Badge tone={enabled ? 'green' : 'slate'}>{enabled ? 'On' : 'Off'}</Badge></p>
+        <p className="mt-1 text-slate-600">
+          When on, the sign-in page offers "Explore the demo": visitors see the whole app filled with built-in sample data,
+          view only. It runs in their browser and never shows or changes your real members and giving.
+        </p>
+        {error && <p className="mt-1 text-red-600">{error}</p>}
+      </div>
+      <button className={enabled ? 'btn-secondary' : 'btn-primary'} onClick={toggle} disabled={busy}>
+        {busy ? 'Saving…' : enabled ? 'Turn demo off' : 'Turn demo on'}
+      </button>
+    </div>
+  )
+}
 
 const CHECK = {
   ok: [CheckCircle2, 'text-emerald-600', 'green', 'OK'],
@@ -54,6 +92,8 @@ export default function SuperDashboard() {
         <StatCard icon={UserCheck} label="New signups (30 days)" value={a.signups_30d} hint={`${a.unverified} not verified`} />
         <StatCard icon={problems ? AlertTriangle : ShieldCheck} label="System checks" value={problems ? `${problems} to review` : 'All good'} hint={`${d.checks.length} checks`} />
       </div>
+
+      <DemoSwitch />
 
       <div className="mt-6 grid gap-6 xl:grid-cols-3">
         <Panel title="System status" className="xl:col-span-2">
