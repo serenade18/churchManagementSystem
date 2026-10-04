@@ -4,6 +4,7 @@
  * that index.css uses, with text colours picked for readability.
  */
 import { API_URL } from './api'
+import { setDemoContext } from './demo'
 
 const DEFAULTS = {
   name: import.meta.env.VITE_CHURCH_NAME || 'JDO Africa',
@@ -81,6 +82,7 @@ function apply(data) {
   branding.logo = assetUrl(data.logo_url) || DEFAULTS.logo
   branding.logoMark = assetUrl(data.logo_mark_url) || assetUrl(data.logo_url) || DEFAULTS.logoMark
   branding.raw = data
+  setDemoContext(branding.name, data)
   applyTheme(data.primary_color, data.sidebar_color)
   document.title = `${branding.name} - ${branding.tagline}`
   document.querySelectorAll("link[rel='icon'], link[rel='apple-touch-icon']").forEach((link) => {

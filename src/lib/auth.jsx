@@ -1,11 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { api, request, setViewOnly, tokens } from './api'
+import { endDemo, isDemo, startDemo } from './demo'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(Boolean(tokens.access || tokens.refresh))
+  const [loading, setLoading] = useState(Boolean(tokens.access || tokens.refresh || isDemo()))
 
   const loadUser = useCallback(async () => {
     try {
@@ -22,21 +23,23 @@ export function AuthProvider({ children }) {
   }, [])
 
   useEffect(() => {
-    if (tokens.access || tokens.refresh) loadUser()
+    if (tokens.access || tokens.refresh || isDemo()) loadUser()
     const onLogout = () => setUser(null)
     window.addEventListener('cms:logout', onLogout)
     return () => window.removeEventListener('cms:logout', onLogout)
   }, [loadUser])
 
   const login = async (username, password) => {
+    endDemo() // a real sign-in leaves the demo
     const data = await request('/auth/login/', { method: 'POST', body: { username, password }, auth: false })
     tokens.set(data)
     await loadUser()
   }
 
-  // Demo sites: sign in to the view-only demo account.
+  // Demo mode (switched on by a super admin): the app on built-in sample data, view only.
   const demoLogin = async () => {
-    tokens.set(await request('/auth/demo/', { method: 'POST', auth: false }))
+    tokens.clear()
+    startDemo()
     await loadUser()
   }
 
@@ -48,6 +51,7 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     tokens.clear()
+    endDemo()
     setViewOnly(false)
     setUser(null)
   }

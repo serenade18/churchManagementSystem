@@ -110,7 +110,7 @@ export default function Paybill() {
       <HowToGive codes={codeList} />
 
       <div className="mb-4 flex gap-1 border-b border-slate-200">
-        {[['payments', 'Payments'], ['reconcile', 'Reconcile statement']].map(([k, label]) => (
+        {[['payments', 'Payments'], ['reconcile', 'Sync with M-PESA']].map(([k, label]) => (
           <button key={k} onClick={() => setTab(k)}
             className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${tab === k ? 'border-brand-700 text-brand-800' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>{label}</button>
         ))}
