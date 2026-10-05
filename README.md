@@ -54,4 +54,4 @@ npm run test:e2e:ui               # same, in Playwright's UI mode
 - Set `BACKEND_DIR` if the backend isn't at `../pceaBackend`, and `BACKEND_PYTHON` if its virtualenv isn't `.venv`.
 - Set `E2E_BROWSER_PATH` to use an installed Chromium-based browser instead of Playwright's Chromium.
 - Each run resets the database to the seed data in `pceaBackend/apps/e2e/management/commands/e2e_seed.py`.
-- `e2e/api.spec.js` tests the backend's public M-PESA and auth endpoints over HTTP, the way Safaricom and the browser call them.
+- `e2e/api.spec.ts` tests the backend's public M-PESA and auth endpoints over HTTP, the way Safaricom and the browser call them.
