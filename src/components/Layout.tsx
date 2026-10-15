@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { type LucideIcon, Building2, Eye, CalendarCheck, Gauge, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, UserPlus, Users, X } from 'lucide-react'
+import { type LucideIcon, Building2, Church, Eye, CalendarCheck, Gauge, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, UserPlus, Users, X } from 'lucide-react'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import Logo from './Logo'
@@ -36,7 +36,7 @@ export default function Layout() {
 
   // Badges: Paybill payments waiting to be allocated, sign-ups waiting for review.
   useEffect(() => {
-    if (user?.is_superuser) return undefined
+    if (user?.is_superuser || branding.platform) return undefined
     const loadPaybill = () => api.get<Page<PaybillPayment>>('/cms/paybill-payments/', { status: 'unallocated', page_size: 1 })
       .then((d) => setCounts((c) => ({ ...c, unallocated: d.count }))).catch(() => {})
     const loadRegistrations = () => api.get<Page<Registration>>('/cms/registrations/', { status: 'pending', page_size: 1 })
@@ -51,9 +51,11 @@ export default function Layout() {
     }
   }, [location.pathname, user?.is_superuser])
   const nav: NavItem[] = [
-    ...(user?.is_superuser
-      ? [{ to: '/super', label: 'System', icon: Gauge }, { to: '/users', label: 'Admin Users', icon: ShieldCheck }]
-      : NAV),
+    ...(branding.platform
+      ? [{ to: '/platform', label: 'Churches', icon: Church }, { to: '/users', label: 'Platform admins', icon: ShieldCheck }]
+      : user?.is_superuser
+        ? [{ to: '/super', label: 'System', icon: Gauge }, { to: '/users', label: 'Admin Users', icon: ShieldCheck }]
+        : NAV),
     { to: '/settings', label: 'Settings', icon: Settings },
   ]
 
@@ -86,7 +88,7 @@ export default function Layout() {
       </nav>
       <div className="border-t border-white/10 p-4">
         <p className="truncate text-sm font-medium text-white">{user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username}</p>
-        <p className="mb-3 text-xs text-brand-200">{user?.is_superuser ? 'Super admin' : user?.view_only ? 'View only' : 'Admin'}</p>
+        <p className="mb-3 text-xs text-brand-200">{branding.platform ? 'Platform admin' : user?.is_superuser ? 'Super admin' : user?.view_only ? 'View only' : 'Admin'}</p>
         <button onClick={logout} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-white/10 hover:text-white">
           <LogOut className="h-4 w-4" /> Sign out
         </button>

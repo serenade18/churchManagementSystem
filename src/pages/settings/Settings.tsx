@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import BrandingSettings from '../../components/BrandingSettings'
 import PublicPageSettings from '../../components/PublicPageSettings'
+import { branding } from '../../lib/theme'
 import { Alert, Field, PageHeader, PasswordInput } from '../../components/ui'
 import { api } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
@@ -24,8 +25,8 @@ export default function SettingsPage() {
   return (
     <>
       <PageHeader title="Settings" subtitle={`Signed in as ${user?.username}`} />
-      <div className="mb-6"><BrandingSettings /></div>
-      {!user?.is_superuser && <div className="mb-6"><PublicPageSettings /></div>}
+      {!branding.platform && <div className="mb-6"><BrandingSettings /></div>}
+      {!branding.platform && !user?.is_superuser && <div className="mb-6"><PublicPageSettings /></div>}
       <div className="card max-w-md p-6">
         <h2 className="mb-4 font-semibold">Change password</h2>
         <Alert tone="green">{done}</Alert>

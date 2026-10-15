@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { api, request, setViewOnly, tokens } from './api'
 import { endDemo, isDemo, startDemo } from './demo'
+import { branding } from './theme'
 import type { Tokens, User } from '../types'
 
 interface AuthValue {
@@ -77,4 +78,7 @@ export const useAuth = () => {
 }
 
 /** Landing page for a signed-in user: super admins get the system dashboard. */
-export const homeFor = (user: User | null) => (user?.is_superuser ? '/super' : '/dashboard')
+export const homeFor = (user: User | null) => {
+  if (branding.platform) return '/platform'  // mkanisa.com: platform admins manage churches
+  return user?.is_superuser ? '/super' : '/dashboard'
+}

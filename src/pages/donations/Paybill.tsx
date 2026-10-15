@@ -6,7 +6,8 @@ import Reconcile from '../../components/Reconcile'
 import { Alert, Badge, Field, Modal, PageHeader, Pagination, Select, Table } from '../../components/ui'
 import { api } from '../../lib/api'
 import { useApi, useDebounced, useOptions } from '../../lib/hooks'
-import { PAYBILL_NUMBER, dateTime, money } from '../../lib/format'
+import { dateTime, money } from '../../lib/format'
+import { paybillNumber } from '../../lib/theme'
 import { useForm } from '../../lib/useForm'
 import type { DonationType, MemberRef, Page, PaybillPayment, PaybillStatus, PhoneCheck, Project, Tone } from '../../types'
 
@@ -23,7 +24,7 @@ function HowToGive({ codes }: { codes: DonationType[] }) {
       <div className="text-sm">
         <p className="font-semibold text-slate-900">How members give by M-PESA</p>
         <p className="text-slate-600">
-          Lipa na M-PESA → Paybill <strong className="font-mono">{PAYBILL_NUMBER}</strong> → Account: <strong>phone number + code</strong>, e.g.{' '}
+          Lipa na M-PESA → Paybill <strong className="font-mono">{paybillNumber()}</strong> → Account: <strong>phone number + code</strong>, e.g.{' '}
           <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono">0712345678{example}</span>
           {' '}(a membership number also works, e.g. <span className="font-mono">M0001{example}</span>). Givers get an SMS receipt automatically.
         </p>

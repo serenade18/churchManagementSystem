@@ -222,7 +222,7 @@ export default function Portal() {
               </div>
               <h2 className="mb-3 mt-6 text-lg font-semibold text-slate-900">My churches</h2>
               {me.churches.length
-                ? <div className="divide-y divide-slate-200 rounded-xl border border-slate-200">{me.churches.map((c) => <button key={c.name} className="block w-full text-left hover:bg-slate-50" onClick={() => setTab('churches')}><ChurchRow church={c} /></button>)}</div>
+                ? <div className="divide-y divide-slate-200 rounded-xl border border-slate-200">{me.churches.map((c) => <button key={c.id} className="block w-full text-left hover:bg-slate-50" onClick={() => setTab('churches')}><ChurchRow church={c} /></button>)}</div>
                 : <p className="rounded-xl border border-dashed border-slate-300 p-4 text-sm text-slate-600">
                     This phone number isn't on a church's member list yet. <Link to="/register" className="font-medium text-brand-700 hover:underline">Register with the church</Link> and, once approved, it shows here.
                   </p>}
@@ -237,8 +237,13 @@ export default function Portal() {
           {tab === 'giving' && <GivingTab />}
           {tab === 'churches' && (
             me.churches.length ? me.churches.map((c) => (
-              <div key={c.name} className="rounded-xl border border-slate-200">
+              <div key={c.id} className="mb-3 rounded-xl border border-slate-200">
                 <ChurchRow church={c} />
+                <div className="flex flex-wrap gap-2 border-t border-slate-100 px-4 py-2.5 text-sm">
+                  <a href={c.url} target="_blank" rel="noreferrer" className="font-medium text-brand-700 hover:underline">Visit the church's site</a>
+                  <span className="text-slate-300">·</span>
+                  <Link to={`/me/statement?year=${me.giving.year}&church=${c.id}`} target="_blank" className="font-medium text-brand-700 hover:underline">{me.giving.year} statement</Link>
+                </div>
                 <div className="divide-y divide-slate-100 border-t border-slate-100">
                   {c.memberships.map((m) => (
                     <div key={m.membership_number} className="grid grid-cols-2 gap-2 px-4 py-3 text-sm sm:grid-cols-4">

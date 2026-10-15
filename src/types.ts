@@ -37,6 +37,9 @@ export interface User {
   phone_number: string
   signed_up: boolean
   view_only: boolean
+  /** The church this admin works for; null for platform admins. */
+  church?: ChurchRef | null
+  is_platform_admin?: boolean
 }
 
 export interface Tokens {
@@ -106,6 +109,45 @@ export interface Branding extends PublicPage {
   cover_url?: string | null
   version?: number
   demo_enabled?: boolean
+  /** True on the platform's own address (mkanisa.com): no church, just mKanisa. */
+  platform?: boolean
+  /** The church this address serves. */
+  church?: ChurchRef | null
+  /** The church's Paybill number (its own, else the platform's). */
+  paybill?: string
+  /** Platform only: who to contact about bringing a church on. */
+  contact_email?: string
+}
+
+export interface ChurchRef {
+  id: Id
+  name: string
+  slug: string
+  url: string
+}
+
+/** A church as platform admins manage it (secrets are write-only). */
+export interface PlatformChurch extends ChurchRef {
+  custom_domain: string | null
+  domain: string
+  is_active: boolean
+  is_listed: boolean
+  mpesa_shortcode: string
+  mpesa_shortcode_type: 'Paybill' | 'Till'
+  has_own_mpesa: boolean
+  sasapay_merchant_code: string
+  admin_count: number
+  member_count: number
+  created_at: string
+}
+
+/** A church in the public directory on the platform's home page. */
+export interface DirectoryChurch {
+  name: string
+  slug: string
+  url: string
+  location: string
+  logo_mark_url: string | null
 }
 
 export interface Church {
@@ -609,6 +651,8 @@ export interface PortalGift {
 }
 
 export interface PortalChurch {
+  id: Id
+  url: string
   name: string
   relationship: string
   status: string

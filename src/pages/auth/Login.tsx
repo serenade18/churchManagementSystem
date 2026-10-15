@@ -46,7 +46,7 @@ export default function Login() {
         <div className="mb-6 text-center">
           <Logo className="mx-auto mb-3 h-24" />
           <h1 className="text-xl font-semibold">{branding.name}</h1>
-          <p className="text-sm text-slate-500">Sign in to the admin portal</p>
+          <p className="text-sm text-slate-500">{branding.platform ? 'Platform admin sign-in' : 'Sign in to the admin portal'}</p>
         </div>
         <Alert>{error}</Alert>
         {unverified && (
@@ -72,13 +72,15 @@ export default function Login() {
             <button type="button" className="btn-secondary w-full" onClick={openDemo} disabled={busy}>Explore the demo (view only)</button>
           </div>
         )}
-        {!demo && (
+        {!demo && !branding.platform && (
           <p className="mt-6 text-center text-sm text-slate-500">
             Need an admin account? <Link to="/signup" className="font-medium text-brand-700 hover:underline">Create one</Link>
           </p>
         )}
         <p className="mt-2 text-center text-sm text-slate-500">
-          Not church staff? <Link to="/" className="font-medium text-brand-700 hover:underline">Go to the church website</Link>
+          {branding.platform
+            ? <>Church admins sign in at their church's address. <Link to="/" className="font-medium text-brand-700 hover:underline">Find your church</Link></>
+            : <>Not church staff? <Link to="/" className="font-medium text-brand-700 hover:underline">Go to the church website</Link></>}
         </p>
         <PoweredBy className="mt-6 text-center text-slate-400" />
       </div>

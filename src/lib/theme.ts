@@ -11,7 +11,10 @@ import type { Branding } from '../types'
 const DEFAULTS = { name: BRAND.name, tagline: BRAND.tagline, logo: BRAND.logo, logoMark: BRAND.logoMark }
 
 // Current branding; read at render time (set once at startup, then the page reloads after edits).
-export const branding: typeof DEFAULTS & { raw?: Branding } = { ...DEFAULTS }
+export const branding: typeof DEFAULTS & { raw?: Branding; platform?: boolean; notFound?: boolean } = { ...DEFAULTS }
+
+/** The church's Paybill number (from the API), else the build's. */
+export const paybillNumber = () => branding.raw?.paybill || BRAND.paybill
 
 // --- colour maths -------------------------------------------------------------------------------
 
@@ -74,6 +77,7 @@ export const brandColor = (shade = 600) =>
 export const assetUrl = (path: string | null | undefined) => (path ? `${API_URL}${path}` : null)
 
 function apply(data: Branding) {
+  branding.platform = Boolean(data.platform)
   branding.name = data.name || DEFAULTS.name
   branding.tagline = data.tagline || DEFAULTS.tagline
   branding.logo = assetUrl(data.logo_url) || DEFAULTS.logo
@@ -95,7 +99,11 @@ export async function loadBranding(timeoutMs = 3000) {
     const res = await fetch(`${API_URL}/branding/`, { signal: controller.signal })
     clearTimeout(timer)
     if (res.ok) apply(await res.json())
-    else apply({})
+    else {
+      // An address that isn't a church (or one that's closed): the app says so.
+      branding.notFound = res.status === 404
+      apply({})
+    }
   } catch {
     apply({})
   }

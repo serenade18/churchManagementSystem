@@ -1,6 +1,7 @@
 import { demoRequest, isDemo } from './demo'
 import type { Params, Tokens } from '../types'
 
+// Relative ("/api") in production: every church's address talks to its own church.
 export const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/$/, '')
 
 const ACCESS = 'cms.access'
@@ -103,7 +104,7 @@ export async function request(path: string, { method = 'GET', body, params, raw 
     }
   }
   if (viewOnly && auth && method !== 'GET') throw new ApiError(403, { detail: VIEW_ONLY_MESSAGE })
-  const url = new URL(`${API_URL}${path}`)
+  const url = new URL(`${API_URL}${path}`, window.location.origin)
   Object.entries(params || {}).forEach(([k, v]) => {
     if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, String(v))
   })

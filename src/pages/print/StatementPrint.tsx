@@ -9,7 +9,7 @@ export default function StatementPrint({ portal = false }: { portal?: boolean })
   const { id } = useParams()
   const [search] = useSearchParams()
   const { data: s, loading, error } = useApi<Statement>(portal ? '/portal/statement/' : `/cms/members/${id}/statement/`, portal
-    ? { year: search.get('year') || '' }
+    ? { year: search.get('year') || '', church: search.get('church') || '' }
     : { date_from: search.get('date_from') || '', date_to: search.get('date_to') || '' }, portal ? portalGet : undefined)
 
   return (

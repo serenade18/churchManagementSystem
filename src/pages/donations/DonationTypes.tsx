@@ -3,7 +3,8 @@ import { Pencil, Plus, Star, Trash2 } from 'lucide-react'
 import { Alert, Badge, ConfirmDialog, Field, Modal, PageHeader, Select, Table } from '../../components/ui'
 import { api, errorMessage } from '../../lib/api'
 import { useApi, useOptions } from '../../lib/hooks'
-import { PAYBILL_NUMBER, money } from '../../lib/format'
+import { money } from '../../lib/format'
+import { paybillNumber } from '../../lib/theme'
 import { clean, useForm } from '../../lib/useForm'
 import type { Branch, DonationType, Page, Project } from '../../types'
 
@@ -77,7 +78,7 @@ export default function DonationTypes() {
 
   return (
     <>
-      <PageHeader title="Donation types" subtitle={`What people give towards, and the code they add on Paybill ${PAYBILL_NUMBER}, e.g. 0712345678TTH.`}
+      <PageHeader title="Donation types" subtitle={`What people give towards, and the code they add on Paybill ${paybillNumber()}, e.g. 0712345678TTH.`}
         actions={<button className="btn-primary" onClick={() => setEditing('new')}><Plus className="h-4 w-4" /> New type</button>} />
       {notice && <Alert tone="green">{notice}</Alert>}
       <Alert>{actionError || error?.message}</Alert>

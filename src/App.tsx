@@ -2,7 +2,7 @@ import { lazy, Suspense, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Layout from './components/Layout'
 import { Spinner } from './components/ui'
-import { AuthProvider, useAuth } from './lib/auth'
+import { AuthProvider, homeFor, useAuth } from './lib/auth'
 import Branches from './pages/branches/Branches'
 import Donations from './pages/donations/Donations'
 import DonationTypes from './pages/donations/DonationTypes'
@@ -26,6 +26,10 @@ import Sms from './pages/sms/Sms'
 import SuperDashboard from './pages/admin/SuperDashboard'
 import StatementPrint from './pages/print/StatementPrint'
 import Users from './pages/admin/Users'
+import NoChurch from './pages/platform/NoChurch'
+import PlatformChurches from './pages/platform/PlatformChurches'
+import PlatformHome from './pages/platform/PlatformHome'
+import { branding } from './lib/theme'
 
 // Charts are heavy; keep them out of the public donation page bundle.
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'))
@@ -36,11 +40,39 @@ function RequireAuth({ children, superuser = false }: { children: ReactNode; sup
   const location = useLocation()
   if (loading) return <div className="flex h-screen items-center justify-center"><Spinner className="h-8 w-8" /></div>
   if (!user) return <Navigate to="/admin" replace state={{ from: location }} />
-  if (superuser && !user.is_superuser) return <Navigate to="/dashboard" replace />
+  if (superuser && !user.is_superuser) return <Navigate to={homeFor(user)} replace />
   return children
 }
 
+/** mkanisa.com itself: the platform's home page, the member portal and platform admin. */
+function PlatformApp() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<PlatformHome />} />
+          <Route path="/me" element={<Portal />} />
+          <Route path="/me/receipt/:id" element={<ReceiptPrint portal />} />
+          <Route path="/me/statement" element={<StatementPrint portal />} />
+          <Route path="/admin" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/signup/superadmin" element={<Signup superadmin />} />
+          <Route element={<RequireAuth><Layout /></RequireAuth>}>
+            <Route path="/platform" element={<RequireAuth superuser><PlatformChurches /></RequireAuth>} />
+            <Route path="/users" element={<RequireAuth superuser><Users /></RequireAuth>} />
+            <Route path="/settings" element={<SettingsPage />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  )
+}
+
 export default function App() {
+  // The address decides: a church's site, the platform itself, or nobody here.
+  if (branding.notFound) return <NoChurch />
+  if (branding.platform) return <PlatformApp />
   return (
     <AuthProvider>
       <BrowserRouter>
