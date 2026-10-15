@@ -45,7 +45,7 @@ export default function Signup({ superadmin = false }: { superadmin?: boolean })
         <div className="mb-6 text-center">
           <Logo className="mx-auto mb-3 h-20" />
           <h1 className="text-xl font-semibold">{branding.name}</h1>
-          <p className="text-sm text-slate-500">{pending ? 'Verify your phone number' : superadmin ? 'Create a super admin account' : 'Create an admin account'}</p>
+          <p className="text-sm text-slate-500">{pending ? 'Verify your phone number' : branding.platform ? 'Create a platform admin account' : superadmin ? 'Create a super admin account' : 'Create an admin account'}</p>
         </div>
         {pending
           ? <VerifyStep pending={pending} onBack={() => setPending(null)}
@@ -54,13 +54,6 @@ export default function Signup({ superadmin = false }: { superadmin?: boolean })
         <p className="mt-6 text-center text-sm text-slate-500">
           Already have an account? <Link to="/admin" className="font-medium text-brand-700 hover:underline">Sign in</Link>
         </p>
-        {!pending && (
-          <p className="mt-2 text-center text-xs text-slate-400">
-            {superadmin
-              ? <Link to="/signup" className="hover:underline">Create a regular admin account instead</Link>
-              : <>Setting up the system? <Link to="/signup/superadmin" className="hover:underline">Create a super admin account</Link></>}
-          </p>
-        )}
       </div>
     </div>
   )
@@ -88,7 +81,9 @@ function DetailsStep({ onCreated, superadmin }: { onCreated: (res: SignupRespons
     <>
       <p className="mb-4 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-800">
         {superadmin
-          ? <>Super admins manage all admin accounts and system settings. You need the <strong>setup key</strong> from whoever runs the server. We'll also send a 6-digit code to your phone.</>
+          ? branding.platform
+            ? <>Platform admins add churches and manage mKanisa. You need the <strong>platform setup key</strong> from whoever runs the server. We'll also send a 6-digit code to your phone.</>
+            : <>Super admins manage all admin accounts and system settings. You need the <strong>setup key</strong> from whoever runs the server. We'll also send a 6-digit code to your phone.</>
           : "We'll send a 6-digit code to your phone to confirm it's yours."}
       </p>
       <Alert>{error}</Alert>

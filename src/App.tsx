@@ -56,6 +56,8 @@ function PlatformApp() {
           <Route path="/me/statement" element={<StatementPrint portal />} />
           <Route path="/admin" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          {/* Platform admin signup: not linked anywhere, reached by its address only */}
+          <Route path="/signup/platform" element={<Signup superadmin />} />
           <Route path="/signup/superadmin" element={<Signup superadmin />} />
           <Route element={<RequireAuth><Layout /></RequireAuth>}>
             <Route path="/platform" element={<RequireAuth superuser><PlatformChurches /></RequireAuth>} />
