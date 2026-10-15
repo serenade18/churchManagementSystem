@@ -23,6 +23,20 @@ export type Tone = 'green' | 'blue' | 'amber' | 'red' | 'purple' | 'slate'
 
 export type AccountStatus = 'active' | 'disabled' | 'unverified'
 
+export type Feature = 'dashboard' | 'members' | 'registrations' | 'giving' | 'paybill' | 'reconciliation'
+  | 'donation_types' | 'projects' | 'attendance' | 'sms' | 'branches'
+export type RoleKey = 'branch_admin' | 'treasurer' | 'secretary' | 'communications' | 'pastor' | 'viewer'
+export interface RoleAssignment {
+  role: RoleKey
+  /** Empty: the whole church. */
+  branches: Id[]
+}
+export interface FeatureAccess {
+  write: boolean
+  /** null: the whole church. */
+  branches: Id[] | null
+}
+
 export interface User {
   id: Id
   username: string
@@ -36,7 +50,14 @@ export interface User {
   status: AccountStatus
   phone_number: string
   signed_up: boolean
-  view_only: boolean
+  /** Staff roles, each for the whole church (no branches) or for chosen branches. */
+  roles: RoleAssignment[]
+  /** Only from /auth/me: no role lets this account change anything. */
+  view_only?: boolean
+  /** Only from /auth/me: the church owner (can do everything, manages staff). */
+  is_owner?: boolean
+  /** Only from /auth/me: what this account may see and change. */
+  access?: Partial<Record<Feature, FeatureAccess>>
   /** The church this admin works for; null for platform admins. */
   church?: ChurchRef | null
   is_platform_admin?: boolean

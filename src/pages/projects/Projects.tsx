@@ -7,6 +7,7 @@ import { useApi, useOptions } from '../../lib/hooks'
 import { PROJECT_STATUS, date, money } from '../../lib/format'
 import { clean, useForm } from '../../lib/useForm'
 import type { Branch, Page, Project } from '../../types'
+import { useCan } from '../../lib/access'
 
 function ProjectForm({ project, onClose, onSaved }: { project: Project | null; onClose: () => void; onSaved: () => void }) {
   const branches = useOptions<Branch>('/cms/branches/')
@@ -69,6 +70,7 @@ function ProjectForm({ project, onClose, onSaved }: { project: Project | null; o
 }
 
 export default function Projects() {
+  const can = useCan()
   const [status, setStatus] = useState('')
   const { data, loading, error, reload } = useApi<Page<Project>>('/cms/projects/', { status, page_size: 500 })
   const [editing, setEditing] = useState<Project | 'new' | null>(null)
@@ -85,7 +87,7 @@ export default function Projects() {
       <PageHeader title="Projects" subtitle="Track church projects and how much has been raised for each."
         actions={<>
           <div className="w-44"><Select value={status} onChange={setStatus} options={PROJECT_STATUS} placeholder="All statuses" /></div>
-          <button className="btn-primary" onClick={() => setEditing('new')}><Plus className="h-4 w-4" /> New project</button>
+          {can('projects', true) && <button className="btn-primary" onClick={() => setEditing('new')}><Plus className="h-4 w-4" /> New project</button>}
         </>} />
       <Alert>{error?.message || actionError}</Alert>
       {loading && !data ? <Spinner className="mx-auto mt-10 h-8 w-8" /> : data?.results.length === 0 ? (

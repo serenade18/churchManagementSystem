@@ -4,6 +4,7 @@ import PublicPageSettings from '../../components/PublicPageSettings'
 import { branding } from '../../lib/theme'
 import { Alert, Field, PageHeader, PasswordInput } from '../../components/ui'
 import { api } from '../../lib/api'
+import { isOwner } from '../../lib/access'
 import { useAuth } from '../../lib/auth'
 import { useForm } from '../../lib/useForm'
 
@@ -25,8 +26,9 @@ export default function SettingsPage() {
   return (
     <>
       <PageHeader title="Settings" subtitle={`Signed in as ${user?.username}`} />
-      {!branding.platform && <div className="mb-6"><BrandingSettings /></div>}
-      {!branding.platform && !user?.is_superuser && <div className="mb-6"><PublicPageSettings /></div>}
+      {/* The church's look and public page are the owner's. */}
+      {!branding.platform && isOwner(user) && <div className="mb-6"><BrandingSettings /></div>}
+      {!branding.platform && isOwner(user) && <div className="mb-6"><PublicPageSettings /></div>}
       <div className="card max-w-md p-6">
         <h2 className="mb-4 font-semibold">Change password</h2>
         <Alert tone="green">{done}</Alert>

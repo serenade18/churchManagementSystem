@@ -7,8 +7,10 @@ import { api, errorMessage } from '../../lib/api'
 import { useApi } from '../../lib/hooks'
 import { CHANNELS, DONATION_STATUS, GENDERS, MARITAL, MEMBER_STATUS, date, dateTime, money, today } from '../../lib/format'
 import type { AttendanceSummary, Donation, Member, Page } from '../../types'
+import { useCan } from '../../lib/access'
 
 export default function MemberDetail() {
+  const can = useCan()
   const { id } = useParams()
   const navigate = useNavigate()
   const [page, setPage] = useState(1)
@@ -20,8 +22,9 @@ export default function MemberDetail() {
   const thisYear = new Date().getFullYear()
   const [period, setPeriod] = useState({ date_from: `${thisYear}-01-01`, date_to: today() })
   const { data: member, error, reload } = useApi<Member>(`/cms/members/${id}/`)
-  const donations = useApi<Page<Donation>>(`/cms/members/${id}/donations/`, { page })
-  const attendance = useApi<AttendanceSummary>(`/cms/members/${id}/attendance-summary/`)
+  const seesGiving = can('giving')
+  const donations = useApi<Page<Donation>>(seesGiving ? `/cms/members/${id}/donations/` : null, { page })
+  const attendance = useApi<AttendanceSummary>(can('attendance') ? `/cms/members/${id}/attendance-summary/` : null)
 
   if (error) return <Alert>{error.message}</Alert>
   if (!member) return <div className="py-20"><Spinner className="mx-auto h-8 w-8" /></div>
@@ -62,19 +65,23 @@ export default function MemberDetail() {
             </div>
           </div>
           <div className="flex gap-2">
-            {member.phone_number && (
+            {member.phone_number && can('sms', true) && (
               <button className="btn-secondary" onClick={() => navigate('/sms', { state: { members: [member] } })}><MessageSquare className="h-4 w-4" /> SMS</button>
             )}
-            <button className="btn-secondary" onClick={() => setStatementOpen(true)}><FileText className="h-4 w-4" /> Giving statement</button>
-            <button className="btn-secondary" onClick={() => setEditing(true)}><Pencil className="h-4 w-4" /> Edit</button>
-            <button className="btn-secondary text-red-600" onClick={() => setDeleting(true)}><Trash2 className="h-4 w-4" /> Delete</button>
+            {seesGiving && <button className="btn-secondary" onClick={() => setStatementOpen(true)}><FileText className="h-4 w-4" /> Giving statement</button>}
+            {can('members', true) && <>
+              <button className="btn-secondary" onClick={() => setEditing(true)}><Pencil className="h-4 w-4" /> Edit</button>
+              <button className="btn-secondary text-red-600" onClick={() => setDeleting(true)}><Trash2 className="h-4 w-4" /> Delete</button>
+            </>}
           </div>
         </div>
         <dl className="mt-6 grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-lg bg-brand-50 p-3">
-            <dt className="text-xs text-brand-700">Total given</dt>
-            <dd className="text-lg font-semibold text-brand-900">{money(member.total_given)}</dd>
-          </div>
+          {seesGiving && (
+            <div className="rounded-lg bg-brand-50 p-3">
+              <dt className="text-xs text-brand-700">Total given</dt>
+              <dd className="text-lg font-semibold text-brand-900">{money(member.total_given)}</dd>
+            </div>
+          )}
           <div className="rounded-lg bg-emerald-50 p-3">
             <dt className="text-xs text-emerald-700">Attendance (last 90 days)</dt>
             <dd className="text-lg font-semibold text-emerald-900">
@@ -95,6 +102,7 @@ export default function MemberDetail() {
         {member.notes && <p className="mt-4 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">{member.notes}</p>}
       </div>
 
+      {seesGiving && <>
       <h2 className="mb-3 text-lg font-semibold">Giving history</h2>
       <Table
         loading={donations.loading}
@@ -115,6 +123,7 @@ export default function MemberDetail() {
         ]}
       />
       <Pagination page={page} count={donations.data?.count} onChange={setPage} />
+      </>}
 
       {editing && <MemberForm member={member} onClose={() => setEditing(false)} onSaved={() => { setEditing(false); reload() }} />}
       <Modal open={statementOpen} onClose={() => setStatementOpen(false)} title="Giving statement"

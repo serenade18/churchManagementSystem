@@ -10,6 +10,7 @@ import { dateTime, money } from '../../lib/format'
 import { paybillNumber } from '../../lib/theme'
 import { useForm } from '../../lib/useForm'
 import type { DonationType, MemberRef, Page, PaybillPayment, PaybillStatus, PhoneCheck, Project, Tone } from '../../types'
+import { useCan } from '../../lib/access'
 
 const STATUS: Record<PaybillStatus, [Tone, string]> = { unallocated: ['amber', 'Unallocated'], allocated: ['green', 'Allocated'], ignored: ['slate', 'Ignored'] }
 const PHONE_CHECK: Partial<Record<PhoneCheck, [Tone, string]>> = { match: ['green', 'Phone verified'], mismatch: ['red', 'Phone mismatch'], unknown: ['slate', 'Phone not verified'] }
@@ -103,7 +104,10 @@ function AllocateModal({ payment, codes, onClose, onDone }: AllocateModalProps) 
   )
 }
 
+const TABS = [['payments', 'Payments'], ['reconcile', 'Sync with M-PESA']] as const
+
 export default function Paybill() {
+  const can = useCan()
   const [tab, setTab] = useState<'payments' | 'reconcile'>('payments')
   const [status, setStatus] = useState('unallocated')
   const [search, setSearch] = useState('')
@@ -121,7 +125,7 @@ export default function Paybill() {
       <HowToGive codes={codeList} />
 
       <div className="mb-4 flex gap-1 border-b border-slate-200">
-        {([['payments', 'Payments'], ['reconcile', 'Sync with M-PESA']] as const).map(([k, label]) => (
+        {(can('reconciliation', true) ? TABS : TABS.slice(0, 1)).map(([k, label]) => (
           <button key={k} onClick={() => setTab(k)}
             className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${tab === k ? 'border-brand-700 text-brand-800' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>{label}</button>
         ))}
@@ -159,7 +163,7 @@ export default function Paybill() {
                 </div>
               ) },
               { key: 'amount', label: 'Amount', className: 'text-right font-semibold', render: (p) => money(p.amount) },
-              { key: 'action', label: '', render: (p) => p.status === 'unallocated' && <button className="btn-primary px-3 py-1.5" onClick={(e) => { e.stopPropagation(); setAllocating(p) }}>Allocate</button> },
+              { key: 'action', label: '', render: (p) => p.status === 'unallocated' && can('paybill', true) && <button className="btn-primary px-3 py-1.5" onClick={(e) => { e.stopPropagation(); setAllocating(p) }}>Allocate</button> },
             ]} />
           <Pagination page={page} count={payments.data?.count} onChange={setPage} />
         </>

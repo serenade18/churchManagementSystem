@@ -6,6 +6,7 @@ import { useApi } from '../../lib/hooks'
 import { money } from '../../lib/format'
 import { useForm } from '../../lib/useForm'
 import type { Branch, Page } from '../../types'
+import { useCan } from '../../lib/access'
 
 function BranchForm({ branch, onClose, onSaved }: { branch: Branch | null; onClose: () => void; onSaved: () => void }) {
   const { values, set, errors, error, busy, submit } = useForm({
@@ -38,6 +39,7 @@ function BranchForm({ branch, onClose, onSaved }: { branch: Branch | null; onClo
 }
 
 export default function Branches() {
+  const can = useCan()
   const { data, loading, error, reload } = useApi<Page<Branch>>('/cms/branches/', { page_size: 500 })
   const [editing, setEditing] = useState<Branch | 'new' | null>(null)
   const [deleting, setDeleting] = useState<Branch | null>(null)
@@ -51,7 +53,7 @@ export default function Branches() {
   return (
     <>
       <PageHeader title="Branches" subtitle="Congregations and outreach centres under your parish."
-        actions={<button className="btn-primary" onClick={() => setEditing('new')}><Plus className="h-4 w-4" /> Add branch</button>} />
+        actions={can('branches', true) && <button className="btn-primary" onClick={() => setEditing('new')}><Plus className="h-4 w-4" /> Add branch</button>} />
       <Alert>{error?.message || actionError}</Alert>
       {loading && !data ? <Spinner className="mx-auto mt-10 h-8 w-8" /> : data?.results.length === 0 ? (
         <div className="card p-12 text-center text-sm text-slate-500">No branches yet. Add your first branch to start grouping members.</div>

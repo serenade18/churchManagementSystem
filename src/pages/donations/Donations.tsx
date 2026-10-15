@@ -6,10 +6,12 @@ import { api, downloadCsv, errorMessage } from '../../lib/api'
 import { useApi, useDebounced, useDonationTypes, useOptions } from '../../lib/hooks'
 import { CHANNELS, DONATION_STATUS, PROVIDER_CHANNELS, currencyMoney, dateTime, money } from '../../lib/format'
 import type { Branch, Donation, DonationSummary, Page, Project } from '../../types'
+import { useCan } from '../../lib/access'
 
 const EMPTY_FILTERS = { status: '', channel: '', donation_type: '', branch: '', project: '', allocation: '', date_from: '', date_to: '' }
 
 export default function Donations() {
+  const can = useCan()
   const branches = useOptions<Branch>('/cms/branches/')
   const projects = useOptions<Project>('/cms/projects/')
   const { options: typeOptions } = useDonationTypes({ includeInactive: true })
@@ -78,7 +80,7 @@ export default function Donations() {
         subtitle="M-PESA giving is recorded automatically. Record cash, bank and cheque giving here."
         actions={<>
           <button className="btn-secondary" onClick={() => downloadCsv('/cms/donations/export/', filterParams, 'donations.csv')}><Download className="h-4 w-4" /> Export</button>
-          <button className="btn-primary" onClick={() => setEditing('new')}><Plus className="h-4 w-4" /> Record donation</button>
+          {can('giving', true) && <button className="btn-primary" onClick={() => setEditing('new')}><Plus className="h-4 w-4" /> Record donation</button>}
         </>}
       />
 

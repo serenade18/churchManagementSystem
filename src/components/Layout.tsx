@@ -2,31 +2,41 @@ import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { type LucideIcon, Building2, Church, Eye, CalendarCheck, Gauge, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, UserPlus, Users, X } from 'lucide-react'
 import { api } from '../lib/api'
+import { can, isOwner, roleLabel } from '../lib/access'
 import { useAuth } from '../lib/auth'
 import Logo from './Logo'
 import { branding } from '../lib/theme'
-import type { Page, PaybillPayment, Registration } from '../types'
+import type { Feature, Page, PaybillPayment, Registration, User } from '../types'
 
 interface NavItem {
   to: string
   label: string
   icon: LucideIcon
   badge?: 'unallocated' | 'registrations'
+  feature?: Feature
 }
 
-// Day-to-day church work; super admins only manage accounts and the system
+// The church's work; each shows to the roles that open it (the owner sees all of it).
 const NAV: NavItem[] = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/members', label: 'Members', icon: Users },
-  { to: '/registrations', label: 'Registrations', icon: UserPlus, badge: 'registrations' },
-  { to: '/donations', label: 'Donations', icon: HandCoins },
-  { to: '/paybill', label: 'Paybill', icon: Smartphone, badge: 'unallocated' },
-  { to: '/donation-types', label: 'Donation Types', icon: Tags },
-  { to: '/attendance', label: 'Attendance', icon: CalendarCheck },
-  { to: '/branches', label: 'Branches', icon: Building2 },
-  { to: '/projects', label: 'Projects', icon: FolderKanban },
-  { to: '/sms', label: 'Bulk SMS', icon: MessageSquare },
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, feature: 'dashboard' },
+  { to: '/members', label: 'Members', icon: Users, feature: 'members' },
+  { to: '/registrations', label: 'Registrations', icon: UserPlus, badge: 'registrations', feature: 'registrations' },
+  { to: '/donations', label: 'Donations', icon: HandCoins, feature: 'giving' },
+  { to: '/paybill', label: 'Paybill', icon: Smartphone, badge: 'unallocated', feature: 'paybill' },
+  { to: '/donation-types', label: 'Donation Types', icon: Tags, feature: 'donation_types' },
+  { to: '/attendance', label: 'Attendance', icon: CalendarCheck, feature: 'attendance' },
+  { to: '/branches', label: 'Branches', icon: Building2, feature: 'branches' },
+  { to: '/projects', label: 'Projects', icon: FolderKanban, feature: 'projects' },
+  { to: '/sms', label: 'Bulk SMS', icon: MessageSquare, feature: 'sms' },
 ]
+
+/** Under the name in the sidebar: "Owner", or the roles held. */
+function roleSummary(user: User | null) {
+  if (branding.platform) return 'Platform admin'
+  if (!user) return ''
+  if (user.is_owner) return 'Owner'
+  return user.roles?.length ? user.roles.map((r) => roleLabel(r.role)).join(' · ') : 'No role yet'
+}
 
 export default function Layout() {
   const { user, logout } = useAuth()
@@ -36,26 +46,27 @@ export default function Layout() {
 
   // Badges: Paybill payments waiting to be allocated, sign-ups waiting for review.
   useEffect(() => {
-    if (user?.is_superuser || branding.platform) return undefined
+    if (branding.platform) return undefined
     const loadPaybill = () => api.get<Page<PaybillPayment>>('/cms/paybill-payments/', { status: 'unallocated', page_size: 1 })
       .then((d) => setCounts((c) => ({ ...c, unallocated: d.count }))).catch(() => {})
     const loadRegistrations = () => api.get<Page<Registration>>('/cms/registrations/', { status: 'pending', page_size: 1 })
       .then((d) => setCounts((c) => ({ ...c, registrations: d.count }))).catch(() => {})
-    loadPaybill()
-    loadRegistrations()
+    if (can(user, 'paybill')) loadPaybill()
+    if (can(user, 'registrations')) loadRegistrations()
     window.addEventListener('cms:paybill-changed', loadPaybill)
     window.addEventListener('cms:registrations-changed', loadRegistrations)
     return () => {
       window.removeEventListener('cms:paybill-changed', loadPaybill)
       window.removeEventListener('cms:registrations-changed', loadRegistrations)
     }
-  }, [location.pathname, user?.is_superuser])
+  }, [location.pathname, user])
   const nav: NavItem[] = [
     ...(branding.platform
       ? [{ to: '/platform', label: 'Churches', icon: Church }, { to: '/users', label: 'Platform admins', icon: ShieldCheck }]
-      : user?.is_superuser
-        ? [{ to: '/super', label: 'System', icon: Gauge }, { to: '/users', label: 'Admin Users', icon: ShieldCheck }]
-        : NAV),
+      : [
+          ...NAV.filter((item) => !item.feature || can(user, item.feature)),
+          ...(isOwner(user) ? [{ to: '/users', label: 'Staff & roles', icon: ShieldCheck }, { to: '/super', label: 'System', icon: Gauge }] : []),
+        ]),
     { to: '/settings', label: 'Settings', icon: Settings },
   ]
 
@@ -88,7 +99,7 @@ export default function Layout() {
       </nav>
       <div className="border-t border-white/10 p-4">
         <p className="truncate text-sm font-medium text-white">{user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username}</p>
-        <p className="mb-3 text-xs text-brand-200">{branding.platform ? 'Platform admin' : user?.is_superuser ? 'Super admin' : user?.view_only ? 'View only' : 'Admin'}</p>
+        <p className="mb-3 text-xs text-brand-200">{roleSummary(user)}</p>
         <button onClick={logout} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-white/10 hover:text-white">
           <LogOut className="h-4 w-4" /> Sign out
         </button>
@@ -119,7 +130,7 @@ export default function Layout() {
               <span>
                 {user.username === 'demo'
                   ? <><strong>Demo, view only.</strong> Look around freely: everything here is sample data, and changes are turned off.</>
-                  : <><strong>View-only account.</strong> You can see everything, but changes are turned off.</>}
+                  : <><strong>View only.</strong> Your role lets you look, but not change anything.</>}
               </span>
             </div>
           )}

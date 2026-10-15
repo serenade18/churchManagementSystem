@@ -7,6 +7,7 @@ import { money } from '../../lib/format'
 import { paybillNumber } from '../../lib/theme'
 import { clean, useForm } from '../../lib/useForm'
 import type { Branch, DonationType, Page, Project } from '../../types'
+import { useCan } from '../../lib/access'
 
 function TypeForm({ type, onClose, onSaved }: { type: DonationType | null; onClose: () => void; onSaved: () => void }) {
   const projects = useOptions<Project>('/cms/projects/')
@@ -56,6 +57,7 @@ function TypeForm({ type, onClose, onSaved }: { type: DonationType | null; onClo
 }
 
 export default function DonationTypes() {
+  const can = useCan()
   const [editing, setEditing] = useState<DonationType | 'new' | null>(null)
   const [deleting, setDeleting] = useState<DonationType | null>(null)
   const [busy, setBusy] = useState(false)
@@ -79,7 +81,7 @@ export default function DonationTypes() {
   return (
     <>
       <PageHeader title="Donation types" subtitle={`What people give towards, and the code they add on Paybill ${paybillNumber()}, e.g. 0712345678TTH.`}
-        actions={<button className="btn-primary" onClick={() => setEditing('new')}><Plus className="h-4 w-4" /> New type</button>} />
+        actions={can('donation_types', true) && <button className="btn-primary" onClick={() => setEditing('new')}><Plus className="h-4 w-4" /> New type</button>} />
       {notice && <Alert tone="green">{notice}</Alert>}
       <Alert>{actionError || error?.message}</Alert>
       <Table loading={loading} rows={types} onRowClick={setEditing} empty="No donation types yet."

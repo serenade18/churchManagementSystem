@@ -442,6 +442,9 @@ function csv(rows: unknown[][]) {
 export const DEMO_USER: User = {
   id: 0, username: 'demo', email: '', first_name: 'Demo', last_name: 'Visitor', is_active: true, is_superuser: false,
   last_login: null, date_joined: null, status: 'active', phone_number: '', signed_up: false, view_only: true,
+  roles: [{ role: 'viewer', branches: [] }], is_owner: false,
+  access: Object.fromEntries((['dashboard', 'members', 'registrations', 'giving', 'paybill', 'reconciliation', 'donation_types',
+    'projects', 'attendance', 'sms', 'branches'] as const).map((f) => [f, { write: false, branches: null }])),
 }
 
 const ROUTES: [RegExp, (params: Query, ids: string[]) => unknown][] = [

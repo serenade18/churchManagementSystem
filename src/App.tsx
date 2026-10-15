@@ -2,7 +2,9 @@ import { lazy, Suspense, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Layout from './components/Layout'
 import { Spinner } from './components/ui'
+import { can, isOwner } from './lib/access'
 import { AuthProvider, homeFor, useAuth } from './lib/auth'
+import type { Feature } from './types'
 import Branches from './pages/branches/Branches'
 import Donations from './pages/donations/Donations'
 import DonationTypes from './pages/donations/DonationTypes'
@@ -26,6 +28,7 @@ import Sms from './pages/sms/Sms'
 import SuperDashboard from './pages/admin/SuperDashboard'
 import StatementPrint from './pages/print/StatementPrint'
 import Users from './pages/admin/Users'
+import NoAccess from './pages/admin/NoAccess'
 import NoChurch from './pages/platform/NoChurch'
 import PlatformChurches from './pages/platform/PlatformChurches'
 import PlatformHome from './pages/platform/PlatformHome'
@@ -35,14 +38,17 @@ import { branding } from './lib/theme'
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'))
 const Attendance = lazy(() => import('./pages/attendance/Attendance'))
 
-function RequireAuth({ children, superuser = false }: { children: ReactNode; superuser?: boolean }) {
+/** Signed in, and (``owner``) the church owner or a platform admin, or (``feature``) a role that opens it. */
+function RequireAuth({ children, owner = false, feature }: { children: ReactNode; owner?: boolean; feature?: Feature }) {
   const { user, loading } = useAuth()
   const location = useLocation()
   if (loading) return <div className="flex h-screen items-center justify-center"><Spinner className="h-8 w-8" /></div>
   if (!user) return <Navigate to="/admin" replace state={{ from: location }} />
-  if (superuser && !user.is_superuser) return <Navigate to={homeFor(user)} replace />
+  if ((owner && !isOwner(user)) || (feature && !can(user, feature))) return <Navigate to={homeFor(user)} replace />
   return children
 }
+
+const lazyPage = (page: ReactNode) => <Suspense fallback={<Spinner className="mx-auto mt-20 h-8 w-8" />}>{page}</Suspense>
 
 /** mkanisa.com itself: the platform's home page, the member portal and platform admin. */
 function PlatformApp() {
@@ -60,8 +66,8 @@ function PlatformApp() {
           <Route path="/signup/platform" element={<Signup superadmin />} />
           <Route path="/signup/superadmin" element={<Signup superadmin />} />
           <Route element={<RequireAuth><Layout /></RequireAuth>}>
-            <Route path="/platform" element={<RequireAuth superuser><PlatformChurches /></RequireAuth>} />
-            <Route path="/users" element={<RequireAuth superuser><Users /></RequireAuth>} />
+            <Route path="/platform" element={<RequireAuth owner><PlatformChurches /></RequireAuth>} />
+            <Route path="/users" element={<RequireAuth owner><Users /></RequireAuth>} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -96,20 +102,21 @@ export default function App() {
           <Route path="/print/receipt/:id" element={<RequireAuth><ReceiptPrint /></RequireAuth>} />
           <Route path="/print/statement/:id" element={<RequireAuth><StatementPrint /></RequireAuth>} />
           <Route element={<RequireAuth><Layout /></RequireAuth>}>
-            <Route path="/super" element={<RequireAuth superuser><SuperDashboard /></RequireAuth>} />
-            <Route path="/dashboard" element={<Suspense fallback={<Spinner className="mx-auto mt-20 h-8 w-8" />}><Dashboard /></Suspense>} />
-            <Route path="/members" element={<Members />} />
-            <Route path="/members/:id" element={<MemberDetail />} />
-            <Route path="/registrations" element={<Registrations />} />
-            <Route path="/donations" element={<Donations />} />
-            <Route path="/branches" element={<Branches />} />
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/sms" element={<Sms />} />
-            <Route path="/paybill" element={<Paybill />} />
-            <Route path="/donation-types" element={<DonationTypes />} />
-            <Route path="/attendance" element={<Suspense fallback={<Spinner className="mx-auto mt-20 h-8 w-8" />}><Attendance /></Suspense>} />
-            <Route path="/attendance/:id" element={<ServiceDetail />} />
-            <Route path="/users" element={<RequireAuth superuser><Users /></RequireAuth>} />
+            <Route path="/super" element={<RequireAuth owner><SuperDashboard /></RequireAuth>} />
+            <Route path="/no-access" element={<NoAccess />} />
+            <Route path="/dashboard" element={<RequireAuth feature="dashboard">{lazyPage(<Dashboard />)}</RequireAuth>} />
+            <Route path="/members" element={<RequireAuth feature="members"><Members /></RequireAuth>} />
+            <Route path="/members/:id" element={<RequireAuth feature="members"><MemberDetail /></RequireAuth>} />
+            <Route path="/registrations" element={<RequireAuth feature="registrations"><Registrations /></RequireAuth>} />
+            <Route path="/donations" element={<RequireAuth feature="giving"><Donations /></RequireAuth>} />
+            <Route path="/branches" element={<RequireAuth feature="branches"><Branches /></RequireAuth>} />
+            <Route path="/projects" element={<RequireAuth feature="projects"><Projects /></RequireAuth>} />
+            <Route path="/sms" element={<RequireAuth feature="sms"><Sms /></RequireAuth>} />
+            <Route path="/paybill" element={<RequireAuth feature="paybill"><Paybill /></RequireAuth>} />
+            <Route path="/donation-types" element={<RequireAuth feature="donation_types"><DonationTypes /></RequireAuth>} />
+            <Route path="/attendance" element={<RequireAuth feature="attendance">{lazyPage(<Attendance />)}</RequireAuth>} />
+            <Route path="/attendance/:id" element={<RequireAuth feature="attendance"><ServiceDetail /></RequireAuth>} />
+            <Route path="/users" element={<RequireAuth owner><Users /></RequireAuth>} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

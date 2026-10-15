@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { api, request, setViewOnly, tokens } from './api'
 import { endDemo, isDemo, startDemo } from './demo'
+import { firstPage } from './access'
 import { branding } from './theme'
 import type { Tokens, User } from '../types'
 
@@ -77,8 +78,8 @@ export const useAuth = () => {
   return auth
 }
 
-/** Landing page for a signed-in user: super admins get the system dashboard. */
+/** Landing page for a signed-in user: the first page their roles open. */
 export const homeFor = (user: User | null) => {
   if (branding.platform) return '/platform'  // mkanisa.com: platform admins manage churches
-  return user?.is_superuser ? '/super' : '/dashboard'
+  return firstPage(user)
 }

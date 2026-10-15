@@ -8,6 +8,7 @@ import { useApi, useOptions } from '../../lib/hooks'
 import { SERVICE_TYPES, date } from '../../lib/format'
 import { brandColor } from '../../lib/theme'
 import type { AttendanceStats, Branch, Page, Service } from '../../types'
+import { useCan } from '../../lib/access'
 
 const AXIS = { fontSize: 12, fill: '#64748b' }
 
@@ -24,6 +25,7 @@ function TrendTooltip({ active, payload }: Partial<TooltipContentProps<number, s
 }
 
 export default function Attendance() {
+  const can = useCan()
   const navigate = useNavigate()
   const branches = useOptions<Branch>('/cms/branches/')
   const [branch, setBranch] = useState('')
@@ -44,7 +46,7 @@ export default function Attendance() {
       <PageHeader title="Attendance" subtitle="Record who came to each service and follow up with members who have been away."
         actions={<>
           <div className="w-44"><Select value={branch} onChange={(v) => { setBranch(v); setPage(1) }} options={branches.map((b) => ({ value: b.id, label: b.name }))} placeholder="All branches" /></div>
-          <button className="btn-primary" onClick={() => setCreating(true)}><Plus className="h-4 w-4" /> New service</button>
+          {can('attendance', true) && <button className="btn-primary" onClick={() => setCreating(true)}><Plus className="h-4 w-4" /> New service</button>}
         </>} />
       <Alert>{stats.error?.message || services.error?.message}</Alert>
 

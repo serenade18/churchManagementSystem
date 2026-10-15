@@ -60,7 +60,7 @@ function ChurchForm({ church, onClose, onSaved }: { church: PlatformChurch | nul
 }
 
 function FirstAdmin({ church, onClose, onDone }: { church: PlatformChurch; onClose: () => void; onDone: (signIn: string) => void }) {
-  const { values, set, errors, error, busy, submit } = useForm({ role: 'admin', first_name: '', last_name: '', username: '', email: '', phone_number: '', password: '' })
+  const { values, set, errors, error, busy, submit } = useForm({ role: 'owner', first_name: '', last_name: '', username: '', email: '', phone_number: '', password: '' })
   const save = async (e: FormEvent) => {
     e.preventDefault()
     const res = await submit(() => api.post<{ sign_in: string }>(`/platform/churches/${church.id}/admins/`, values)).catch(() => null)
@@ -69,12 +69,12 @@ function FirstAdmin({ church, onClose, onDone }: { church: PlatformChurch; onClo
   return (
     <Modal open onClose={onClose} title={`Add an admin for ${church.name}`}
       footer={<><button className="btn-secondary" onClick={onClose}>Cancel</button><button className="btn-primary" form="admin-form" disabled={busy}>{busy ? 'Creating…' : 'Create admin'}</button></>}>
-      <p className="mb-4 text-sm text-slate-600">They sign in at the church's address. A church usually needs one of each.</p>
+      <p className="mb-4 text-sm text-slate-600">They sign in at the church's address. Start with the owner: they add the rest of the staff and choose each person's roles and branches.</p>
       <Alert>{error}</Alert>
       <form id="admin-form" onSubmit={save} className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2 sm:col-span-2" role="radiogroup" aria-label="Role">
-          {([['admin', 'Church admin', 'Runs the church: members, giving, Paybill, attendance, SMS.'],
-            ['superadmin', 'Super admin', "Manages the church's admin accounts and sees system health."]] as const).map(([key, label, text]) => (
+          {([['owner', 'Church owner', 'Everything in the church: staff and roles, branches, giving, members, settings.'],
+            ['admin', 'Church admin', 'Runs every branch day to day and the finances, without managing staff.']] as const).map(([key, label, text]) => (
             <label key={key} className={`flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-2 text-sm ${values.role === key ? 'border-brand-600 bg-brand-50' : 'border-slate-200'}`}>
               <input type="radio" name="role" className="mt-0.5 accent-[var(--color-primary)]" checked={values.role === key} onChange={() => set('role')(key)} />
               <span><span className="font-medium text-slate-900">{label}</span><span className="block text-xs text-slate-500">{text}</span></span>

@@ -85,7 +85,7 @@ export default function SuperDashboard() {
 
   return (
     <>
-      <PageHeader title="System overview" subtitle={`Super admin view for ${user?.first_name || user?.username}: admin accounts and system health.`} />
+      <PageHeader title="System overview" subtitle={`Owner view for ${user?.first_name || user?.username}: admin accounts and system health.`} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard icon={Users} label="Admin accounts" value={a.total} hint={`${a.superadmins} super admin${a.superadmins === 1 ? '' : 's'} · ${a.admins} admin${a.admins === 1 ? '' : 's'}`} />
@@ -116,8 +116,8 @@ export default function SuperDashboard() {
         </Panel>
 
         <Panel title="Accounts" action={<Link to="/users" className="text-sm font-medium text-brand-700 hover:underline">Manage admins</Link>}>
-          <Line label="Super admins" value={a.superadmins} />
-          <Line label="Admins" value={a.admins} />
+          <Line label="Owners" value={a.superadmins} />
+          <Line label="Staff" value={a.admins} />
           <Line label="Active" value={a.active} />
           <Line label="Disabled" value={a.disabled} />
           <Line label="Phone not verified" value={a.unverified} />

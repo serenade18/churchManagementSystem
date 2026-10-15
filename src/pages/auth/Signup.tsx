@@ -84,7 +84,7 @@ function DetailsStep({ onCreated, superadmin }: { onCreated: (res: SignupRespons
           ? branding.platform
             ? <>Platform admins add churches and manage mKanisa. You need the <strong>platform setup key</strong> from whoever runs the server. We'll also send a 6-digit code to your phone.</>
             : <>Super admins manage all admin accounts and system settings. You need the <strong>setup key</strong> from whoever runs the server. We'll also send a 6-digit code to your phone.</>
-          : "We'll send a 6-digit code to your phone to confirm it's yours."}
+          : "We'll send a 6-digit code to your phone to confirm it's yours. Then the church's owner gives you a role (for example, your branch or the treasury)."}
       </p>
       <Alert>{error}</Alert>
       <form onSubmit={save} className="grid gap-4 sm:grid-cols-2">

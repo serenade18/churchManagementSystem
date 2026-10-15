@@ -7,8 +7,10 @@ import { downloadCsv } from '../../lib/api'
 import { useApi, useDebounced, useOptions } from '../../lib/hooks'
 import { MEMBER_STATUS, GENDERS, money } from '../../lib/format'
 import type { Branch, Member, Page } from '../../types'
+import { useCan } from '../../lib/access'
 
 export default function Members() {
+  const can = useCan()
   const navigate = useNavigate()
   const branches = useOptions<Branch>('/cms/branches/')
   const [search, setSearch] = useState('')
@@ -26,7 +28,7 @@ export default function Members() {
     { key: 'phone_number', label: 'Phone', render: (m) => m.phone_number || '—' },
     { key: 'branch_name', label: 'Branch', render: (m) => m.branch_name || '—' },
     { key: 'status', label: 'Status', render: (m) => <Badge status={m.status}>{MEMBER_STATUS[m.status]}</Badge> },
-    { key: 'total_given', label: 'Total given', className: 'text-right', render: (m) => money(m.total_given) },
+    ...(can('giving') ? [{ key: 'total_given', label: 'Total given', className: 'text-right', render: (m: Member) => money(m.total_given) }] : []),
   ]
 
   return (
@@ -41,7 +43,7 @@ export default function Members() {
             gender: filters.gender,
           } })}><MessageSquare className="h-4 w-4" /> Send SMS</button>
           <button className="btn-secondary" onClick={() => downloadCsv('/cms/members/export/', { ...filters, search }, 'members.csv')}><Download className="h-4 w-4" /> Export</button>
-          <button className="btn-primary" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> Add member</button>
+          {can('members', true) && <button className="btn-primary" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> Add member</button>}
         </>}
       />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
