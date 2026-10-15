@@ -6,7 +6,7 @@ import { errorMessage, request } from '../../lib/api'
 import { currencyMoney, money } from '../../lib/format'
 import { branding } from '../../lib/theme'
 import PublicLayout from '../public/PublicLayout'
-import type { MpesaPayment, PaypalConfig, PublicDonationType, PublicProject } from '../../types'
+import type { MobileMoneyConfig, MpesaPayment, PaypalConfig, PublicDonationType, PublicProject } from '../../types'
 
 type Method = 'mpesa' | 'paypal'
 type GiveState = 'form' | 'sending' | 'waiting' | 'success' | 'failed'
@@ -54,6 +54,9 @@ export default function Give() {
   const [params] = useSearchParams()
   const [method, setMethod] = useState<Method>('mpesa')
   const [paypal, setPaypal] = useState<PaypalConfig>({ enabled: false, currency: 'USD', kes_rate: 0 })
+  // Mobile money: M-PESA, or (when SasaPay sends the prompts) also Airtel Money and others.
+  const [networks, setNetworks] = useState<MobileMoneyConfig['networks']>([{ code: '63902', label: 'M-PESA' }])
+  const [network, setNetwork] = useState('63902')
   const [form, setForm] = useState({ reference: '', phone: '', option: '', amount: '1000', name: '', email: '' })
   const [options, setOptions] = useState<GivingOption[] | null>(null)
   const [state, setState] = useState<GiveState>('form')
@@ -62,6 +65,11 @@ export default function Give() {
 
   useEffect(() => {
     request<PaypalConfig>('/paypal/config/', { auth: false }).then(setPaypal).catch(() => {})
+    request<MobileMoneyConfig>('/payments/mobile/', { auth: false }).then((config) => {
+      if (!config.networks.length) return
+      setNetworks(config.networks)
+      setNetwork((current) => (config.networks.some((n) => n.code === current) ? current : config.networks[0].code))
+    }).catch(() => {})
     Promise.all([
       request<PublicDonationType[]>('/donation-types/', { auth: false }),
       request<PublicProject[]>('/public/projects/', { auth: false }).catch((): PublicProject[] => []),
@@ -99,6 +107,7 @@ export default function Give() {
   }
 
   const isPaypal = method === 'paypal'
+  const netLabel = networks.find((n) => n.code === network)?.label || 'M-PESA'
   const giftAmount = (value: string) => (isPaypal ? currencyMoney(value, paypal.currency) : money(value))
   const switchMethod = (key: Method) => {
     setMethod(key)
@@ -128,12 +137,12 @@ export default function Give() {
       return
     }
     const phone = normalisePhone(form.phone)
-    if (!phone) return setMessage('Enter a valid Safaricom number, e.g. 0712 345 678.')
+    if (!phone) return setMessage(`Enter a valid ${netLabel === 'M-PESA' ? 'Safaricom' : netLabel} number, e.g. 0712 345 678.`)
     setState('sending')
     try {
       const res = await request<{ data: { payment: MpesaPayment } }>('/mpay/pay/', {
         method: 'POST', auth: false,
-        body: { phone_number: phone, amount: Math.round(Number(form.amount)), reference: form.reference.trim(), ...target },
+        body: { phone_number: phone, amount: Math.round(Number(form.amount)), reference: form.reference.trim(), network, ...target },
       })
       setState('waiting')
       poll(res.data.payment.checkout_request_id)
@@ -165,7 +174,7 @@ export default function Give() {
         <div className="py-6 text-center">
           <Smartphone className="mx-auto mb-3 h-14 w-14 text-brand-600" />
           <h1 className="text-xl font-semibold">Check your phone</h1>
-          <p className="mt-2 text-sm text-slate-600">Enter your M-PESA PIN on the prompt sent to your phone to complete your gift of {money(form.amount)}.</p>
+          <p className="mt-2 text-sm text-slate-600">Enter your {netLabel} PIN on the prompt sent to your phone to complete your gift of {money(form.amount)}.</p>
           <Loader2 className="mx-auto mt-6 h-6 w-6 animate-spin text-brand-600" />
           <button className="mt-6 text-sm text-slate-500 hover:underline" onClick={reset}>Cancel</button>
         </div>
@@ -174,13 +183,13 @@ export default function Give() {
           <div className="mb-5 flex items-start justify-between gap-3">
             <div>
               <h1 className="text-xl font-semibold text-slate-900">Give to {branding.name}</h1>
-              <p className="text-sm text-slate-500">{isPaypal ? 'Pay securely with PayPal or a card.' : "Secure giving with M-PESA. You'll get a prompt on your phone."}</p>
+              <p className="text-sm text-slate-500">{isPaypal ? 'Pay securely with PayPal or a card.' : `Secure giving with ${networks.length > 1 ? 'mobile money' : netLabel}. You'll get a prompt on your phone.`}</p>
             </div>
             <HeartHandshake className="h-7 w-7 shrink-0 text-brand-700" />
           </div>
           {paypal.enabled && (
             <div className="mb-5 grid grid-cols-2 gap-2" role="radiogroup" aria-label="Payment method">
-              {([['mpesa', 'M-PESA', Smartphone], ['paypal', 'PayPal / card', CreditCard]] as const).map(([key, label, Icon]) => (
+              {([['mpesa', networks.length > 1 ? 'Mobile money' : 'M-PESA', Smartphone], ['paypal', 'PayPal / card', CreditCard]] as const).map(([key, label, Icon]) => (
                 <button key={key} type="button" role="radio" aria-checked={method === key} onClick={() => switchMethod(key)}
                   className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium ${method === key ? 'border-brand-600 bg-brand-50 text-brand-800' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
                   <Icon className="h-4 w-4" /> {label}
@@ -231,9 +240,21 @@ export default function Give() {
                 </Field>
               </>
             ) : (
-              <Field label="M-PESA phone number">
+              <>
+              {networks.length > 1 && (
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" role="radiogroup" aria-label="Mobile money network">
+                  {networks.map((n) => (
+                    <button key={n.code} type="button" role="radio" aria-checked={network === n.code} onClick={() => setNetwork(n.code)}
+                      className={`rounded-lg border px-3 py-2 text-sm font-medium ${network === n.code ? 'border-brand-600 bg-brand-50 text-brand-800' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
+                      {n.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <Field label={`${netLabel} phone number`}>
                 <input className="input" required inputMode="tel" autoComplete="tel" placeholder="07XX XXX XXX" value={form.phone} onChange={set('phone')} />
               </Field>
+              </>
             )}
             <Field label="Membership number (optional)"
               hint={isPaypal ? undefined : "If your phone is registered with the church, we'll link your gift automatically. Visitors may enter their name."}>
@@ -243,7 +264,7 @@ export default function Give() {
             <button className="btn-primary w-full py-3" disabled={state === 'sending' || !options?.length}>
               {state === 'sending'
                 ? (isPaypal ? 'Opening PayPal…' : 'Sending prompt…')
-                : <>Give {form.amount ? giftAmount(form.amount) : ''} with {isPaypal ? 'PayPal' : 'M-PESA'} <ArrowRight className="h-4 w-4" /></>}
+                : <>Give {form.amount ? giftAmount(form.amount) : ''} with {isPaypal ? 'PayPal' : netLabel} <ArrowRight className="h-4 w-4" /></>}
             </button>
           </form>
         </>

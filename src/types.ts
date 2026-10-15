@@ -215,7 +215,7 @@ export interface AttendanceSummary {
 
 // --- giving -------------------------------------------------------------------------------------
 
-export type Channel = 'mpesa' | 'paybill' | 'paypal' | 'cash' | 'bank' | 'cheque'
+export type Channel = 'mpesa' | 'paybill' | 'paypal' | 'sasapay' | 'cash' | 'bank' | 'cheque'
 export type DonationStatus = 'success' | 'pending' | 'failed'
 export type ReceiptSmsStatus = 'sent' | 'failed' | 'no_phone' | ''
 
@@ -562,6 +562,14 @@ export interface PublicProject {
   percent?: number | null
   end_date?: string | null
   image_url?: string | null
+}
+
+/** What the give page offers for mobile money (GET /payments/mobile/). */
+export interface MobileMoneyConfig {
+  /** Which service sends the payment prompt. */
+  provider: 'daraja' | 'sasapay'
+  /** e.g. 63902 M-PESA, 63903 Airtel Money (SasaPay network codes). */
+  networks: { code: string; label: string }[]
 }
 
 export interface PaypalConfig {

@@ -341,7 +341,7 @@ function words(n: number): string {
   return ''
 }
 const inWords = (n: number) => `${words(Math.round(n)) || 'Zero'} Shillings Only`
-const CHANNEL: Record<Channel, string> = { mpesa: 'M-PESA', paybill: 'M-PESA Paybill', cash: 'Cash', bank: 'Bank', cheque: 'Cheque', paypal: 'PayPal' }
+const CHANNEL: Record<Channel, string> = { mpesa: 'M-PESA', paybill: 'M-PESA Paybill', cash: 'Cash', bank: 'Bank', cheque: 'Cheque', paypal: 'PayPal', sasapay: 'SasaPay' }
 
 function dashboard() {
   const { now, members, branches, projects, services } = db()

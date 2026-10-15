@@ -19,9 +19,9 @@ export const dateTime = (value: string | number | Date | null | undefined) =>
     : '—'
 export const today = () => new Date().toISOString().slice(0, 10)
 
-export const CHANNELS: Record<Channel, string> = { mpesa: 'M-PESA', paybill: 'M-PESA Paybill', paypal: 'PayPal', cash: 'Cash', bank: 'Bank', cheque: 'Cheque' }
+export const CHANNELS: Record<Channel, string> = { mpesa: 'M-PESA', paybill: 'M-PESA Paybill', paypal: 'PayPal', sasapay: 'SasaPay', cash: 'Cash', bank: 'Bank', cheque: 'Cheque' }
 // Donations confirmed by M-PESA or PayPal can't be edited (amount/status) or deleted.
-export const PROVIDER_CHANNELS: readonly string[] = ['mpesa', 'paybill', 'paypal'] satisfies Channel[]
+export const PROVIDER_CHANNELS: readonly string[] = ['mpesa', 'paybill', 'paypal', 'sasapay'] satisfies Channel[]
 export const PAYBILL_NUMBER = BRAND.paybill
 export const DONATION_STATUS: Record<DonationStatus, string> = { success: 'Success', pending: 'Pending', failed: 'Failed' }
 export const MEMBER_STATUS: Record<MemberStatus, string> = { active: 'Active', inactive: 'Inactive', transferred: 'Transferred', deceased: 'Deceased', visitor: 'Visitor' }
