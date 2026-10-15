@@ -4,7 +4,7 @@ import { latestCode, randomPhone, unique } from './fixtures.js'
 test('a new admin signs up, verifies their phone by SMS code and is signed in', async ({ page, request }) => {
   const id = unique().toLowerCase()
   const [phone, normalised] = randomPhone()
-  await page.goto('/')
+  await page.goto('/admin')
   await page.getByRole('link', { name: 'Create one' }).click()
 
   await page.getByLabel('First name').fill('Peter')

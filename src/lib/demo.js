@@ -55,7 +55,7 @@ function build() {
     { id: 1, name: 'Sanctuary Construction', description: 'New main sanctuary seating 1,200.', target_amount: 5000000, status: 'ongoing', branch: 1, start: 300 },
     { id: 2, name: 'Youth Centre', description: 'Library, computer lab and hall for the youth.', target_amount: 1200000, status: 'ongoing', branch: null, start: 240 },
     { id: 3, name: 'Community Borehole', description: 'Clean water for the neighbourhood.', target_amount: 650000, status: 'completed', branch: null, start: 360 },
-  ].map((p) => ({ ...p, start_date: ymd(now - p.start * DAY), end_date: p.status === 'completed' ? ymd(now - 40 * DAY) : null, created_at: created, updated_at: created }))
+  ].map((p) => ({ ...p, start_date: ymd(now - p.start * DAY), end_date: p.status === 'completed' ? ymd(now - 40 * DAY) : null, show_on_site: true, image_url: null, created_at: created, updated_at: created }))
 
   const types = [
     [1, 'GEN', 'General Offering', null, true], [2, 'TTH', 'Tithe & First Fruit', null, false], [3, 'DEV', 'Development', null, false],
@@ -152,7 +152,23 @@ function build() {
     return { id: i + 1, message, audience: {}, audience_label: label, status: 'sent', recipient_count: to.length, sent_count: to.length, failed_count: 0, skipped_count: 0, sent_by_name: 'treasurer', created_at: iso(now - days * DAY), to }
   })
 
-  DB = { now, branches, projects, types, members, donations, paybill, services, sms }
+  // Sign-ups from the public /register page.
+  const registrations = [
+    ['member', 'Faith', 'Njoroge', '254711222333', 1, 'pending', 0.2, 'Moved to the area last month. Looking forward to joining the choir.'],
+    ['member', 'Brian', 'Ochieng', '254722333444', 2, 'pending', 1, ''],
+    ['visitor', 'Lucy', 'Wairimu', '254733444555', null, 'pending', 2, 'Visited last Sunday with my sister.'],
+    ['member', members[3].first_name, members[3].last_name, members[3].phone_number, members[3].branch, 'pending', 3, 'Updating my details.'],
+    ['member', 'Daniel', 'Kibet', '254744555666', 3, 'approved', 9, ''],
+    ['visitor', 'Test', 'Entry', '254700000001', null, 'rejected', 12, ''],
+  ].map(([kind, first_name, last_name, phone_number, branch, status, days, message], i) => ({
+    id: i + 1, kind, first_name, last_name, other_names: '', full_name: `${first_name} ${last_name}`, phone_number, email: '',
+    gender: '', date_of_birth: null, marital_status: '', address: '', branch, branch_name: null, previous_church: '', message,
+    consent_at: iso(now - days * DAY), status, member: null, member_number: status === 'approved' ? 'M0065' : null,
+    reviewed_by_name: status === 'pending' ? null : 'secretary', reviewed_at: status === 'pending' ? null : iso(now - (days - 1) * DAY),
+    review_note: status === 'rejected' ? 'Test entry' : '', created_at: iso(now - days * DAY),
+  }))
+
+  DB = { now, branches, projects, types, members, donations, paybill, services, sms, registrations }
   return DB
 }
 
@@ -446,6 +462,15 @@ const ROUTES = [
     period_start: iso(db().now - 10 * DAY), period_end: iso(db().now - 3 * DAY), rows: 46, already_recorded: 44, imported: 2,
     linked: 0, needs_review: 0, amount_imported: '3500.00', synced: true, amounts_fixed: 0, marked_not_received: 0,
   }]],
+  [/^\/cms\/registrations\/$/, (p) => page(db().registrations.filter((r) => (!p.status || r.status === p.status)
+    && matches(p.search, r.full_name, r.phone_number)).map((r) => {
+    const same = r.status === 'pending' ? db().members.filter((m) => m.phone_number === r.phone_number) : []
+    return {
+      ...r, branch_name: branchName(r.branch),
+      possible_matches: same.map((m) => ({ id: m.id, full_name: m.full_name, membership_number: m.membership_number, phone_number: m.phone_number, branch: branchName(m.branch), reason: 'Same phone number' })),
+      suggested_number: r.status === 'pending' ? `M${String(db().members.length + 1).padStart(4, '0')}` : null,
+    }
+  }), p)],
   [/^\/cms\/users\/$/, (p) => page([], p)],
   [/^\/cms\/branding\/$/, () => ({ ...context.branding })],
 ]

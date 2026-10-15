@@ -5,11 +5,11 @@ test.describe('Sign in', () => {
   test('rejects a wrong password', async ({ page }) => {
     await login(page, { username: 'clerk', password: 'not-the-password' })
     await expect(page.getByText('Incorrect username or password.')).toBeVisible()
-    await expect(page).toHaveURL(/\/$/)
+    await expect(page).toHaveURL(/\/admin$/)
   })
 
   test('show password toggles what was typed', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/admin')
     const password = page.getByLabel('Password', { exact: true })
     await password.fill('secret-123')
     await expect(password).toHaveAttribute('type', 'password')
@@ -24,7 +24,7 @@ test.describe('Sign in', () => {
     await expect(page).toHaveURL(/\/dashboard$/)
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
     await expect(sidebarLinks(page)).toHaveText(
-      ['Dashboard', 'Members', 'Donations', 'Paybill', 'Donation Types', 'Attendance', 'Branches', 'Projects', 'Bulk SMS', 'Settings'],
+      ['Dashboard', 'Members', 'Registrations', 'Donations', 'Paybill', 'Donation Types', 'Attendance', 'Branches', 'Projects', 'Bulk SMS', 'Settings'],
     )
     await page.getByRole('button', { name: 'Sign out' }).click()
     await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible()

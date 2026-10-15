@@ -7,7 +7,11 @@ import Branches from './pages/branches/Branches'
 import Donations from './pages/donations/Donations'
 import DonationTypes from './pages/donations/DonationTypes'
 import ForgotPassword from './pages/auth/ForgotPassword'
+import ChurchHome from './pages/public/ChurchHome'
 import Give from './pages/give/Give'
+import Portal from './pages/public/Portal'
+import Register from './pages/public/Register'
+import Registrations from './pages/members/Registrations'
 import PaypalReturn from './pages/give/PaypalReturn'
 import Login from './pages/auth/Login'
 import MemberDetail from './pages/members/MemberDetail'
@@ -31,7 +35,7 @@ function RequireAuth({ children, superuser }) {
   const { user, loading } = useAuth()
   const location = useLocation()
   if (loading) return <div className="flex h-screen items-center justify-center"><Spinner className="h-8 w-8" /></div>
-  if (!user) return <Navigate to="/" replace state={{ from: location }} />
+  if (!user) return <Navigate to="/admin" replace state={{ from: location }} />
   if (superuser && !user.is_superuser) return <Navigate to="/dashboard" replace />
   return children
 }
@@ -41,9 +45,14 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* The site opens on the admin login; the public giving page lives at /give */}
-          <Route path="/" element={<Login />} />
-          <Route path="/login" element={<Navigate to="/" replace />} />
+          {/* The church's public site; church staff sign in at /admin */}
+          <Route path="/" element={<ChurchHome />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/me" element={<Portal />} />
+          <Route path="/me/receipt/:id" element={<ReceiptPrint portal />} />
+          <Route path="/me/statement" element={<StatementPrint portal />} />
+          <Route path="/admin" element={<Login />} />
+          <Route path="/login" element={<Navigate to="/admin" replace />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/signup/superadmin" element={<Signup superadmin />} />
@@ -57,6 +66,7 @@ export default function App() {
             <Route path="/dashboard" element={<Suspense fallback={<Spinner className="mx-auto mt-20 h-8 w-8" />}><Dashboard /></Suspense>} />
             <Route path="/members" element={<Members />} />
             <Route path="/members/:id" element={<MemberDetail />} />
+            <Route path="/registrations" element={<Registrations />} />
             <Route path="/donations" element={<Donations />} />
             <Route path="/branches" element={<Branches />} />
             <Route path="/projects" element={<Projects />} />

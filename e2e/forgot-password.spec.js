@@ -5,7 +5,7 @@ const NEW_PASSWORD = 'Brand-new-pass-2026'
 
 test('an admin resets a forgotten password with an SMS code', async ({ page, request }) => {
   const { username, password, phone } = ACCOUNTS.forgetful
-  await page.goto('/')
+  await page.goto('/admin')
   await page.getByLabel('Username').fill(username)
   await page.getByRole('link', { name: 'Forgot password?' }).click()
 

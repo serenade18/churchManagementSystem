@@ -21,7 +21,8 @@ export const CHANNELS = { mpesa: 'M-PESA', paybill: 'M-PESA Paybill', paypal: 'P
 export const PROVIDER_CHANNELS = ['mpesa', 'paybill', 'paypal']
 export const PAYBILL_NUMBER = BRAND.paybill
 export const DONATION_STATUS = { success: 'Success', pending: 'Pending', failed: 'Failed' }
-export const MEMBER_STATUS = { active: 'Active', inactive: 'Inactive', transferred: 'Transferred', deceased: 'Deceased' }
+export const MEMBER_STATUS = { active: 'Active', inactive: 'Inactive', transferred: 'Transferred', deceased: 'Deceased', visitor: 'Visitor' }
+export const REGISTRATION_STATUS = { pending: 'Waiting', approved: 'Approved', rejected: 'Rejected' }
 export const GENDERS = { male: 'Male', female: 'Female' }
 export const MARITAL = { single: 'Single', married: 'Married', widowed: 'Widowed', divorced: 'Divorced' }
 export const PROJECT_STATUS = { planned: 'Planned', ongoing: 'Ongoing', on_hold: 'On Hold', completed: 'Completed' }
@@ -29,7 +30,7 @@ export const PROJECT_STATUS = { planned: 'Planned', ongoing: 'Ongoing', on_hold:
 export const STATUS_TONES = {
   success: 'green', active: 'green', ongoing: 'blue', completed: 'green',
   pending: 'amber', planned: 'slate', on_hold: 'amber', inactive: 'slate',
-  failed: 'red', transferred: 'purple', deceased: 'slate',
+  failed: 'red', transferred: 'purple', deceased: 'slate', visitor: 'blue', approved: 'green', rejected: 'red',
 }
 
 export const SERVICE_TYPES = {

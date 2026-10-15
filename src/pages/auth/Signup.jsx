@@ -35,7 +35,7 @@ export default function Signup({ superadmin = false }) {
               onVerified={async (tokens) => { await acceptTokens(tokens) /* redirect above follows the role */ }} />
           : <DetailsStep superadmin={superadmin} onCreated={(res) => setPending({ username: res.username, phone: res.phone, fresh: true, notice: res.detail, smsFailed: !res.sms_sent })} />}
         <p className="mt-6 text-center text-sm text-slate-500">
-          Already have an account? <Link to="/" className="font-medium text-brand-700 hover:underline">Sign in</Link>
+          Already have an account? <Link to="/admin" className="font-medium text-brand-700 hover:underline">Sign in</Link>
         </p>
         {!pending && (
           <p className="mt-2 text-center text-xs text-slate-400">

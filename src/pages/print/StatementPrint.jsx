@@ -1,14 +1,15 @@
 import { useParams, useSearchParams } from 'react-router-dom'
 import PrintLayout, { ChurchHeader } from '../../components/PrintLayout'
 import { useApi } from '../../lib/hooks'
+import { portalGet } from '../../lib/portal'
 import { date, dateTime, money } from '../../lib/format'
 
-export default function StatementPrint() {
+export default function StatementPrint({ portal = false }) {
   const { id } = useParams()
   const [search] = useSearchParams()
-  const { data: s, loading, error } = useApi(`/cms/members/${id}/statement/`, {
-    date_from: search.get('date_from') || '', date_to: search.get('date_to') || '',
-  })
+  const { data: s, loading, error } = useApi(portal ? '/portal/statement/' : `/cms/members/${id}/statement/`, portal
+    ? { year: search.get('year') || '' }
+    : { date_from: search.get('date_from') || '', date_to: search.get('date_to') || '' }, portal ? portalGet : undefined)
 
   return (
     <PrintLayout title={s ? `Giving statement ${s.member.membership_number} ${s.date_from} to ${s.date_to}` : 'Giving statement'} loading={loading} error={error}>

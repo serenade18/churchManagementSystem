@@ -10,10 +10,10 @@ test('a giver abroad pays with PayPal; the gift is confirmed and admins see it i
 
   await page.goto('/give')
   await page.getByRole('radio', { name: 'PayPal / card' }).click()
-  await page.getByLabel('Membership number (if you have one)').fill(MEMBER.number)
+  await page.getByLabel('Membership number (optional)').fill(MEMBER.number)
   await page.getByLabel('Your name').fill('Grace Abroad')
   await page.getByLabel('Email for your receipt').fill(email)
-  await page.getByLabel('Giving towards').selectOption({ label: 'Thanksgiving' })
+  await page.getByRole('radio', { name: 'Thanksgiving' }).check()
   await page.getByLabel('Amount (USD)').fill('20')
   await expect(page.getByText(/About (Ksh|KES)\s?2,600/)).toBeVisible() // PAYPAL_KES_RATE=130 in e2e
   await page.getByRole('button', { name: /Give .*20.* with PayPal/ }).click()

@@ -6,7 +6,7 @@ async function startGift(page, { amount, phone = '0711 000 001', towards = 'Tith
   await page.goto('/give')
   await page.getByLabel('Membership number').fill(MEMBER.number)
   await page.getByLabel('M-PESA phone number').fill(phone)
-  await page.getByLabel('Giving towards').selectOption({ label: towards })
+  await page.getByRole('radio', { name: towards }).check()
   await page.getByLabel('Amount (KES)').fill(String(amount))
   const [response] = await Promise.all([
     page.waitForResponse((r) => r.url().includes('/mpay/pay/') && r.request().method() === 'POST'),
@@ -46,7 +46,7 @@ test('a cancelled M-PESA prompt shows the failure and lets the giver retry', asy
   await expect(page.getByRole('heading', { name: 'Payment not completed' })).toBeVisible({ timeout: 15_000 })
   await expect(page.getByText('Request cancelled by user')).toBeVisible()
   await page.getByRole('button', { name: 'Try again' }).click()
-  await expect(page.getByRole('heading', { name: 'Give online' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /^Give to / })).toBeVisible()
 })
 
 test('the giving form rejects an invalid phone number before calling M-PESA', async ({ page }) => {

@@ -23,7 +23,7 @@ export function randomPhone() {
 }
 
 export async function login(page, { username, password }) {
-  await page.goto('/')
+  await page.goto('/admin')
   await page.getByLabel('Username').fill(username)
   await page.getByLabel('Password', { exact: true }).fill(password)
   await page.getByRole('button', { name: 'Sign in' }).click()

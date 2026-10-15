@@ -75,9 +75,9 @@ export default function Login() {
           </p>
         )}
         <p className="mt-2 text-center text-sm text-slate-500">
-          Want to give? <Link to="/give" className="font-medium text-brand-700 hover:underline">Go to the donation page</Link>
+          Not church staff? <Link to="/" className="font-medium text-brand-700 hover:underline">Go to the church website</Link>
         </p>
-        <PoweredBy className="mt-6 text-slate-400" />
+        <PoweredBy className="mt-6 text-center text-slate-400" />
       </div>
     </div>
   )

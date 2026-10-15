@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { Building2, Eye, CalendarCheck, Gauge, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, Users, X } from 'lucide-react'
+import { Building2, Eye, CalendarCheck, Gauge, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, UserPlus, Users, X } from 'lucide-react'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import Logo from './Logo'
@@ -10,6 +10,7 @@ import { branding } from '../lib/theme'
 const NAV = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/members', label: 'Members', icon: Users },
+  { to: '/registrations', label: 'Registrations', icon: UserPlus, badge: 'registrations' },
   { to: '/donations', label: 'Donations', icon: HandCoins },
   { to: '/paybill', label: 'Paybill', icon: Smartphone, badge: 'unallocated' },
   { to: '/donation-types', label: 'Donation Types', icon: Tags },
@@ -22,17 +23,25 @@ const NAV = [
 export default function Layout() {
   const { user, logout } = useAuth()
   const [open, setOpen] = useState(false)
-  const [counts, setCounts] = useState({ unallocated: 0 })
+  const [counts, setCounts] = useState({ unallocated: 0, registrations: 0 })
   const location = useLocation()
 
-  // Badge: Paybill payments waiting to be allocated.
+  // Badges: Paybill payments waiting to be allocated, sign-ups waiting for review.
   useEffect(() => {
+    if (user?.is_superuser) return undefined
     const loadPaybill = () => api.get('/cms/paybill-payments/', { status: 'unallocated', page_size: 1 })
       .then((d) => setCounts((c) => ({ ...c, unallocated: d.count }))).catch(() => {})
+    const loadRegistrations = () => api.get('/cms/registrations/', { status: 'pending', page_size: 1 })
+      .then((d) => setCounts((c) => ({ ...c, registrations: d.count }))).catch(() => {})
     loadPaybill()
+    loadRegistrations()
     window.addEventListener('cms:paybill-changed', loadPaybill)
-    return () => window.removeEventListener('cms:paybill-changed', loadPaybill)
-  }, [location.pathname])
+    window.addEventListener('cms:registrations-changed', loadRegistrations)
+    return () => {
+      window.removeEventListener('cms:paybill-changed', loadPaybill)
+      window.removeEventListener('cms:registrations-changed', loadRegistrations)
+    }
+  }, [location.pathname, user?.is_superuser])
   const nav = [
     ...(user?.is_superuser
       ? [{ to: '/super', label: 'System', icon: Gauge }, { to: '/users', label: 'Admin Users', icon: ShieldCheck }]
@@ -62,7 +71,7 @@ export default function Layout() {
             <Icon className="h-5 w-5" /> {label}
             {badge && counts[badge] > 0 && (
               <span className="ml-auto rounded-full bg-danger px-2 py-0.5 text-xs font-semibold text-white"
-                title="Payments to allocate">{counts[badge]}</span>
+                title={badge === 'unallocated' ? 'Payments to allocate' : 'Sign-ups to review'}>{counts[badge]}</span>
             )}
           </NavLink>
         ))}

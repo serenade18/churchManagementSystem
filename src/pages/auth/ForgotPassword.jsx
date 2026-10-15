@@ -32,7 +32,7 @@ export default function ForgotPassword() {
               onReset={async (tokens) => { await acceptTokens(tokens) /* redirect above follows the role */ }} />
           : <RequestStep initial={location.state?.username || ''} onSent={(username, detail) => { setNotice(detail); setSentTo(username) }} />}
         <p className="mt-6 text-center text-sm text-slate-500">
-          Remembered it? <Link to="/" className="font-medium text-brand-700 hover:underline">Sign in</Link>
+          Remembered it? <Link to="/admin" className="font-medium text-brand-700 hover:underline">Sign in</Link>
         </p>
       </div>
     </div>

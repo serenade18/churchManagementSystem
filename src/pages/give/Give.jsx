@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
-import { CheckCircle2, CreditCard, Loader2, Smartphone, XCircle } from 'lucide-react'
-import Logo, { PoweredBy } from '../../components/Logo'
-import { Alert, Field, Select } from '../../components/ui'
+import { useSearchParams } from 'react-router-dom'
+import { ArrowRight, CheckCircle2, CreditCard, HeartHandshake, Loader2, Smartphone, XCircle } from 'lucide-react'
+import { Alert, Field } from '../../components/ui'
 import { request } from '../../lib/api'
 import { currencyMoney, money } from '../../lib/format'
 import { branding } from '../../lib/theme'
+import PublicLayout from '../public/PublicLayout'
 
 const POLL_MS = 4000
 const POLL_LIMIT = 30 // ~2 minutes
+const QUICK = { mpesa: [500, 1000, 2000, 5000], paypal: [10, 25, 50, 100] }
 
 // Accept 07XX / 01XX / +2547XX and normalise to 2547XXXXXXXX for Daraja.
 function normalisePhone(raw) {
@@ -19,30 +20,46 @@ function normalisePhone(raw) {
   return null
 }
 
+/**
+ * What a gift can go towards: each donation type, then each published project (given through the
+ * general "Project" type) unless a type already stands for it. Values: "t:<type id>" / "p:<project id>".
+ */
+function givingOptions(types, projects) {
+  const projectType = types.find((t) => t.asks_project)
+  const covered = new Set(types.map((t) => t.project).filter(Boolean))
+  return [
+    ...types.filter((t) => !t.asks_project).map((t) => ({ value: `t:${t.id}`, label: t.name, type: t.id, project: t.project || undefined })),
+    ...(projectType ? projects.filter((p) => !covered.has(p.id)).map((p) => ({ value: `p:${p.id}`, label: p.name, type: projectType.id, project: p.id, isProject: true })) : []),
+  ]
+}
+
 export default function Give() {
   const [params] = useSearchParams()
   const [method, setMethod] = useState('mpesa') // mpesa | paypal
   const [paypal, setPaypal] = useState({ enabled: false, currency: 'USD', kes_rate: 0 })
-  const [form, setForm] = useState({ reference: '', phone: '', description: '', amount: '', project: '', name: '', email: '' })
-  const [projects, setProjects] = useState([])
-  const [types, setTypes] = useState([])
+  const [form, setForm] = useState({ reference: '', phone: '', option: '', amount: '1000', name: '', email: '' })
+  const [options, setOptions] = useState(null)
   const [state, setState] = useState('form') // form | sending | waiting | success | failed
   const [message, setMessage] = useState(params.get('paypal') === 'cancelled' ? 'Your PayPal payment was cancelled. Nothing was charged.' : '')
   const timer = useRef(null)
 
   useEffect(() => {
-    request('/public/projects/', { auth: false }).then(setProjects).catch(() => {})
     request('/paypal/config/', { auth: false }).then(setPaypal).catch(() => {})
-    request('/donation-types/', { auth: false }).then((list) => {
-      setTypes(list)
-      const first = list.find((t) => t.is_default) || list[0]
-      if (first) setForm((f) => (f.description ? f : { ...f, description: String(first.id) }))
-    }).catch(() => {})
+    Promise.all([
+      request('/donation-types/', { auth: false }),
+      request('/public/projects/', { auth: false }).catch(() => []),
+    ]).then(([types, projects]) => {
+      const list = givingOptions(types, projects)
+      setOptions(list)
+      const wanted = params.get('project')
+      const pick = (wanted && (list.find((o) => String(o.project) === wanted && o.isProject) || list.find((o) => String(o.project) === wanted)))
+        || list.find((o) => types.find((t) => t.is_default && `t:${t.id}` === o.value)) || list[0]
+      if (pick) setForm((f) => (f.option ? f : { ...f, option: pick.value }))
+    }).catch(() => setOptions([]))
     return () => clearTimeout(timer.current)
-  }, [])
+  }, [params])
 
-  const asksProject = types.find((t) => String(t.id) === String(form.description))?.asks_project
-
+  const chosen = options?.find((o) => o.value === form.option)
   const set = (key) => (e) => setForm({ ...form, [key]: e?.target ? e.target.value : e })
 
   const poll = (checkoutId, attempt = 0) => {
@@ -66,54 +83,40 @@ export default function Give() {
 
   const isPaypal = method === 'paypal'
   const giftAmount = (value) => (isPaypal ? currencyMoney(value, paypal.currency) : money(value))
-
-  const submitPaypal = async () => {
-    setState('sending')
-    try {
-      const res = await request('/paypal/orders/', {
-        method: 'POST',
-        auth: false,
-        body: {
-          amount: Number(form.amount).toFixed(2),
-          reference: form.reference.trim(),
-          name: form.name.trim(),
-          email: form.email.trim(),
-          description: form.description,
-          project: asksProject ? form.project : undefined,
-        },
-      })
-      window.location.assign(res.approve_url) // PayPal sends the giver back to /give/paypal
-    } catch (err) {
-      setMessage(err.message)
-      setState('form')
-    }
+  const switchMethod = (key) => {
+    setMethod(key)
+    setMessage('')
+    setForm((f) => ({ ...f, amount: String(QUICK[key][1]) }))
   }
 
   const submit = async (e) => {
     e.preventDefault()
+    if (!chosen) return setMessage('Please choose what you would like to support.')
+    if (!(Number(form.amount) >= 1)) return setMessage('Please enter an amount.')
+    // A type tied to a project carries it already; only general project gifts name the project.
+    const target = { description: chosen.type, project: chosen.isProject ? chosen.project : undefined }
+    setMessage('')
     if (isPaypal) {
-      if (!form.description) return setMessage('Please choose what you are giving for.')
-      if (asksProject && !form.project) return setMessage('Please choose the project you are supporting.')
-      setMessage('')
-      return submitPaypal()
+      setState('sending')
+      try {
+        const res = await request('/paypal/orders/', {
+          method: 'POST', auth: false,
+          body: { amount: Number(form.amount).toFixed(2), reference: form.reference.trim(), name: form.name.trim(), email: form.email.trim(), ...target },
+        })
+        window.location.assign(res.approve_url) // PayPal sends the giver back to /give/paypal
+      } catch (err) {
+        setMessage(err.message)
+        setState('form')
+      }
+      return
     }
     const phone = normalisePhone(form.phone)
     if (!phone) return setMessage('Enter a valid Safaricom number, e.g. 0712 345 678.')
-    if (!form.description) return setMessage('Please choose what you are giving for.')
-    if (asksProject && !form.project) return setMessage('Please choose the project you are supporting.')
-    setMessage('')
     setState('sending')
     try {
       const res = await request('/mpay/pay/', {
-        method: 'POST',
-        auth: false,
-        body: {
-          phone_number: phone,
-          amount: Math.round(Number(form.amount)),
-          reference: form.reference.trim(),
-          description: form.description,
-          project: asksProject ? form.project : undefined,
-        },
+        method: 'POST', auth: false,
+        body: { phone_number: phone, amount: Math.round(Number(form.amount)), reference: form.reference.trim(), ...target },
       })
       setState('waiting')
       poll(res.data.payment.checkout_request_id)
@@ -127,79 +130,107 @@ export default function Give() {
 
   return (
     <GiveLayout>
-          {state === 'success' ? (
-            <div className="py-6 text-center">
-              <CheckCircle2 className="mx-auto mb-3 h-14 w-14 text-emerald-500" />
-              <h1 className="text-xl font-semibold">Thank you!</h1>
-              <p className="mt-2 text-sm text-slate-600">Your gift of {money(form.amount)} has been received. God bless you!</p>
-              <button className="btn-primary mt-6" onClick={() => { reset(); setForm({ ...form, amount: '' }) }}>Give again</button>
+      {state === 'success' ? (
+        <div className="py-6 text-center">
+          <CheckCircle2 className="mx-auto mb-3 h-14 w-14 text-emerald-500" />
+          <h1 className="text-xl font-semibold">Thank you!</h1>
+          <p className="mt-2 text-sm text-slate-600">Your gift of {money(form.amount)} towards {chosen?.label} has been received. God bless you!</p>
+          <button className="btn-primary mt-6" onClick={reset}>Give again</button>
+        </div>
+      ) : state === 'failed' ? (
+        <div className="py-6 text-center">
+          <XCircle className="mx-auto mb-3 h-14 w-14 text-red-500" />
+          <h1 className="text-xl font-semibold">Payment not completed</h1>
+          <p className="mt-2 text-sm text-slate-600">{message}</p>
+          <button className="btn-primary mt-6" onClick={reset}>Try again</button>
+        </div>
+      ) : state === 'waiting' ? (
+        <div className="py-6 text-center">
+          <Smartphone className="mx-auto mb-3 h-14 w-14 text-brand-600" />
+          <h1 className="text-xl font-semibold">Check your phone</h1>
+          <p className="mt-2 text-sm text-slate-600">Enter your M-PESA PIN on the prompt sent to your phone to complete your gift of {money(form.amount)}.</p>
+          <Loader2 className="mx-auto mt-6 h-6 w-6 animate-spin text-brand-600" />
+          <button className="mt-6 text-sm text-slate-500 hover:underline" onClick={reset}>Cancel</button>
+        </div>
+      ) : (
+        <>
+          <div className="mb-5 flex items-start justify-between gap-3">
+            <div>
+              <h1 className="text-xl font-semibold text-slate-900">Give to {branding.name}</h1>
+              <p className="text-sm text-slate-500">{isPaypal ? 'Pay securely with PayPal or a card.' : "Secure giving with M-PESA. You'll get a prompt on your phone."}</p>
             </div>
-          ) : state === 'failed' ? (
-            <div className="py-6 text-center">
-              <XCircle className="mx-auto mb-3 h-14 w-14 text-red-500" />
-              <h1 className="text-xl font-semibold">Payment not completed</h1>
-              <p className="mt-2 text-sm text-slate-600">{message}</p>
-              <button className="btn-primary mt-6" onClick={reset}>Try again</button>
-            </div>
-          ) : state === 'waiting' ? (
-            <div className="py-6 text-center">
-              <Smartphone className="mx-auto mb-3 h-14 w-14 text-brand-600" />
-              <h1 className="text-xl font-semibold">Check your phone</h1>
-              <p className="mt-2 text-sm text-slate-600">Enter your M-PESA PIN on the prompt sent to your phone to complete your gift of {money(form.amount)}.</p>
-              <Loader2 className="mx-auto mt-6 h-6 w-6 animate-spin text-brand-600" />
-              <button className="mt-6 text-sm text-slate-500 hover:underline" onClick={reset}>Cancel</button>
-            </div>
-          ) : (
-            <>
-              <h1 className="text-xl font-semibold">Give online</h1>
-              <p className="mb-5 text-sm text-slate-500">
-                {isPaypal ? 'Pay securely with PayPal or a card. You will be taken to PayPal to complete your gift.' : "Pay securely via M-PESA. You'll receive a prompt on your phone."}
-              </p>
-              {paypal.enabled && (
-                <div className="mb-5 grid grid-cols-2 gap-2" role="radiogroup" aria-label="Payment method">
-                  {[['mpesa', 'M-PESA', Smartphone], ['paypal', 'PayPal / card', CreditCard]].map(([key, label, Icon]) => (
-                    <button key={key} type="button" role="radio" aria-checked={method === key} onClick={() => { setMethod(key); setMessage('') }}
-                      className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium ${method === key ? 'border-brand-600 bg-brand-50 text-brand-800' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
-                      <Icon className="h-4 w-4" /> {label}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <Alert>{message}</Alert>
-              <form onSubmit={submit} className="space-y-4">
-                <Field label={isPaypal ? 'Membership number (if you have one)' : 'Membership number'} hint={isPaypal ? undefined : 'Visitors may enter their name instead.'}>
-                  <input className="input" required={!isPaypal} value={form.reference} onChange={set('reference')} maxLength={12} />
-                </Field>
-                {isPaypal ? (
-                  <>
-                    <Field label="Your name"><input className="input" value={form.name} onChange={set('name')} maxLength={150} autoComplete="name" /></Field>
-                    <Field label="Email for your receipt" hint="Optional: PayPal's email is used if you leave it empty.">
-                      <input className="input" type="email" value={form.email} onChange={set('email')} autoComplete="email" />
-                    </Field>
-                  </>
-                ) : (
-                  <Field label="M-PESA phone number">
-                    <input className="input" required inputMode="tel" placeholder="0712 345 678" value={form.phone} onChange={set('phone')} />
-                  </Field>
-                )}
-                <Field label="Giving towards">
-                  <Select value={form.description} onChange={set('description')} options={types.map((t) => ({ value: t.id, label: t.name }))} placeholder={types.length ? undefined : 'Loading…'} />
-                </Field>
-                {asksProject && (
-                  <Field label="Project">
-                    <Select value={form.project} onChange={set('project')} options={projects.map((p) => ({ value: p.id, label: p.name }))} placeholder="Select a project" />
-                  </Field>
-                )}
-                <Field label={`Amount (${isPaypal ? paypal.currency : 'KES'})`}
-                  hint={isPaypal && form.amount && Number(paypal.kes_rate) ? `About ${money(Number(form.amount) * Number(paypal.kes_rate))}` : undefined}>
-                  <input className="input" required type="number" min="1" step={isPaypal ? '0.01' : '1'} value={form.amount} onChange={set('amount')} />
-                </Field>
-                <button className="btn-primary w-full py-3" disabled={state === 'sending'}>
-                  {state === 'sending' ? (isPaypal ? 'Opening PayPal…' : 'Sending prompt…') : `Give ${form.amount ? giftAmount(form.amount) : ''}${isPaypal ? ' with PayPal' : ''}`}
+            <HeartHandshake className="h-7 w-7 shrink-0 text-brand-700" />
+          </div>
+          {paypal.enabled && (
+            <div className="mb-5 grid grid-cols-2 gap-2" role="radiogroup" aria-label="Payment method">
+              {[['mpesa', 'M-PESA', Smartphone], ['paypal', 'PayPal / card', CreditCard]].map(([key, label, Icon]) => (
+                <button key={key} type="button" role="radio" aria-checked={method === key} onClick={() => switchMethod(key)}
+                  className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium ${method === key ? 'border-brand-600 bg-brand-50 text-brand-800' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
+                  <Icon className="h-4 w-4" /> {label}
                 </button>
-              </form>
-            </>
+              ))}
+            </div>
           )}
+          <Alert>{message}</Alert>
+          <form onSubmit={submit} className="space-y-5">
+            <fieldset>
+              <legend className="label">What would you like to support?</legend>
+              {options === null
+                ? <p className="text-sm text-slate-500">Loading…</p>
+                : (
+                  <div className="space-y-1.5">
+                    {options.map((o) => (
+                      <label key={o.value} className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-sm ${form.option === o.value ? 'border-brand-600 bg-brand-50 font-medium text-slate-900' : 'border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
+                        <input type="radio" name="option" value={o.value} checked={form.option === o.value} onChange={set('option')} className="h-4 w-4 accent-[var(--color-primary)]" />
+                        {o.label}
+                        {o.isProject && <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">Project</span>}
+                      </label>
+                    ))}
+                  </div>
+                )}
+            </fieldset>
+
+            <div>
+              <label htmlFor="give-amount" className="label">Amount ({isPaypal ? paypal.currency : 'KES'})</label>
+              <div className="mb-2 grid grid-cols-4 gap-2" role="group" aria-label="Quick amounts">
+                {QUICK[method].map((n) => (
+                  <button key={n} type="button" onClick={() => setForm({ ...form, amount: String(n) })} aria-pressed={Number(form.amount) === n}
+                    className={`rounded-full border py-2 text-sm font-medium ${Number(form.amount) === n ? 'border-brand-600 bg-brand-600 text-white' : 'border-slate-300 text-slate-700 hover:bg-slate-50'}`}>
+                    {n.toLocaleString()}
+                  </button>
+                ))}
+              </div>
+              <input id="give-amount" className="input" required type="number" min="1" step={isPaypal ? '0.01' : '1'} value={form.amount} onChange={set('amount')} />
+              {isPaypal && form.amount && Number(paypal.kes_rate) > 0 && (
+                <span className="mt-1 block text-xs text-slate-500">About {money(Number(form.amount) * Number(paypal.kes_rate))}</span>
+              )}
+            </div>
+
+            {isPaypal ? (
+              <>
+                <Field label="Your name"><input className="input" value={form.name} onChange={set('name')} maxLength={150} autoComplete="name" /></Field>
+                <Field label="Email for your receipt" hint="Optional: PayPal's email is used if you leave it empty.">
+                  <input className="input" type="email" value={form.email} onChange={set('email')} autoComplete="email" />
+                </Field>
+              </>
+            ) : (
+              <Field label="M-PESA phone number">
+                <input className="input" required inputMode="tel" autoComplete="tel" placeholder="07XX XXX XXX" value={form.phone} onChange={set('phone')} />
+              </Field>
+            )}
+            <Field label="Membership number (optional)"
+              hint={isPaypal ? undefined : "If your phone is registered with the church, we'll link your gift automatically. Visitors may enter their name."}>
+              <input className="input" value={form.reference} onChange={set('reference')} maxLength={12} />
+            </Field>
+
+            <button className="btn-primary w-full py-3" disabled={state === 'sending' || !options?.length}>
+              {state === 'sending'
+                ? (isPaypal ? 'Opening PayPal…' : 'Sending prompt…')
+                : <>Give {form.amount ? giftAmount(form.amount) : ''} with {isPaypal ? 'PayPal' : 'M-PESA'} <ArrowRight className="h-4 w-4" /></>}
+            </button>
+          </form>
+        </>
+      )}
     </GiveLayout>
   )
 }
@@ -207,15 +238,8 @@ export default function Give() {
 /** Page frame shared by the give page and the PayPal return page. */
 export function GiveLayout({ children }) {
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-sidebar via-sidebar to-primary-hover">
-      <header className="flex items-center justify-between px-4 py-4 text-white sm:px-8">
-        <span className="flex items-center gap-3 font-semibold"><Logo tile className="h-11 w-11" /> {branding.name}</span>
-        <Link to="/" className="text-sm text-brand-100 hover:text-white">Admin login</Link>
-      </header>
-      <main className="flex flex-1 items-center justify-center p-4">
-        <div className="card w-full max-w-md p-6 sm:p-8">{children}</div>
-      </main>
-      <PoweredBy className="pb-4 text-white/60" />
-    </div>
+    <PublicLayout width="max-w-xl">
+      <div className="card p-5 sm:p-7">{children}</div>
+    </PublicLayout>
   )
 }
