@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { latestCode, randomPhone, unique } from './fixtures.js'
 
-test('a new admin signs up, verifies their phone by SMS code and is signed in', async ({ page, request }) => {
+test('a new admin signs up, verifies their phone by SMS code and waits for a role', async ({ page, request }) => {
   const id = unique().toLowerCase()
   const [phone, normalised] = randomPhone()
   await page.goto('/admin')
@@ -25,7 +25,8 @@ test('a new admin signs up, verifies their phone by SMS code and is signed in', 
 
   await page.getByLabel('Verification code').fill(code)
   await page.getByRole('button', { name: 'Verify and sign in' }).click()
-  await expect(page).toHaveURL(/\/dashboard$/)
+  await expect(page).toHaveURL(/\/no-access$/)
+  await expect(page.getByRole('heading', { name: 'Waiting for a role' })).toBeVisible()
   await expect(page.getByText('Peter Mwangi')).toBeVisible()
 })
 

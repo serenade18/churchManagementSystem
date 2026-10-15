@@ -103,7 +103,8 @@ export async function request(path: string, { method = 'GET', body, params, raw 
       throw new ApiError(err.status || 400, { detail: err.message })
     }
   }
-  if (viewOnly && auth && method !== 'GET') throw new ApiError(403, { detail: VIEW_ONLY_MESSAGE })
+  // (Their own password is theirs to change; the server decides for shared view-only accounts.)
+  if (viewOnly && auth && method !== 'GET' && path !== '/auth/change-password/') throw new ApiError(403, { detail: VIEW_ONLY_MESSAGE })
   const url = new URL(`${API_URL}${path}`, window.location.origin)
   Object.entries(params || {}).forEach(([k, v]) => {
     if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, String(v))

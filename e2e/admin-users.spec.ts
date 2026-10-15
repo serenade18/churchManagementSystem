@@ -1,15 +1,16 @@
 import { expect, test } from '@playwright/test'
 import { ACCOUNTS, login, unique } from './fixtures.js'
 
-test('a super admin adds an admin who can then sign in', async ({ page, browser }) => {
+test('the owner adds a staff member with a role, who can then sign in', async ({ page, browser }) => {
   const username = `deacon${unique().toLowerCase()}`
   await login(page, ACCOUNTS.super)
-  await page.getByRole('link', { name: 'Admin Users' }).click()
-  await page.getByRole('button', { name: 'Add admin' }).click()
+  await page.getByRole('link', { name: 'Staff & roles' }).click()
+  await page.getByRole('button', { name: 'Add staff member' }).click()
   await page.getByLabel('Username *').fill(username)
   await page.getByLabel('First name').fill('Daniel')
   await page.getByLabel('Last name').fill('Otieno')
   await page.getByLabel(/^Password \*/).fill('Deacon-pass-2026')
+  await page.getByRole('checkbox', { name: /Branch admin/ }).check()
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByRole('row', { name: new RegExp(username) })).toContainText('Active')
 
@@ -23,10 +24,11 @@ test('an admin changes their own password in Settings', async ({ page }) => {
   // Use a fresh admin so other specs keep the seeded passwords.
   const username = `elder${unique().toLowerCase()}`
   await login(page, ACCOUNTS.super)
-  await page.getByRole('link', { name: 'Admin Users' }).click()
-  await page.getByRole('button', { name: 'Add admin' }).click()
+  await page.getByRole('link', { name: 'Staff & roles' }).click()
+  await page.getByRole('button', { name: 'Add staff member' }).click()
   await page.getByLabel('Username *').fill(username)
   await page.getByLabel(/^Password \*/).fill('Elder-pass-2026')
+  await page.getByRole('checkbox', { name: /Pastor/ }).check()
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByRole('row', { name: new RegExp(username) })).toBeVisible()
   await page.getByRole('button', { name: 'Sign out' }).click()
@@ -45,5 +47,5 @@ test('an admin changes their own password in Settings', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Sign out' }).click()
   await login(page, { username, password: 'Elder-new-2026' })
-  await expect(page).toHaveURL(/\/dashboard$/)
+  await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible()  // signed in with the new password
 })

@@ -30,11 +30,13 @@ test.describe('Sign in', () => {
     await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible()
   })
 
-  test('a super admin lands on the system overview and only sees admin pages', async ({ page }) => {
+  test('the church owner sees every page, plus staff and the system overview', async ({ page }) => {
     await login(page, ACCOUNTS.super)
-    await expect(page).toHaveURL(/\/super$/)
+    await expect(page).toHaveURL(/\/dashboard$/)
+    await expect(sidebarLinks(page)).toHaveText(['Dashboard', 'Members', 'Registrations', 'Donations', 'Paybill',
+      'Donation Types', 'Attendance', 'Branches', 'Projects', 'Bulk SMS', 'Staff & roles', 'System', 'Settings'])
+    await page.getByRole('link', { name: 'System' }).click()
     await expect(page.getByRole('heading', { name: 'System overview' })).toBeVisible()
-    await expect(sidebarLinks(page)).toHaveText(['System', 'Admin Users', 'Settings'])
   })
 
   test('a signed-out visitor is sent to sign in, then back to the page they wanted', async ({ page }) => {
