@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { CheckCircle2, CreditCard, Loader2, Smartphone, XCircle } from 'lucide-react'
-import Logo from '../../components/Logo'
+import Logo, { PoweredBy } from '../../components/Logo'
 import { Alert, Field, Select } from '../../components/ui'
 import { request } from '../../lib/api'
 import { currencyMoney, money } from '../../lib/format'
@@ -215,6 +215,7 @@ export function GiveLayout({ children }) {
       <main className="flex flex-1 items-center justify-center p-4">
         <div className="card w-full max-w-md p-6 sm:p-8">{children}</div>
       </main>
+      <PoweredBy className="pb-4 text-white/60" />
     </div>
   )
 }

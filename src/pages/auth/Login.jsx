@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
-import Logo from '../../components/Logo'
+import Logo, { PoweredBy } from '../../components/Logo'
 import { Alert, PasswordInput } from '../../components/ui'
 import { homeFor, useAuth } from '../../lib/auth'
 import { branding } from '../../lib/theme'
@@ -77,6 +77,7 @@ export default function Login() {
         <p className="mt-2 text-center text-sm text-slate-500">
           Want to give? <Link to="/give" className="font-medium text-brand-700 hover:underline">Go to the donation page</Link>
         </p>
+        <PoweredBy className="mt-6 text-slate-400" />
       </div>
     </div>
   )

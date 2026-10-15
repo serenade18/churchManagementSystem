@@ -1,4 +1,5 @@
 import { branding } from '../lib/theme'
+import { BRAND } from '../brand'
 
 /**
  * The organisation's logo (Settings > Branding, else public/logo.png): the full logo where there is room,
@@ -11,4 +12,10 @@ export default function Logo({ className = 'h-12', tile = false, mark = tile }) 
   )
   if (!tile) return img
   return <span className={`inline-flex shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-sm ${className}`}>{img}</span>
+}
+
+/** "Powered by mKanisa" on public pages once a church shows its own name; nothing on other builds. */
+export function PoweredBy({ className = 'text-slate-400' }) {
+  if (!BRAND.poweredBy || branding.name === BRAND.poweredBy) return null
+  return <p className={`text-center text-xs ${className}`}>Powered by <span className="font-semibold">{BRAND.poweredBy}</span></p>
 }
