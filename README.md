@@ -32,12 +32,16 @@ npm run dev               # http://localhost:5173
 ## Production build
 
 ```bash
-npm run build             # outputs to dist/
+npm run typecheck         # TypeScript only
+npm run build             # type-checks, then builds into ../pceaBackend/frontend/dist
 ```
 
-Upload the contents of `dist/` to the web root of `cms.pceamilele.or.ke`. The included
-`.htaccess` routes every page to `index.html`, so links like `/members/12` work on Apache/cPanel.
-`VITE_*` variables are baked in at build time, so set `.env` **before** building.
+The app is TypeScript (`.ts` / `.tsx`); shared API shapes live in `src/types.ts`.
+
+`npm run build` writes into the backend checkout (`pceaBackend/frontend/dist`) so one deployment
+serves both; set `BACKEND_DIR` if the backend isn't next to this repo. The API address comes from
+`.env.production` (`VITE_API_URL=https://mkanisa.com/api`). `VITE_*` variables are baked in at build
+time, so change them **before** building.
 
 ## End-to-end tests
 
@@ -54,4 +58,4 @@ npm run test:e2e:ui               # same, in Playwright's UI mode
 - Set `BACKEND_DIR` if the backend isn't at `../pceaBackend`, and `BACKEND_PYTHON` if its virtualenv isn't `.venv`.
 - Set `E2E_BROWSER_PATH` to use an installed Chromium-based browser instead of Playwright's Chromium.
 - Each run resets the database to the seed data in `pceaBackend/apps/e2e/management/commands/e2e_seed.py`.
-- `e2e/api.spec.js` tests the backend's public M-PESA and auth endpoints over HTTP, the way Safaricom and the browser call them.
+- `e2e/api.spec.ts` tests the backend's public M-PESA and auth endpoints over HTTP, the way Safaricom and the browser call them.
