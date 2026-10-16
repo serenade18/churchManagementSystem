@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from 'react'
 import { api } from './api'
 import type { DonationType, Page, Params } from '../types'
 
-/** Fetch `path` with `params`, refetching whenever they change. */
-export function useApi<T>(path: string | null, params?: Params) {
+type Getter = <T>(path: string, params?: Params) => Promise<T>
+
+/** Fetch `path` with `params` (with ``get``, e.g. the member portal's), refetching whenever they change. */
+export function useApi<T>(path: string | null, params?: Params, get: Getter = api.get) {
   const [data, setData] = useState<T | null>(null)
   const [error, setError] = useState<Error | null>(null)
   const [loading, setLoading] = useState(true)
@@ -13,14 +15,14 @@ export function useApi<T>(path: string | null, params?: Params) {
     if (!path) return
     setLoading(true)
     try {
-      setData(await api.get<T>(path, JSON.parse(key)))
+      setData(await get<T>(path, JSON.parse(key)))
       setError(null)
     } catch (e) {
       setError(e as Error)
     } finally {
       setLoading(false)
     }
-  }, [path, key])
+  }, [path, key, get])
 
   useEffect(() => { reload() }, [reload])
   return { data, error, loading, reload, setData }

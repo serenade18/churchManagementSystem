@@ -217,7 +217,10 @@ export function GiveLayout({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen flex-col bg-gradient-to-br from-sidebar via-sidebar to-primary-hover">
       <header className="flex items-center justify-between px-4 py-4 text-white sm:px-8">
         <span className="flex items-center gap-3 font-semibold"><Logo tile className="h-11 w-11" /> {branding.name}</span>
-        <Link to="/" className="text-sm text-brand-100 hover:text-white">Admin login</Link>
+        <nav className="flex items-center gap-4 text-sm">
+          <Link to="/me" className="text-brand-100 hover:text-white">My giving</Link>
+          <Link to="/" className="text-brand-100 hover:text-white">Admin login</Link>
+        </nav>
       </header>
       <main className="flex flex-1 items-center justify-center p-4">
         <div className="card w-full max-w-md p-6 sm:p-8">{children}</div>

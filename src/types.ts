@@ -501,3 +501,48 @@ export interface PaypalGift {
   message: string
   donation_type: string | null
 }
+
+// --- member portal --------------------------------------------------------------------------------
+
+export interface PortalPerson {
+  name: string
+  phone_number: string
+  email: string
+}
+
+export interface PortalGift {
+  id: Id
+  date: string
+  donation_type: string
+  project: string | null
+  amount: Amount
+  paid_amount: Amount | null
+  paid_currency: string | null
+  channel: string
+  receipt_number: string
+}
+
+export interface PortalMembership {
+  full_name: string
+  membership_number: string
+  branch: string | null
+  status: string
+  date_joined: string | null
+}
+
+export interface PortalMe {
+  person: PortalPerson
+  churches: { name: string; relationship: string; status: string; memberships: PortalMembership[] }[]
+  giving: {
+    year: number
+    year_total: Amount
+    year_count: number
+    all_time_total: Amount
+    last_gift: PortalGift | null
+  }
+}
+
+export interface PortalGiving {
+  years: number[]
+  results: PortalGift[]
+}

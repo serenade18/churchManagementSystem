@@ -80,6 +80,8 @@ export interface RequestOptions {
   params?: Params
   raw?: boolean
   auth?: boolean
+  /** Extra headers, e.g. the member portal's sign-in. */
+  headers?: Record<string, string>
 }
 
 /**
@@ -88,7 +90,7 @@ export interface RequestOptions {
  */
 export async function request(path: string, options: RequestOptions & { raw: true }): Promise<Response>
 export async function request<T = unknown>(path: string, options?: RequestOptions): Promise<T>
-export async function request(path: string, { method = 'GET', body, params, raw = false, auth = true }: RequestOptions = {}): Promise<unknown> {
+export async function request(path: string, { method = 'GET', body, params, raw = false, auth = true, headers: extra = {} }: RequestOptions = {}): Promise<unknown> {
   // Demo: admin requests are answered from built-in sample data, never the server.
   if (auth && isDemo()) {
     await new Promise((resolve) => setTimeout(resolve, 120))
@@ -108,7 +110,7 @@ export async function request(path: string, { method = 'GET', body, params, raw 
 
   const isForm = body instanceof FormData
   const send = () => {
-    const headers: Record<string, string> = {}
+    const headers: Record<string, string> = { ...extra }
     if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json'
     if (auth && tokens.access) headers.Authorization = `Bearer ${tokens.access}`
     return fetch(url, { method, headers, body: body === undefined ? undefined : isForm ? body : JSON.stringify(body) })
