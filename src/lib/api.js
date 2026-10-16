@@ -64,7 +64,8 @@ export const VIEW_ONLY_MESSAGE = 'This is a view-only demo: you can look around,
 let viewOnly = false
 export const setViewOnly = (value) => { viewOnly = Boolean(value) }
 
-export async function request(path, { method = 'GET', body, params, raw = false, auth = true } = {}) {
+/** Call the API. ``headers`` adds extra headers, e.g. the member portal's sign-in. */
+export async function request(path, { method = 'GET', body, params, raw = false, auth = true, headers: extra = {} } = {}) {
   // Demo: admin requests are answered from built-in sample data, never the server.
   if (auth && isDemo()) {
     await new Promise((resolve) => setTimeout(resolve, 120))
@@ -83,7 +84,7 @@ export async function request(path, { method = 'GET', body, params, raw = false,
 
   const isForm = body instanceof FormData
   const send = () => {
-    const headers = {}
+    const headers = { ...extra }
     if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json'
     if (auth && tokens.access) headers.Authorization = `Bearer ${tokens.access}`
     return fetch(url, { method, headers, body: body === undefined ? undefined : isForm ? body : JSON.stringify(body) })

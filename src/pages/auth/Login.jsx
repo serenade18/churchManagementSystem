@@ -77,6 +77,9 @@ export default function Login() {
         <p className="mt-2 text-center text-sm text-slate-500">
           Want to give? <Link to="/give" className="font-medium text-brand-700 hover:underline">Go to the donation page</Link>
         </p>
+        <p className="mt-2 text-center text-sm text-slate-500">
+          A member? <Link to="/me" className="font-medium text-brand-700 hover:underline">Sign in to see your giving</Link>
+        </p>
       </div>
     </div>
   )

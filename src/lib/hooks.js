@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from './api'
 
-/** Fetch `path` with `params`, refetching whenever they change. */
-export function useApi(path, params) {
+/** Fetch `path` with `params` (with ``get``, e.g. the member portal's), refetching whenever they change. */
+export function useApi(path, params, get = api.get) {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -12,14 +12,14 @@ export function useApi(path, params) {
     if (!path) return
     setLoading(true)
     try {
-      setData(await api.get(path, JSON.parse(key)))
+      setData(await get(path, JSON.parse(key)))
       setError(null)
     } catch (e) {
       setError(e)
     } finally {
       setLoading(false)
     }
-  }, [path, key])
+  }, [path, key, get])
 
   useEffect(() => { reload() }, [reload])
   return { data, error, loading, reload, setData }

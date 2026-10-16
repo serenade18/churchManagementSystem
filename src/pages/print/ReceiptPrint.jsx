@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom'
 import PrintLayout, { ChurchHeader } from '../../components/PrintLayout'
 import { useApi } from '../../lib/hooks'
+import { portalGet } from '../../lib/portal'
 import { currencyMoney, dateTime, money } from '../../lib/format'
 
 function Row({ label, children }) {
@@ -13,9 +14,10 @@ function Row({ label, children }) {
   )
 }
 
-export default function ReceiptPrint() {
+/** An official receipt: for admins, or (``portal``) for a signed-in member's own gift. */
+export default function ReceiptPrint({ portal = false }) {
   const { id } = useParams()
-  const { data: r, loading, error } = useApi(`/cms/donations/${id}/receipt/`)
+  const { data: r, loading, error } = useApi(portal ? `/portal/giving/${id}/receipt/` : `/cms/donations/${id}/receipt/`, undefined, portal ? portalGet : undefined)
 
   return (
     <PrintLayout title={r ? `Receipt ${r.receipt_number}` : 'Receipt'} pageSize="A5" loading={loading} error={error}>
