@@ -14,11 +14,12 @@ test('someone registers on the public site, an admin approves them, and they sig
   await page.getByLabel('First name').fill('Amani')
   await page.getByLabel('Last name').fill(last)
   await page.getByLabel('Phone number').fill(phone)
+  await page.getByText('More about you').click()
   await page.getByLabel('Anything you would like us to know?').fill('New to the area.')
   await page.getByRole('checkbox').check()
   await page.getByRole('button', { name: 'Send my details' }).click()
-  await expect(page.getByRole('heading', { name: 'Details received' })).toBeVisible()
-  await expect(page.getByText('Thank you, Amani!')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Thank you, Amani!' })).toBeVisible()
+  await expect(page.getByText('The church office will review your details')).toBeVisible()
 
   // An admin reviews and approves the sign-up.
   await login(page, ACCOUNTS.clerk)

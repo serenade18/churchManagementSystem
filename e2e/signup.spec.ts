@@ -5,7 +5,8 @@ test('a new admin signs up, verifies their phone by SMS code and waits for a rol
   const id = unique().toLowerCase()
   const [phone, normalised] = randomPhone()
   await page.goto('/admin')
-  await page.getByRole('link', { name: 'Create one' }).click()
+  await page.getByRole('link', { name: 'Create a staff account' }).click()
+  await expect(page.getByText('Step 1 of 3')).toBeVisible()
 
   await page.getByLabel('First name').fill('Peter')
   await page.getByLabel('Last name').fill('Mwangi')
@@ -16,15 +17,16 @@ test('a new admin signs up, verifies their phone by SMS code and waits for a rol
   await page.getByLabel('Confirm password').fill('Strong-pass-2026')
   await page.getByRole('button', { name: 'Create account' }).click()
 
-  await expect(page.getByText('Verify your phone number')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Check your phone' })).toBeVisible()
+  await expect(page.getByText('Step 2 of 3')).toBeVisible()
   const code = await latestCode(request, normalised)
 
   await page.getByLabel('Verification code').fill(code === '000000' ? '111111' : '000000')
-  await page.getByRole('button', { name: 'Verify and sign in' }).click()
+  await page.getByRole('button', { name: 'Verify and continue' }).click()
   await expect(page.getByText(/Incorrect code/)).toBeVisible()
 
   await page.getByLabel('Verification code').fill(code)
-  await page.getByRole('button', { name: 'Verify and sign in' }).click()
+  await page.getByRole('button', { name: 'Verify and continue' }).click()
   await expect(page).toHaveURL(/\/no-access$/)
   await expect(page.getByRole('heading', { name: 'Waiting for a role' })).toBeVisible()
   await expect(page.getByText('Peter Mwangi')).toBeVisible()

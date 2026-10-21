@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { type LucideIcon, Church, ChevronRight, FileText, HeartHandshake, LogOut, Receipt, UserRound } from 'lucide-react'
+import { type LucideIcon, Check, Church, ChevronRight, FileText, HeartHandshake, LogOut, MessageSquareMore, Receipt, UserRound } from 'lucide-react'
 import { Alert, Field, Modal, Spinner } from '../../components/ui'
+import { AuthAlert, CodeInput, MemberAuthLayout, MemberFooter, ResendCode, authLabel, authPrimary, churchPhoto, maskPhone, useCountdown } from '../../components/AuthShell'
 import { errorMessage, request } from '../../lib/api'
 import { currencyMoney, date, money } from '../../lib/format'
 import { portalGet, portalRequest, portalToken } from '../../lib/portal'
@@ -9,6 +10,8 @@ import PublicLayout from './PublicLayout'
 import type { PortalChurch, PortalGift, PortalGiving, PortalMe } from '../../types'
 
 type QuickAction = [LucideIcon, string, { to: string; target?: string; onClick?: undefined } | { onClick: () => void; to?: undefined; target?: undefined }]
+
+const RESEND_SECONDS = 60
 
 /** Sign in with a phone number and the code we SMS to it. */
 function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
@@ -24,12 +27,14 @@ function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
     setError('')
     try { await action() } catch (e) { setError(errorMessage(e)) } finally { setBusy(false) }
   }
+  const [wait, restartWait] = useCountdown(RESEND_SECONDS)
   const send = (e?: FormEvent) => {
     e?.preventDefault()
     run(async () => {
       const res = await request<{ detail: string; phone_number: string }>('/portal/login/', { method: 'POST', body: { phone_number: phone }, auth: false })
       setSentTo(res.phone_number)
       setNote(res.detail)
+      restartWait()
     })
   }
   const verify = (e: FormEvent) => {
@@ -41,35 +46,57 @@ function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
     })
   }
 
+  const changeNumber = () => { setSentTo(null); setCode(''); setError('') }
+  const photo = churchPhoto('/landing/member-giving.jpg')
+
+  if (sentTo) return (
+    <MemberAuthLayout photo={photo} compact back={changeNumber}>
+      <span className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-brand-50 text-brand-700"><MessageSquareMore className="h-6 w-6" aria-hidden="true" /></span>
+      <div className="flex flex-col gap-1.5">
+        <h1 className="font-display text-[32px] font-semibold leading-[1.1] tracking-[-0.015em] text-mk-forest">Enter the code</h1>
+        <p className="text-mk-muted">We sent a 6-digit code by SMS to <span className="whitespace-nowrap font-semibold text-mk-forest">{maskPhone(sentTo)}</span>.</p>
+      </div>
+      {note && <p role="status" className="sr-only">{note}</p>}
+      <AuthAlert>{error}</AuthAlert>
+      <form onSubmit={verify} className="flex flex-col gap-[18px]">
+        <CodeInput id="portal-code" label="6-digit code" value={code} onChange={setCode} autoFocus invalid={!!error} />
+        <button className={authPrimary} disabled={busy || code.length !== 6}>{busy ? 'Checking…' : 'Sign in'}</button>
+      </form>
+      <div className="flex flex-col items-center gap-1">
+        <ResendCode seconds={wait} onResend={() => { setCode(''); send() }} busy={busy} />
+        <button type="button" className="min-h-11 text-[15px] font-semibold text-brand-700 hover:underline" onClick={changeNumber}>Use a different number</button>
+      </div>
+      <p className="mt-auto rounded-[14px] border border-mk-border bg-white px-4 py-3.5 text-[13px] text-mk-muted">The code works once and expires in 10 minutes. The church will never ask you for it.</p>
+    </MemberAuthLayout>
+  )
+
   return (
-    <div className="card mx-auto max-w-sm p-6 sm:p-8">
-      <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-700"><UserRound className="h-6 w-6" /></span>
-      <h1 className="text-center text-xl font-semibold">My member portal</h1>
-      <p className="mb-5 text-center text-sm text-slate-500">Your giving, receipts and statements in one place. No password needed.</p>
-      <Alert>{error}</Alert>
-      {sentTo ? (
-        <form onSubmit={verify} className="space-y-4">
-          <Alert tone="green">{note}</Alert>
-          <Field label="6-digit code">
-            <input className="input text-center font-mono text-lg tracking-[0.4em]" required autoFocus inputMode="numeric" autoComplete="one-time-code"
-              maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} />
-          </Field>
-          <button className="btn-primary w-full" disabled={busy || code.length !== 6}>{busy ? 'Checking…' : 'Sign in'}</button>
-          <div className="flex justify-between text-sm">
-            <button type="button" className="text-slate-500 hover:underline" onClick={() => { setSentTo(null); setCode('') }}>Change number</button>
-            <button type="button" className="font-medium text-brand-700 hover:underline" onClick={() => send()} disabled={busy}>Send a new code</button>
-          </div>
-        </form>
-      ) : (
-        <form onSubmit={send} className="space-y-4">
-          <Field label="Your phone number" hint="The number the church has for you, or the one you give with.">
-            <input className="input" required autoFocus inputMode="tel" autoComplete="tel" placeholder="07XX XXX XXX" value={phone} onChange={(e) => setPhone(e.target.value)} />
-          </Field>
-          <button className="btn-primary w-full" disabled={busy}>{busy ? 'Sending…' : 'Send me a code'}</button>
-          <p className="text-center text-sm text-slate-500">Not registered yet? <Link to="/register" className="font-medium text-brand-700 hover:underline">Join the church</Link></p>
-        </form>
-      )}
-    </div>
+    <MemberAuthLayout photo={photo}>
+      <div className="flex flex-col gap-1.5">
+        <h1 className="font-display text-[34px] font-semibold leading-[1.1] tracking-[-0.015em] text-mk-forest">My giving</h1>
+        <p className="text-mk-muted">Sign in with your phone. No password needed.</p>
+      </div>
+      <AuthAlert>{error}</AuthAlert>
+      <form onSubmit={send} className="flex flex-col gap-3.5">
+        <label htmlFor="portal-phone" className={authLabel}>Your phone number</label>
+        <div className="flex h-14 overflow-hidden rounded-[14px] border border-mk-border bg-white focus-within:border-2 focus-within:border-brand-600">
+          <span className="flex items-center border-r border-mk-border bg-mk-ivory px-3.5 font-semibold text-mk-forest" aria-hidden="true">+254</span>
+          <input id="portal-phone" type="tel" required autoFocus inputMode="tel" autoComplete="tel" placeholder="712 345 678" aria-describedby="portal-phone-hint"
+            value={phone} onChange={(e) => setPhone(e.target.value)} className="min-w-0 flex-1 bg-transparent px-3.5 text-lg text-mk-forest outline-none" />
+        </div>
+        <span id="portal-phone-hint" className="text-[13px] text-mk-muted">The number the church has for you, or the one you give with.</span>
+        <button className={`${authPrimary} mt-1`} disabled={busy}>{busy ? 'Sending…' : 'Send me a code'}</button>
+      </form>
+      <ul className="flex flex-col gap-2 text-sm text-mk-slate">
+        {['Every gift, with its receipt', 'Your yearly giving statement', 'Every church you belong to, in one place'].map((perk) => (
+          <li key={perk} className="flex items-center gap-2.5"><Check className="h-4 w-4 flex-none text-brand-700" strokeWidth={2.5} aria-hidden="true" />{perk}</li>
+        ))}
+      </ul>
+      <div className="mt-auto flex flex-col gap-3.5">
+        <Link to="/register" className="inline-flex min-h-12 items-center justify-center rounded-full border border-mk-border bg-white px-5 text-[15px] font-semibold text-mk-forest hover:border-brand-200">Not a member yet? Join the church</Link>
+        <MemberFooter />
+      </div>
+    </MemberAuthLayout>
   )
 }
 
@@ -175,7 +202,7 @@ export default function Portal() {
     setMe(null)
   }
 
-  if (!signedIn) return <PublicLayout><SignIn onSignedIn={() => setSignedIn(true)} /></PublicLayout>
+  if (!signedIn) return <SignIn onSignedIn={() => setSignedIn(true)} />
   if (!me) return <PublicLayout><Spinner className="mx-auto mt-20 h-8 w-8" /></PublicLayout>
 
   const first = (me.person.name || '').split(' ')[0]

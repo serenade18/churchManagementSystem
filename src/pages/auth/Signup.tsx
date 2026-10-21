@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent, type InputHTMLAttributes } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { Smartphone } from 'lucide-react'
-import Logo from '../../components/Logo'
-import { Alert, Field, PasswordInput } from '../../components/ui'
+import { PasswordInput } from '../../components/ui'
+import { AuthAlert, AuthField, AuthTitle, CodeInput, ResendCode, SignupSteps, StaffAuthLayout, authInput, authPassword, authPrimary, maskPhone } from '../../components/AuthShell'
 import { errorMessage, request } from '../../lib/api'
 import { homeFor, useAuth } from '../../lib/auth'
 import { branding } from '../../lib/theme'
@@ -39,23 +39,29 @@ export default function Signup({ superadmin = false }: { superadmin?: boolean })
 
   if (user) return <Navigate to={homeFor(user)} replace />
 
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-sidebar via-sidebar to-primary-hover p-4">
-      <div className="card w-full max-w-lg p-8">
-        <div className="mb-6 text-center">
-          <Logo className="mx-auto mb-3 h-20" />
-          <h1 className="text-xl font-semibold">{branding.name}</h1>
-          <p className="text-sm text-slate-500">{pending ? 'Verify your phone number' : branding.platform ? 'Create a platform admin account' : superadmin ? 'Create a super admin account' : 'Create an admin account'}</p>
-        </div>
-        {pending
-          ? <VerifyStep pending={pending} onBack={() => setPending(null)}
-              onVerified={async (tokens) => { await acceptTokens(tokens) /* redirect above follows the role */ }} />
-          : <DetailsStep superadmin={superadmin} onCreated={(res) => setPending({ username: res.username, phone: res.phone, fresh: true, notice: res.detail, smsFailed: !res.sms_sent })} />}
-        <p className="mt-6 text-center text-sm text-slate-500">
-          Already have an account? <Link to="/admin" className="font-medium text-brand-700 hover:underline">Sign in</Link>
-        </p>
+  const title = pending ? 'Check your phone' : branding.platform ? 'Create a platform admin account' : superadmin ? 'Create a super admin account' : 'Create a staff account'
+  const aside = superadmin
+    ? (
+      <div className="flex flex-col gap-3.5">
+        <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-white/80">{branding.platform ? 'Platform admin' : 'Super admin'}</p>
+        <p className="font-display text-[30px] font-semibold leading-[1.1] tracking-[-0.015em] sm:text-[40px]">You'll need the setup key from whoever runs the server.</p>
       </div>
-    </div>
+    )
+    : <SignupSteps current={pending ? 2 : 1} />
+
+  return (
+    <StaffAuthLayout aside={aside} width={pending ? 'max-w-[420px]' : 'max-w-[480px]'}>
+      <AuthTitle step={superadmin ? undefined : pending ? 'Step 2 of 3' : 'Step 1 of 3'} title={title}>
+        {!pending && !superadmin && <>Members don't need one: they <Link to="/me" className="font-semibold text-brand-700 hover:underline">sign in to My giving</Link> with their phone.</>}
+      </AuthTitle>
+      {pending
+        ? <VerifyStep pending={pending} onBack={() => setPending(null)}
+            onVerified={async (tokens) => { await acceptTokens(tokens) /* redirect above follows the role */ }} />
+        : <DetailsStep superadmin={superadmin} onCreated={(res) => setPending({ username: res.username, phone: res.phone, fresh: true, notice: res.detail, smsFailed: !res.sms_sent })} />}
+      <p className="text-center text-[15px] text-mk-muted">
+        Already have an account? <Link to="/admin" className="font-semibold text-brand-700 hover:underline">Sign in</Link>
+      </p>
+    </StaffAuthLayout>
   )
 }
 
@@ -71,33 +77,36 @@ function DetailsStep({ onCreated, superadmin }: { onCreated: (res: SignupRespons
     if (res) onCreated(res)
   }
   const input = (key: string, label: string, { type, ...props }: InputHTMLAttributes<HTMLInputElement> = {}) => (
-    <Field label={label} error={errors[key]}>
+    <AuthField label={label} error={errors[key]}>
       {type === 'password'
-        ? <PasswordInput required value={values[key]} onChange={set(key)} {...props} />
-        : <input className="input" type={type} required value={values[key]} onChange={set(key)} {...props} />}
-    </Field>
+        ? <PasswordInput className={authPassword} required value={values[key]} onChange={set(key)} {...props} />
+        : <input className={authInput} type={type} required value={values[key]} onChange={set(key)} {...props} />}
+    </AuthField>
   )
   return (
     <>
-      <p className="mb-4 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-800">
-        {superadmin
-          ? branding.platform
-            ? <>Platform admins add churches and manage mKanisa. You need the <strong>platform setup key</strong> from whoever runs the server. We'll also send a 6-digit code to your phone.</>
-            : <>Super admins manage all admin accounts and system settings. You need the <strong>setup key</strong> from whoever runs the server. We'll also send a 6-digit code to your phone.</>
-          : "We'll send a 6-digit code to your phone to confirm it's yours. Then the church's owner gives you a role (for example, your branch or the treasury)."}
-      </p>
-      <Alert>{error}</Alert>
-      <form onSubmit={save} className="grid gap-4 sm:grid-cols-2">
+      <AuthAlert>{error}</AuthAlert>
+      <form onSubmit={save} className="grid gap-[18px] sm:grid-cols-2">
         {superadmin && <div className="sm:col-span-2">{input('setup_key', 'Setup key', { type: 'password', autoComplete: 'off', autoFocus: true })}</div>}
         {input('first_name', 'First name', { autoComplete: 'given-name', autoFocus: !superadmin })}
         {input('last_name', 'Last name', { autoComplete: 'family-name' })}
         {input('email', 'Email', { type: 'email', autoComplete: 'email' })}
-        {input('phone_number', 'Phone number', { inputMode: 'tel', placeholder: '0712 345 678', autoComplete: 'tel' })}
+        {input('phone_number', 'Phone number', { type: 'tel', inputMode: 'tel', placeholder: '0712 345 678', autoComplete: 'tel' })}
         <div className="sm:col-span-2">{input('username', 'Username', { autoComplete: 'username' })}</div>
         {input('password', 'Password', { type: 'password', autoComplete: 'new-password' })}
         {input('confirm_password', 'Confirm password', { type: 'password', autoComplete: 'new-password' })}
-        <p className="-mt-2 text-xs text-slate-500 sm:col-span-2">At least 8 characters, not too common or too similar to your name.</p>
-        <button className="btn-primary w-full sm:col-span-2" disabled={busy}>{busy ? 'Creating account…' : 'Create account'}</button>
+        <p className="-mt-2 text-[13px] text-mk-muted sm:col-span-2">At least 8 characters, not too common or too similar to your name.</p>
+        <p className="flex gap-3 rounded-[14px] border border-mk-border bg-white px-4 py-3.5 text-sm text-mk-slate sm:col-span-2">
+          <Smartphone className="mt-0.5 h-5 w-5 flex-none text-brand-700" aria-hidden="true" />
+          <span>
+            {superadmin
+              ? branding.platform
+                ? "Platform admins add churches and manage mKanisa. We'll SMS a 6-digit code to confirm your phone."
+                : "Super admins manage every admin account and the church's settings. We'll SMS a 6-digit code to confirm your phone."
+              : "We'll SMS a 6-digit code to confirm your phone. Then the church's owner gives you a role, for example your branch or the treasury."}
+          </span>
+        </p>
+        <button className={`${authPrimary} sm:col-span-2`} disabled={busy}>{busy ? 'Creating account…' : 'Create account'}</button>
       </form>
     </>
   )
@@ -143,27 +152,24 @@ function VerifyStep({ pending, onBack, onVerified }: { pending: Pending; onBack:
   }
 
   return (
-    <div>
-      <div className="mb-4 flex items-start gap-3 rounded-lg bg-brand-50 px-3 py-3 text-sm text-brand-800">
-        <Smartphone className="mt-0.5 h-5 w-5 shrink-0" />
-        <p>
-          {phone ? <>Enter the 6-digit code we sent to <strong>{phone}</strong>.</> : <>Your phone number isn't verified yet. Tap <strong>Send code</strong> to get a code by SMS.</>}
-          {' '}It expires in 10 minutes.
-        </p>
-      </div>
-      <Alert tone="green">{notice}</Alert>
-      <Alert>{error}</Alert>
-      <form onSubmit={verify} className="space-y-4">
-        <input className="input text-center font-mono text-2xl tracking-[0.5em]" inputMode="numeric" autoComplete="one-time-code"
-          autoFocus maxLength={6} placeholder="••••••" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} aria-label="Verification code" />
-        <button className="btn-primary w-full" disabled={busy || code.length !== 6}>{busy ? 'Verifying…' : 'Verify and sign in'}</button>
+    <>
+      <p className="-mt-3 text-mk-muted">
+        {phone
+          ? <>We sent a 6-digit code by SMS to <span className="whitespace-nowrap font-semibold text-mk-forest">{maskPhone(phone)}</span>. It expires in 10 minutes.</>
+          : <>Your phone number isn't verified yet. Tap <span className="font-semibold text-mk-forest">Send code</span> to get a code by SMS.</>}
+      </p>
+      {notice && <p role="status" className="rounded-[14px] border border-brand-200 bg-brand-50 px-4 py-3 text-[15px] text-brand-800">{notice}</p>}
+      <AuthAlert>{error}</AuthAlert>
+      <form onSubmit={verify} className="flex flex-col gap-[18px]">
+        <CodeInput id="signup-code" label="Verification code" value={code} onChange={setCode} autoFocus invalid={!!error} />
+        <button className={authPrimary} disabled={busy || code.length !== 6}>{busy ? 'Verifying…' : 'Verify and continue'}</button>
       </form>
-      <div className="mt-4 flex items-center justify-between text-sm">
-        {pending.fresh ? <button type="button" className="text-slate-500 hover:underline" onClick={onBack}>Change details</button> : <span />}
-        <button type="button" className="font-medium text-brand-700 hover:underline disabled:text-slate-400 disabled:no-underline" disabled={wait > 0} onClick={resend}>
-          {wait > 0 ? `Resend code in ${wait}s` : phone ? 'Resend code' : 'Send code'}
-        </button>
+      <div className="flex flex-col items-center gap-1">
+        {phone
+          ? <ResendCode seconds={wait} onResend={resend} />
+          : <button type="button" onClick={resend} className="min-h-11 font-semibold text-brand-700 hover:underline">Send code</button>}
+        {pending.fresh && <button type="button" className="min-h-11 text-[15px] font-semibold text-brand-700 hover:underline" onClick={onBack}>Change number</button>}
       </div>
-    </div>
+    </>
   )
 }

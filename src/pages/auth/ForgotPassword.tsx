@@ -1,8 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
-import { KeyRound, Smartphone } from 'lucide-react'
-import Logo from '../../components/Logo'
-import { Alert, Field, PasswordInput } from '../../components/ui'
+import { PasswordInput } from '../../components/ui'
+import { AuthAlert, AuthField, AuthTitle, CodeInput, ResendCode, StaffAuthLayout, authInput, authLabel, authPassword, authPrimary } from '../../components/AuthShell'
 import { errorMessage, request } from '../../lib/api'
 import { homeFor, useAuth } from '../../lib/auth'
 import { branding } from '../../lib/theme'
@@ -20,23 +19,26 @@ export default function ForgotPassword() {
 
   if (user) return <Navigate to={homeFor(user)} replace />
 
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-sidebar via-sidebar to-primary-hover p-4">
-      <div className="card w-full max-w-sm p-8">
-        <div className="mb-6 text-center">
-          <Logo className="mx-auto mb-3 h-20" />
-          <h1 className="text-xl font-semibold">{branding.name}</h1>
-          <p className="text-sm text-slate-500">{sentTo ? 'Choose a new password' : 'Reset your password'}</p>
-        </div>
-        {sentTo
-          ? <ResetStep username={sentTo} notice={notice} onBack={() => setSentTo(null)}
-              onReset={async (tokens) => { await acceptTokens(tokens) /* redirect above follows the role */ }} />
-          : <RequestStep initial={(location.state as { username?: string } | null)?.username || ''} onSent={(username, detail) => { setNotice(detail); setSentTo(username) }} />}
-        <p className="mt-6 text-center text-sm text-slate-500">
-          Remembered it? <Link to="/admin" className="font-medium text-brand-700 hover:underline">Sign in</Link>
-        </p>
-      </div>
+  const aside = (
+    <div className="flex flex-col gap-3.5">
+      <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-white/80">{branding.platform ? 'Platform admin' : 'Church office'}</p>
+      <p className="font-display text-[30px] font-semibold leading-[1.1] tracking-[-0.015em] sm:text-[40px]">A code to your phone, and you're back in.</p>
     </div>
+  )
+
+  return (
+    <StaffAuthLayout aside={aside}>
+      <AuthTitle title={sentTo ? 'Choose a new password' : 'Reset your password'}>
+        {sentTo ? null : "Enter your username or phone number. We'll SMS a 6-digit code to the phone on your account."}
+      </AuthTitle>
+      {sentTo
+        ? <ResetStep username={sentTo} notice={notice} onBack={() => setSentTo(null)}
+            onReset={async (tokens) => { await acceptTokens(tokens) /* redirect above follows the role */ }} />
+        : <RequestStep initial={(location.state as { username?: string } | null)?.username || ''} onSent={(username, detail) => { setNotice(detail); setSentTo(username) }} />}
+      <p className="text-center text-[15px] text-mk-muted">
+        Remembered it? <Link to="/admin" className="font-semibold text-brand-700 hover:underline">Sign in</Link>
+      </p>
+    </StaffAuthLayout>
   )
 }
 
@@ -49,16 +51,12 @@ function RequestStep({ initial, onSent }: { initial: string; onSent: (username: 
   }
   return (
     <>
-      <div className="mb-4 flex items-start gap-3 rounded-lg bg-brand-50 px-3 py-3 text-sm text-brand-800">
-        <KeyRound className="mt-0.5 h-5 w-5 shrink-0" />
-        <p>Enter your username or phone number. We'll text a 6-digit code to the phone number on your account.</p>
-      </div>
-      <Alert>{error}</Alert>
-      <form onSubmit={send} className="space-y-4">
-        <Field label="Username or phone number" error={errors.username}>
-          <input className="input" autoComplete="username" autoFocus required value={values.username} onChange={set('username')} />
-        </Field>
-        <button className="btn-primary w-full" disabled={busy}>{busy ? 'Sending code…' : 'Send code'}</button>
+      <AuthAlert>{error}</AuthAlert>
+      <form onSubmit={send} className="flex flex-col gap-[18px]">
+        <AuthField label="Username or phone number" error={errors.username}>
+          <input className={authInput} autoComplete="username" autoFocus required value={values.username} onChange={set('username')} />
+        </AuthField>
+        <button className={authPrimary} disabled={busy}>{busy ? 'Sending code…' : 'Send code'}</button>
       </form>
     </>
   )
@@ -101,33 +99,29 @@ function ResetStep({ username, notice: initialNotice, onBack, onReset }: ResetSt
   }
 
   return (
-    <div>
-      <div className="mb-4 flex items-start gap-3 rounded-lg bg-brand-50 px-3 py-3 text-sm text-brand-800">
-        <Smartphone className="mt-0.5 h-5 w-5 shrink-0" />
-        <p>{notice || 'Enter the 6-digit code we sent to your phone.'} The code expires in 10 minutes.</p>
-      </div>
-      <Alert>{error || resendError}</Alert>
-      <form onSubmit={reset} className="space-y-4">
-        <Field label="Code" error={errors.code}>
-          <input className="input text-center font-mono text-2xl tracking-[0.5em]" inputMode="numeric" autoComplete="one-time-code"
-            autoFocus maxLength={6} placeholder="••••••" value={values.code} onChange={(e) => set('code')(e.target.value.replace(/\D/g, ''))} />
-        </Field>
+    <>
+      <p role="status" className="-mt-3 text-mk-muted">{notice || 'Enter the 6-digit code we sent to your phone.'} The code expires in 10 minutes.</p>
+      <AuthAlert>{error || resendError}</AuthAlert>
+      <form onSubmit={reset} className="flex flex-col gap-[18px]">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="reset-code" className={authLabel}>Code</label>
+          <CodeInput id="reset-code" label="Code" value={values.code} onChange={(code) => set('code')(code)} autoFocus invalid={!!errors.code} />
+          {errors.code && <span className="text-[13px] text-[#8E2F22]">{errors.code}</span>}
+        </div>
         {/* Lets password managers save the new password against the right account */}
         <input type="text" name="username" autoComplete="username" value={username} readOnly hidden />
-        <Field label="New password" error={errors.new_password} hint="At least 8 characters, not too common or too similar to your name.">
-          <PasswordInput autoComplete="new-password" required value={values.new_password} onChange={set('new_password')} />
-        </Field>
-        <Field label="Confirm new password" error={errors.confirm_password}>
-          <PasswordInput autoComplete="new-password" required value={values.confirm_password} onChange={set('confirm_password')} />
-        </Field>
-        <button className="btn-primary w-full" disabled={busy || values.code.length !== 6}>{busy ? 'Resetting…' : 'Reset password and sign in'}</button>
+        <AuthField label="New password" error={errors.new_password} hint="At least 8 characters, not too common or too similar to your name.">
+          <PasswordInput className={authPassword} autoComplete="new-password" required value={values.new_password} onChange={set('new_password')} />
+        </AuthField>
+        <AuthField label="Confirm new password" error={errors.confirm_password}>
+          <PasswordInput className={authPassword} autoComplete="new-password" required value={values.confirm_password} onChange={set('confirm_password')} />
+        </AuthField>
+        <button className={authPrimary} disabled={busy || values.code.length !== 6}>{busy ? 'Resetting…' : 'Reset password and sign in'}</button>
       </form>
-      <div className="mt-4 flex items-center justify-between text-sm">
-        <button type="button" className="text-slate-500 hover:underline" onClick={onBack}>Use a different account</button>
-        <button type="button" className="font-medium text-brand-700 hover:underline disabled:text-slate-400 disabled:no-underline" disabled={wait > 0} onClick={resend}>
-          {wait > 0 ? `Resend code in ${wait}s` : 'Resend code'}
-        </button>
+      <div className="flex flex-col items-center gap-1">
+        <ResendCode seconds={wait} onResend={resend} />
+        <button type="button" className="min-h-11 text-[15px] font-semibold text-brand-700 hover:underline" onClick={onBack}>Use a different account</button>
       </div>
-    </div>
+    </>
   )
 }
