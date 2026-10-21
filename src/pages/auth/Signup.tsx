@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent, type InputHTMLAttributes } from 'r
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { KeyRound, Lock, Smartphone } from 'lucide-react'
 import { PasswordInput } from '../../components/ui'
-import { AuthAlert, AuthField, AuthTitle, CodeInput, PlatformSteps, ResendCode, SignupSteps, StaffAuthLayout, authInput, authPassword, authPrimary, maskPhone } from '../../components/AuthShell'
+import { AuthAlert, AuthField, AuthTitle, CodeInput, PlatformSteps, ResendCode, SignupSteps, StaffAuthLayout, authInput, authLabel, authPassword, authPrimary, maskPhone } from '../../components/AuthShell'
 import { errorMessage, request } from '../../lib/api'
 import { homeFor, useAuth } from '../../lib/auth'
 import { branding } from '../../lib/theme'
@@ -87,8 +87,8 @@ function DetailsStep({ onCreated, superadmin }: { onCreated: (res: SignupRespons
     const res = await submit((v) => request<SignupResponse>(endpoint, { method: 'POST', body: v, auth: false })).catch(() => null)
     if (res) onCreated(res)
   }
-  const input = (key: string, label: string, { type, ...props }: InputHTMLAttributes<HTMLInputElement> = {}) => (
-    <AuthField label={label} error={errors[key]}>
+  const input = (key: string, label: string, { type, ...props }: InputHTMLAttributes<HTMLInputElement> = {}, hint?: string) => (
+    <AuthField label={label} error={errors[key]} hint={hint}>
       {type === 'password'
         ? <PasswordInput className={authPassword} required value={values[key]} onChange={set(key)} {...props} />
         : <input className={authInput} type={type} required value={values[key]} onChange={set(key)} {...props} />}
@@ -97,7 +97,7 @@ function DetailsStep({ onCreated, superadmin }: { onCreated: (res: SignupRespons
   return (
     <>
       <AuthAlert>{error}</AuthAlert>
-      <form onSubmit={save} className="grid gap-[18px] sm:grid-cols-2">
+      <form onSubmit={save} className="grid gap-x-4 gap-y-[18px] sm:grid-cols-2">
         {superadmin && (
           <div className={`flex flex-col gap-2.5 rounded-2xl border bg-[#FBF4E4] p-[18px] sm:col-span-2 ${errors.setup_key ? 'border-[#F0C7BF]' : 'border-[#EADCB8]'}`}>
             <label htmlFor="setup-key" className="flex items-center gap-2.5 text-sm font-semibold text-mk-forest">
@@ -115,10 +115,9 @@ function DetailsStep({ onCreated, superadmin }: { onCreated: (res: SignupRespons
         {input('email', 'Email', { type: 'email', autoComplete: 'email' })}
         {input('phone_number', 'Phone number', { type: 'tel', inputMode: 'tel', placeholder: '0712 345 678', autoComplete: 'tel' })}
         <div className="sm:col-span-2">{input('username', 'Username', { autoComplete: 'username' })}</div>
-        {input('password', 'Password', { type: 'password', autoComplete: 'new-password' })}
+        {input('password', 'Password', { type: 'password', autoComplete: 'new-password' }, 'At least 8 characters.')}
         {input('confirm_password', 'Confirm password', { type: 'password', autoComplete: 'new-password' })}
-        <p className="-mt-2 text-[13px] text-mk-muted sm:col-span-2">At least 8 characters, not too common or too similar to your name.</p>
-        <p className="flex gap-3 rounded-[14px] border border-mk-border bg-white px-4 py-3.5 text-sm text-mk-slate sm:col-span-2">
+        <p className="flex gap-3 rounded-[14px] bg-brand-50 px-4 py-3.5 text-sm text-mk-forest sm:col-span-2">
           <Smartphone className="mt-0.5 h-5 w-5 flex-none text-brand-700" aria-hidden="true" />
           <span>
             {superadmin
@@ -137,7 +136,7 @@ function DetailsStep({ onCreated, superadmin }: { onCreated: (res: SignupRespons
 /** The phone mark above "Check your phone". */
 export function PhoneTile() {
   return (
-    <span className="-mb-3 flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
+    <span className="-mb-3 flex h-14 w-14 items-center justify-center rounded-[18px] bg-brand-50 text-brand-700">
       <Smartphone className="h-6 w-6" aria-hidden="true" />
     </span>
   )
@@ -196,7 +195,10 @@ export function VerifyStep<R = Tokens>({ pending, onBack, onVerified, paths = SI
       {notice && <p role="status" className="rounded-[14px] border border-brand-200 bg-brand-50 px-4 py-3 text-[15px] text-brand-800">{notice}</p>}
       <AuthAlert>{error}</AuthAlert>
       <form onSubmit={verify} className="flex flex-col gap-[18px]">
-        <CodeInput id="signup-code" label="Verification code" value={code} onChange={setCode} autoFocus invalid={!!error} />
+        <div className="flex flex-col gap-2">
+          <label htmlFor="signup-code" className={authLabel}>Verification code</label>
+          <CodeInput id="signup-code" label="Verification code" value={code} onChange={setCode} autoFocus invalid={!!error} />
+        </div>
         <button className={authPrimary} disabled={busy || code.length !== 6}>{busy ? 'Verifying…' : verifyLabel}</button>
       </form>
       <div className="flex flex-wrap items-center justify-between gap-x-4">

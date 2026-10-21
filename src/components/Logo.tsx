@@ -18,7 +18,10 @@ export default function Logo({ className = 'h-12', tile = false, mark = tile }: 
  * "Powered by mKanisa" on public pages once a church shows its own name (``always``: even before),
  * nothing on other builds.
  */
-export function PoweredBy({ className = 'text-center text-slate-400', always = false }) {
+export function PoweredBy({ className = 'text-center text-slate-400', always = false, wordmark = false }) {
   if (!BRAND.poweredBy || (!always && branding.name === BRAND.poweredBy)) return null
+  if (wordmark) return ( // the built-in logo is the platform's wordmark on builds that say "Powered by"
+    <p className={`inline-flex items-center gap-1.5 text-xs ${className}`}>Powered by <img src={BRAND.logo} alt={BRAND.poweredBy} className="h-3.5 w-auto" /></p>
+  )
   return <p className={`text-xs ${className}`}>Powered by <span className="font-semibold">{BRAND.poweredBy}</span></p>
 }

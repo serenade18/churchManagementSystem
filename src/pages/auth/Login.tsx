@@ -110,7 +110,7 @@ export default function Login() {
 
       <div className="flex flex-wrap items-center justify-between gap-2 text-[13px] text-mk-muted">
         <Link to="/" className="hover:text-mk-forest hover:underline">{branding.platform ? 'Back to mKanisa' : 'Back to the church website'}</Link>
-        <PoweredBy className="text-mk-muted" />
+        <PoweredBy wordmark className="text-mk-muted" />
       </div>
     </StaffAuthLayout>
   )

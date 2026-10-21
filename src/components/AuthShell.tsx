@@ -40,7 +40,7 @@ export function StaffAuthLayout({ aside, children, width = 'max-w-[400px]', badg
         ) : (
           <>
             <img src={churchPhoto('/landing/church-cover.jpg')} alt="" className="absolute inset-0 h-full w-full object-cover object-[55%_45%]" />
-            <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${shade(60)} 0%, ${shade(30)} 40%, ${shade(90)} 100%)` }} />
+            <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${shade(55)} 0%, ${shade(20)} 40%, ${shade(88)} 100%)` }} />
           </>
         )}
         <div className="relative flex w-full flex-col justify-between gap-10 px-6 py-8 sm:px-12 sm:py-10">
@@ -165,7 +165,7 @@ export function MemberAuthLayout({ photo, compact = false, back, children }: { p
 
 /** "Powered by mKanisa" under the member pages. */
 export function MemberFooter() {
-  return <PoweredBy className="text-center text-mk-muted" />
+  return <PoweredBy wordmark className="justify-center text-mk-muted" />
 }
 
 /**
@@ -200,7 +200,7 @@ export const authPrimary = 'inline-flex h-[54px] w-full items-center justify-cen
 export const authSecondary = 'inline-flex h-[52px] w-full items-center justify-center rounded-full border border-mk-border bg-white px-6 font-semibold text-mk-forest transition hover:border-brand-200'
 export const authLabel = 'text-sm font-semibold text-mk-forest'
 /** PasswordInput's own classes, grown to the sign-in pages' size. */
-export const authPassword = 'h-[52px]! rounded-xl! px-4! pr-12! text-base! border-mk-border! text-mk-forest!'
+export const authPassword = 'h-[52px]! rounded-xl! px-4! pr-12! text-base! border-mk-border! text-mk-forest! shadow-none!'
 
 /** A problem with what was sent, in a calm red. */
 export function AuthAlert({ children }: { children?: ReactNode }) {
