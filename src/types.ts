@@ -738,3 +738,66 @@ export interface PlatformOverview {
     created_at: string
   }[]
 }
+
+/** GET /platform/registrations/ */
+export interface ChurchRegistration {
+  id: Id
+  name: string
+  slug: string
+  domain: string
+  url: string
+  location: string
+  status: 'waiting' | 'opened' | 'expired'
+  created_at: string
+  opened_at: string | null
+  minutes_to_open: number | null
+  owner: { name: string; username: string; phone: string; email: string; codes_sent: number } | null
+  log: { at: string; what: 'registered' | 'code_sent' | 'code_resent' | 'code_failed' | 'opened'; by: string | null }[]
+}
+export interface RegistrationsPage {
+  stats: { registered_this_month: number; opened_this_month: number; minutes_to_open: number | null; waiting: number; oldest_waiting_days: number | null }
+  period: 'month' | 'quarter' | 'all'
+  counts: { waiting: number; opened: number; expired: number; all: number }
+  results: ChurchRegistration[]
+}
+
+/** GET /platform/payments/ */
+export interface PlatformPayment {
+  key: string
+  at: string
+  church: { id: Id; name: string; slug: string; url: string }
+  channel: string
+  from: string
+  amount: Amount
+  currency: string
+  receipt: string
+  status: 'confirmed' | 'failed' | 'waiting' | 'unmatched'
+  reason: string
+  for: string
+}
+export interface PaymentsPage {
+  days: number
+  stats: {
+    received_today: Amount; received_today_count: number; received_change: number | null
+    prompts_sent: number; prompts_confirmed_rate: number | null
+    unmatched: number; unmatched_amount: Amount; waiting_over_an_hour: number
+    paypal_month: Amount; paypal_month_kes: Amount; paypal_month_count: number
+  }
+  reasons: { failed: number; sent: number; items: { key: string; label: string; count: number; share: number }[] }
+  trouble: { kind: 'failing' | 'unmatched' | 'stale'; church: PlatformPayment['church']; text: string }[]
+  total: number
+  page: number
+  has_more: boolean
+  results: PlatformPayment[]
+}
+
+/** GET /platform/sms/ */
+export interface SmsPage {
+  days: number
+  stats: { sent: number; change: number | null; accepted_rate: number | null; refused: number; receipts_per_gift: number | null; churches_sending_bulk: number; churches_live: number }
+  series: { day: string; count: number }[]
+  kinds: { key: string; label: string; count: number; share: number }[]
+  balance: { credits: number | null; days_left: number | null; low: boolean; sender_id: string }
+  failures: { church: string; kind: string; count: number; text: string }[]
+  churches: { id: Id; name: string; slug: string; receipts: number; bulk: number; failed: number; accepted_rate: number | null; last_bulk: { text: string; at: string } | null }[]
+}

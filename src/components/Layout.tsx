@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { type LucideIcon, Building2, Church, Eye, CalendarCheck, Gauge, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, UserPlus, Users, X } from 'lucide-react'
+import { type LucideIcon, Building2, Church, CreditCard, Eye, Inbox, CalendarCheck, Gauge, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, UserPlus, Users, X } from 'lucide-react'
 import { api } from '../lib/api'
 import { can, isOwner, roleLabel } from '../lib/access'
 import { useAuth } from '../lib/auth'
@@ -44,9 +44,16 @@ export default function Layout() {
   const [counts, setCounts] = useState({ unallocated: 0, registrations: 0 })
   const location = useLocation()
 
-  // Badges: Paybill payments waiting to be allocated, sign-ups waiting for review.
+  // Badges: Paybill payments waiting to be allocated, sign-ups waiting for review; on the platform,
+  // churches whose owner hasn't confirmed their phone yet.
   useEffect(() => {
-    if (branding.platform) return undefined
+    if (branding.platform) {
+      const loadWaiting = () => api.get<{ stats: { waiting: number } }>('/platform/registrations/', { status: 'waiting' })
+        .then((d) => setCounts((c) => ({ ...c, registrations: d.stats.waiting }))).catch(() => {})
+      loadWaiting()
+      window.addEventListener('platform:registrations-changed', loadWaiting)
+      return () => window.removeEventListener('platform:registrations-changed', loadWaiting)
+    }
     const loadPaybill = () => api.get<Page<PaybillPayment>>('/cms/paybill-payments/', { status: 'unallocated', page_size: 1 })
       .then((d) => setCounts((c) => ({ ...c, unallocated: d.count }))).catch(() => {})
     const loadRegistrations = () => api.get<Page<Registration>>('/cms/registrations/', { status: 'pending', page_size: 1 })
@@ -64,6 +71,8 @@ export default function Layout() {
   const nav: NavItem[] = [
     ...(branding.platform
       ? [{ to: '/platform', label: 'Overview', icon: LayoutDashboard }, { to: '/platform/churches', label: 'Churches', icon: Church },
+          { to: '/platform/registrations', label: 'Registrations', icon: Inbox, badge: 'registrations' as const },
+          { to: '/platform/payments', label: 'Payments', icon: CreditCard }, { to: '/platform/sms', label: 'SMS', icon: MessageSquare },
           { to: '/users', label: 'Platform admins', icon: ShieldCheck }]
       : [
           ...NAV.filter((item) => !item.feature || can(user, item.feature)),
@@ -104,8 +113,8 @@ export default function Layout() {
           >
             <Icon className="h-5 w-5" /> {label}
             {badge && counts[badge] > 0 && (
-              <span className="ml-auto rounded-full bg-danger px-2 py-0.5 text-xs font-semibold text-white"
-                title={badge === 'unallocated' ? 'Payments to allocate' : 'Sign-ups to review'}>{counts[badge]}</span>
+              <span className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${platform ? 'bg-mk-gold text-mk-forest' : 'bg-danger text-white'}`}
+                title={platform ? 'Churches waiting on their owner' : badge === 'unallocated' ? 'Payments to allocate' : 'Sign-ups to review'}>{counts[badge]}</span>
             )}
           </NavLink>
         ))}

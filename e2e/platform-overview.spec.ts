@@ -61,7 +61,7 @@ test.describe('Platform overview', () => {
   test('headline numbers, charts and the platform menu', async ({ page }) => {
     await asPlatformAdmin(page)
     await expect(page.getByRole('heading', { name: 'Platform overview' })).toBeVisible()
-    await expect(sidebarLinks(page)).toHaveText(['Overview', 'Churches', 'Platform admins', 'Settings'])
+    await expect(sidebarLinks(page)).toHaveText(['Overview', 'Churches', 'Registrations', 'Payments', 'SMS', 'Platform admins', 'Settings'])
     await expect(page.getByRole('img', { name: 'mKanisa' }).first()).toBeVisible()
 
     await expect(page.getByText('Churches live')).toBeVisible()
@@ -101,13 +101,13 @@ test.describe('Platform overview', () => {
     await expect(attention.getByRole('link', { name: /Open their Paybill/ })).toHaveAttribute('href', 'https://standrews.mkanisa.com/paybill')
 
     let resent = ''
-    await page.route('**/api/platform/register/resend/', (route) => {
-      resent = route.request().postDataJSON().username
+    await page.route('**/api/platform/registrations/*/resend/', (route) => {
+      resent = new URL(route.request().url()).pathname
       route.fulfill({ json: { detail: 'A new code was sent to 0711 ••• 001.' } })
     })
     await attention.getByRole('button', { name: /Resend code/ }).click()
     await expect(attention.getByText('A new code was sent to 0711 ••• 001.')).toBeVisible()
-    expect(resent).toBe('graceowner')
+    expect(resent).toBe('/api/platform/registrations/9/resend/')
 
     // "Check M-PESA keys" opens that church's settings.
     await attention.getByRole('link', { name: /Check M-PESA keys/ }).click()

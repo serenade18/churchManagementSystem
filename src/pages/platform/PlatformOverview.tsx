@@ -1,11 +1,12 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronDown, ChevronUp, CircleX, Clock, Moon, Plus, Search, TriangleAlert, type LucideIcon } from 'lucide-react'
+import { CircleX, Clock, Moon, Plus, Search, TriangleAlert, type LucideIcon } from 'lucide-react'
 import { Alert, Spinner } from '../../components/ui'
 import { api, errorMessage } from '../../lib/api'
 import { useApi } from '../../lib/hooks'
 import { compactMoney, money } from '../../lib/format'
 import type { OverviewPeriod, PlatformOverview } from '../../types'
+import { Card, Delta, Tile, bar, niceMax, number } from './shared'
 
 type Overview = PlatformOverview
 type Row = Overview['church_rows'][number]
@@ -13,7 +14,6 @@ type Attention = Overview['attention'][number]
 
 const PERIODS: [OverviewPeriod, string, string][] = [
   ['30d', '30 days', 'by day'], ['quarter', 'Quarter', 'by week'], ['12m', '12 months', 'by month']]
-const number = (n: number) => n.toLocaleString('en-KE')
 
 /** Platform admins' home: how every church on mKanisa is doing. */
 export default function PlatformOverviewPage() {
@@ -76,44 +76,12 @@ export default function PlatformOverviewPage() {
   )
 }
 
-function Card({ id, title, subtitle, flex, children }: { id: string; title: string; subtitle: string; flex: string; children: ReactNode }) {
-  return (
-    <section aria-labelledby={id} style={{ flex }} className="flex min-w-0 flex-col gap-[18px] rounded-[22px] border border-mk-border bg-white p-6">
-      <header className="flex flex-col gap-0.5">
-        <h2 id={id} className="font-display text-xl font-semibold text-mk-forest">{title}</h2>
-        <p className="text-sm text-mk-muted">{subtitle}</p>
-      </header>
-      {children}
-    </section>
-  )
-}
 
 function Stat({ label, value }: { label: string; value: number }) {
   return <div><dt className="text-[13px] text-mk-muted">{label}</dt><dd className="font-display text-[22px] font-semibold text-mk-forest">{number(value)}</dd></div>
 }
 
-/** Up or down, in green or red, with an arrow so it isn't colour alone. */
-function Delta({ value, suffix = '%', invert = false }: { value: number | null; suffix?: string; invert?: boolean }) {
-  if (value === null || value === 0) return null
-  const up = value > 0
-  const good = invert ? !up : up
-  const Icon = up ? ChevronUp : ChevronDown
-  return (
-    <span className={`inline-flex items-center gap-0.5 text-[13px] font-semibold ${good ? 'text-mk-green' : 'text-[#B42318]'}`}>
-      <Icon className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden="true" />{up ? '+' : '−'}{Math.abs(value)}{suffix}
-    </span>
-  )
-}
 
-function Tile({ label, value, children }: { label: string; value: string; children: ReactNode }) {
-  return (
-    <div className="flex min-w-0 flex-col gap-1.5 rounded-[20px] border border-mk-border bg-white px-[22px] py-5">
-      <span className="text-sm text-mk-muted">{label}</span>
-      <span className="whitespace-nowrap font-display text-[28px] font-semibold leading-tight tracking-[-0.02em] text-mk-forest">{value}</span>
-      <span className="flex flex-wrap items-center gap-2 text-[13px] text-mk-muted">{children}</span>
-    </div>
-  )
-}
 
 function Headlines({ data }: { data: Overview }) {
   const { churches, members, giving, prompts, sms } = data
@@ -140,22 +108,12 @@ function Headlines({ data }: { data: Overview }) {
   )
 }
 
-/** A rounded-top bar from the baseline. */
-const bar = (x: number, y: number, w: number, base: number, r = 4) => {
-  const rr = Math.min(r, w / 2, Math.max(0, base - y))
-  return `M${x},${base} V${y + rr} Q${x},${y} ${x + rr},${y} H${x + w - rr} Q${x + w},${y} ${x + w},${y + rr} V${base}Z`
-}
 
-/** A tidy top for the axis: 1, 2, 2.5 or 5 times a power of ten. */
-function niceMax(value: number) {
-  if (value <= 0) return 1
-  const power = 10 ** Math.floor(Math.log10(value))
-  return ([1, 2, 2.5, 5, 10].find((m) => m * power >= value) || 10) * power
-}
 
 function GivingChart({ series }: { series: Overview['giving']['series'] }) {
   const [hover, setHover] = useState<number | null>(null)
   const [table, setTable] = useState(false)
+  if (!series.length) return <p className="text-sm text-mk-muted">No giving yet.</p>
   const W = 640, H = 260, L = 52, T = 14, B = 28
   const pw = W - L - 8, ph = H - T - B
   const max = niceMax(Math.max(...series.map((s) => Number(s.amount))))
@@ -258,6 +216,7 @@ function Channels({ data }: { data: Overview }) {
 
 function GrowthChart({ growth }: { growth: Overview['growth'] }) {
   const [hover, setHover] = useState<number | null>(null)
+  if (growth.length < 2) return <p className="text-sm text-mk-muted">Not enough history yet.</p>
   const W = 420, H = 200, L = 34, T = 14, B = 28
   const pw = W - L - 14, ph = H - T - B
   const max = niceMax(Math.max(...growth.map((g) => g.churches), 1))
@@ -315,7 +274,7 @@ function AttentionItem({ item }: { item: Attention }) {
   const action = 'mt-1 self-start text-sm font-semibold text-mk-green hover:underline'
   const resend = async () => {
     try {
-      const res = await api.post<{ detail: string }>('/platform/register/resend/', { username: item.username })
+      const res = await api.post<{ detail: string }>(`/platform/registrations/${item.church}/resend/`)
       setSent(res.detail)
     } catch (err) { setSent(errorMessage(err)) }
   }

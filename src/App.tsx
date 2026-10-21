@@ -33,6 +33,9 @@ import NoChurch from './pages/platform/NoChurch'
 import PlatformChurches from './pages/platform/PlatformChurches'
 import PlatformHome from './pages/platform/PlatformHome'
 import PlatformOverviewPage from './pages/platform/PlatformOverview'
+import PlatformPayments from './pages/platform/PlatformPayments'
+import PlatformRegistrations from './pages/platform/PlatformRegistrations'
+import PlatformSms from './pages/platform/PlatformSms'
 import RegisterChurch from './pages/platform/RegisterChurch'
 import { branding } from './lib/theme'
 
@@ -71,6 +74,9 @@ function PlatformApp() {
           <Route element={<RequireAuth><Layout /></RequireAuth>}>
             <Route path="/platform" element={<RequireAuth owner><PlatformOverviewPage /></RequireAuth>} />
             <Route path="/platform/churches" element={<RequireAuth owner><PlatformChurches /></RequireAuth>} />
+            <Route path="/platform/registrations" element={<RequireAuth owner><PlatformRegistrations /></RequireAuth>} />
+            <Route path="/platform/payments" element={<RequireAuth owner><PlatformPayments /></RequireAuth>} />
+            <Route path="/platform/sms" element={<RequireAuth owner><PlatformSms /></RequireAuth>} />
             <Route path="/users" element={<RequireAuth owner><Users /></RequireAuth>} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
