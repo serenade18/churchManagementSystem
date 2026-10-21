@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link, Navigate, useLocation } from 'react-router-dom'
+import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { PoweredBy } from '../../components/Logo'
 import { PasswordInput } from '../../components/ui'
@@ -17,8 +17,11 @@ export default function Login() {
     try { await demoLogin() } catch (err) { setError(errorMessage(err)); setBusy(false) }
   }
   const location = useLocation()
-  const [form, setForm] = useState({ username: '', password: '' })
+  const [params] = useSearchParams()
+  // ?username=: sent here from the platform (a church just registered, or staff signing in there).
+  const [form, setForm] = useState({ username: params.get('username') || '', password: '' })
   const [error, setError] = useState('')
+  const [churchUrl, setChurchUrl] = useState('')
   const [unverified, setUnverified] = useState(false)
   const [busy, setBusy] = useState(false)
 
@@ -30,12 +33,14 @@ export default function Login() {
     setBusy(true)
     setError('')
     setUnverified(false)
+    setChurchUrl('')
     try {
       await login(form.username, form.password) // the redirect above runs once the user is loaded
     } catch (e) {
       const err = e as ApiError
-      const data = err.data as { code?: string | string[]; detail?: string | string[] } | null
+      const data = err.data as { code?: string | string[]; detail?: string | string[]; church_url?: string[] } | null
       setUnverified(([] as string[]).concat(data?.code || []).includes('unverified'))
+      setChurchUrl(data?.church_url?.[0] || '') // a church's staff, signing in on the platform
       setError(err.status === 401 ? 'Incorrect username or password.' : data?.detail ? ([] as string[]).concat(data.detail).join(' ') : err.message)
     } finally {
       setBusy(false)
@@ -44,7 +49,7 @@ export default function Login() {
 
   const aside = (
     <div className="flex flex-col gap-3.5">
-      <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-white/80">{branding.platform ? 'Platform admin' : 'Church office'}</p>
+      <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-white/80">{branding.platform ? 'mKanisa' : 'Church office'}</p>
       <p className="font-display text-[30px] font-semibold leading-[1.1] tracking-[-0.015em] sm:text-[40px]">
         {branding.platform ? 'Every church on mKanisa, looked after from one place.' : "Members, giving and the church's work, in one quiet place."}
       </p>
@@ -53,27 +58,32 @@ export default function Login() {
 
   return (
     <StaffAuthLayout aside={aside}>
-      <AuthTitle title="Sign in">{branding.platform ? 'For mKanisa platform admins.' : "For the church's staff and admins."}</AuthTitle>
+      <AuthTitle title="Sign in">{branding.platform ? "For church staff and mKanisa admins. We'll take you to your church." : "For the church's staff and admins."}</AuthTitle>
 
-      {error && (
+      {churchUrl ? (
+        <div role="status" className="flex flex-col gap-3 rounded-2xl bg-brand-50 px-5 py-[18px] text-[15px] text-mk-forest">
+          <p>Your account is with your church. Sign in there, at <span className="font-semibold">{churchUrl.replace(/^https?:\/\//, '')}</span>.</p>
+          <a href={`${churchUrl}/admin?username=${encodeURIComponent(form.username)}`} className={authPrimary}>Continue to your church</a>
+        </div>
+      ) : error && (
         <AuthAlert>
           {error}
           {unverified && (
-            <Link to={`/signup?verify=${encodeURIComponent(form.username)}`} className="mt-2 block font-semibold text-[#8E2F22] underline">Verify my phone</Link>
+            <Link to={`${branding.platform ? '/start' : '/signup'}?verify=${encodeURIComponent(form.username)}`} className="mt-2 block font-semibold text-[#8E2F22] underline">Verify my phone</Link>
           )}
         </AuthAlert>
       )}
 
       <form onSubmit={submit} className="flex flex-col gap-[18px]">
         <AuthField label="Username">
-          <input className={authInput} autoComplete="username" autoFocus required value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
+          <input className={authInput} autoComplete="username" autoFocus={!form.username} required value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
         </AuthField>
         <div className="flex flex-col gap-1.5">
           <div className="flex items-baseline justify-between gap-3">
             <label htmlFor="password" className={authLabel}>Password</label>
             <Link to="/forgot-password" state={{ username: form.username }} className="text-sm font-semibold text-brand-700 hover:underline">Forgot password?</Link>
           </div>
-          <PasswordInput id="password" className={authPassword} aria-invalid={error ? true : undefined} autoComplete="current-password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+          <PasswordInput id="password" autoFocus={!!form.username} className={authPassword} aria-invalid={error ? true : undefined} autoComplete="current-password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
         </div>
         <button className={`${authPrimary} mt-1`} disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
       </form>
@@ -85,25 +95,21 @@ export default function Login() {
         </div>
       )}
 
-      {!branding.platform && (
-        <>
-          <div className="flex items-center gap-3.5 text-[13px] text-mk-muted">
-            <span className="h-px flex-1 bg-mk-border" />New to the church office?<span className="h-px flex-1 bg-mk-border" />
-          </div>
-          <Link to="/signup" className={authSecondary}>Create a staff account</Link>
-          <div className="flex flex-col gap-2.5 rounded-2xl bg-brand-50 px-5 py-[18px]">
-            <p className="text-[15px] text-mk-forest"><span className="font-semibold">A member?</span> You don't need an account here.</p>
-            <Link to="/me" className="inline-flex items-center gap-2 self-start text-[15px] font-semibold text-brand-700 hover:underline">
-              Sign in to My giving with your phone <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-          </div>
-        </>
-      )}
+      <div className="flex items-center gap-3.5 text-[13px] text-mk-muted">
+        <span className="h-px flex-1 bg-mk-border" />{branding.platform ? 'New to mKanisa?' : 'New to the church office?'}<span className="h-px flex-1 bg-mk-border" />
+      </div>
+      {branding.platform
+        ? <Link to="/start" className={authSecondary}>Bring your church</Link>
+        : <Link to="/signup" className={authSecondary}>Create a staff account</Link>}
+      <div className="flex flex-col gap-2.5 rounded-2xl bg-brand-50 px-5 py-[18px]">
+        <p className="text-[15px] text-mk-forest"><span className="font-semibold">A member?</span> You don't need an account here.</p>
+        <Link to="/me" className="inline-flex items-center gap-2 self-start text-[15px] font-semibold text-brand-700 hover:underline">
+          Sign in to My giving with your phone <ArrowRight className="h-4 w-4" aria-hidden="true" />
+        </Link>
+      </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2 text-[13px] text-mk-muted">
-        {branding.platform
-          ? <span>Church staff sign in at their church's address. <Link to="/" className="font-semibold text-brand-700 hover:underline">Find your church</Link></span>
-          : <Link to="/" className="hover:text-mk-forest hover:underline">Back to the church website</Link>}
+        <Link to="/" className="hover:text-mk-forest hover:underline">{branding.platform ? 'Back to mKanisa' : 'Back to the church website'}</Link>
         <PoweredBy className="text-mk-muted" />
       </div>
     </StaffAuthLayout>

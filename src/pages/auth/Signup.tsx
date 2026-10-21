@@ -10,7 +10,7 @@ import { useForm } from '../../lib/useForm'
 import type { Tokens } from '../../types'
 
 /** An account waiting for its phone to be verified. */
-interface Pending {
+export interface Pending {
   username: string
   phone: string
   fresh: boolean // just created here (not sent over from the login page)
@@ -18,7 +18,7 @@ interface Pending {
   smsFailed?: boolean
 }
 
-interface SignupResponse {
+export interface SignupResponse {
   username: string
   phone: string
   detail: string
@@ -51,12 +51,13 @@ export default function Signup({ superadmin = false }: { superadmin?: boolean })
 
   return (
     <StaffAuthLayout aside={aside} width={pending ? 'max-w-[420px]' : 'max-w-[480px]'}>
+      {pending && <PhoneTile />}
       <AuthTitle step={superadmin ? undefined : pending ? 'Step 2 of 3' : 'Step 1 of 3'} title={title}>
-        {!pending && !superadmin && <>Members don't need one: they <Link to="/me" className="font-semibold text-brand-700 hover:underline">sign in to My giving</Link> with their phone.</>}
+        {!pending && !superadmin && <>For people who work in the church office. Members don't need an account: they <Link to="/me" className="font-semibold text-brand-700 hover:underline">sign in with their phone</Link>.</>}
       </AuthTitle>
       {pending
         ? <VerifyStep pending={pending} onBack={() => setPending(null)}
-            onVerified={async (tokens) => { await acceptTokens(tokens) /* redirect above follows the role */ }} />
+            onVerified={async (tokens: Tokens) => { await acceptTokens(tokens) /* redirect above follows the role */ }} />
         : <DetailsStep superadmin={superadmin} onCreated={(res) => setPending({ username: res.username, phone: res.phone, fresh: true, notice: res.detail, smsFailed: !res.sms_sent })} />}
       <p className="text-center text-[15px] text-mk-muted">
         Already have an account? <Link to="/admin" className="font-semibold text-brand-700 hover:underline">Sign in</Link>
@@ -103,7 +104,7 @@ function DetailsStep({ onCreated, superadmin }: { onCreated: (res: SignupRespons
               ? branding.platform
                 ? "Platform admins add churches and manage mKanisa. We'll SMS a 6-digit code to confirm your phone."
                 : "Super admins manage every admin account and the church's settings. We'll SMS a 6-digit code to confirm your phone."
-              : "We'll SMS a 6-digit code to confirm your phone. Then the church's owner gives you a role, for example your branch or the treasury."}
+              : "We'll send a 6-digit code to your phone to confirm it's yours. Then the church's owner chooses your role."}
           </span>
         </p>
         <button className={`${authPrimary} sm:col-span-2`} disabled={busy}>{busy ? 'Creating account…' : 'Create account'}</button>
@@ -112,11 +113,24 @@ function DetailsStep({ onCreated, superadmin }: { onCreated: (res: SignupRespons
   )
 }
 
-function VerifyStep({ pending, onBack, onVerified }: { pending: Pending; onBack: () => void; onVerified: (tokens: Tokens) => Promise<void> }) {
+/** The phone mark above "Check your phone". */
+export function PhoneTile() {
+  return (
+    <span className="-mb-3 flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
+      <Smartphone className="h-6 w-6" aria-hidden="true" />
+    </span>
+  )
+}
+
+const SIGNUP_PATHS = { verify: '/auth/signup/verify/', resend: '/auth/signup/resend/' }
+
+/** Step 2 of a signup: the SMS code. ``paths`` lets another signup (a church registering) use it. */
+export function VerifyStep<R = Tokens>({ pending, onBack, onVerified, paths = SIGNUP_PATHS }:
+  { pending: Pending; onBack: () => void; onVerified: (res: R) => Promise<void> | void; paths?: typeof SIGNUP_PATHS }) {
   const [code, setCode] = useState('')
   const [phone, setPhone] = useState(pending.phone)
   const [error, setError] = useState(pending.smsFailed ? pending.notice : '')
-  const [notice, setNotice] = useState(pending.smsFailed ? '' : pending.notice || '')
+  const [notice, setNotice] = useState('') // the sentence above already says a code was sent; this is for resends
   const [busy, setBusy] = useState(false)
   const [wait, setWait] = useState(pending.fresh && !pending.smsFailed ? RESEND_SECONDS : 0)
 
@@ -130,7 +144,7 @@ function VerifyStep({ pending, onBack, onVerified }: { pending: Pending; onBack:
     e.preventDefault()
     setBusy(true); setError('')
     try {
-      const res = await request<Tokens>('/auth/signup/verify/', { method: 'POST', body: { username: pending.username, code }, auth: false })
+      const res = await request<R>(paths.verify, { method: 'POST', body: { username: pending.username, code }, auth: false })
       await onVerified(res)
     } catch (err) {
       setNotice('')
@@ -142,7 +156,7 @@ function VerifyStep({ pending, onBack, onVerified }: { pending: Pending; onBack:
   const resend = async () => {
     setError(''); setNotice('')
     try {
-      const res = await request<{ detail: string; phone: string }>('/auth/signup/resend/', { method: 'POST', body: { username: pending.username }, auth: false })
+      const res = await request<{ detail: string; phone: string }>(paths.resend, { method: 'POST', body: { username: pending.username }, auth: false })
       setNotice(res.detail); setPhone(res.phone); setWait(RESEND_SECONDS); setCode('')
     } catch (err) {
       setError(errorMessage(err))
@@ -164,7 +178,7 @@ function VerifyStep({ pending, onBack, onVerified }: { pending: Pending; onBack:
         <CodeInput id="signup-code" label="Verification code" value={code} onChange={setCode} autoFocus invalid={!!error} />
         <button className={authPrimary} disabled={busy || code.length !== 6}>{busy ? 'Verifying…' : 'Verify and continue'}</button>
       </form>
-      <div className="flex flex-col items-center gap-1">
+      <div className="flex flex-wrap items-center justify-between gap-x-4">
         {phone
           ? <ResendCode seconds={wait} onResend={resend} />
           : <button type="button" onClick={resend} className="min-h-11 font-semibold text-brand-700 hover:underline">Send code</button>}

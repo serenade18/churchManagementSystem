@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { type LucideIcon, ArrowRight, ChartLine, Check, Church, HeartHandshake, MessageSquare, RefreshCw, Search, ShieldCheck, Users } from 'lucide-react'
+import { type LucideIcon, ArrowRight, ChartLine, Check, Church, HeartHandshake, Menu, MessageSquare, RefreshCw, Search, ShieldCheck, Users, X } from 'lucide-react'
 import { request } from '../../lib/api'
 import { BRAND } from '../../brand'
 import { branding } from '../../lib/theme'
@@ -14,6 +14,8 @@ const FEATURES: [LucideIcon, string, string, string][] = [
   [ShieldCheck, 'Roles and branches', 'Treasurers, secretaries, pastors and branch admins each see what their role needs, and nothing more.', 'bg-mk-coral/35'],
   [ChartLine, 'Reports and statements', 'Dashboards for leaders, printable receipts, and yearly giving statements members can download.', 'bg-mk-mist'],
 ]
+
+const SECTIONS: [string, string][] = [['#features', 'Features'], ['#how', 'Giving'], ['#members', 'For members'], ['#pricing', 'Pricing']]
 
 const STEPS: [string, string][] = [
   ['A member gives', "On the church's give page or straight to its Paybill. The M-PESA or Airtel Money prompt arrives on their phone."],
@@ -55,9 +57,16 @@ function Heading({ children, dark = false }: { children: ReactNode; dark?: boole
 export default function PlatformHome() {
   const [churches, setChurches] = useState<DirectoryChurch[] | null>(null)
   const [query, setQuery] = useState('')
+  const [menuOpen, setMenuOpen] = useState(false)
+  useEffect(() => {
+    if (!menuOpen) return
+    const close = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false) }
+    window.addEventListener('keydown', close)
+    return () => window.removeEventListener('keydown', close)
+  }, [menuOpen])
   useEffect(() => { request<DirectoryChurch[]>('/platform/directory/', { auth: false }).then(setChurches).catch(() => setChurches([])) }, [])
   const contact = branding.raw?.contact_email
-  const join = contact ? `mailto:${contact}?subject=Bringing our church to mKanisa` : '#directory'
+  const talk = contact ? `mailto:${contact}?subject=Bringing our church to mKanisa` : '/start'
   const shown = (churches || []).filter((c) => `${c.name} ${c.location}`.toLowerCase().includes(query.trim().toLowerCase()))
 
   return (
@@ -67,18 +76,34 @@ export default function PlatformHome() {
         <img src="/landing/hero-congregation.jpg" alt="" className="absolute inset-0 h-full w-full object-cover object-[62%_35%]" />
         <div className="absolute inset-0" style={{ background: HERO_VEIL }} />
         <div className="relative mx-auto flex min-h-[760px] max-w-7xl sm:min-h-[860px] flex-col justify-between gap-16 px-5 pb-14 sm:px-10">
-          <header className="flex flex-wrap items-center gap-x-10 gap-y-4 pt-7">
+          <header className="relative flex items-center gap-x-10 pt-7">
             <a href="#top"><img src="/logo-ivory.png" alt={BRAND.name} className="h-7 w-auto sm:h-[30px]" /></a>
-            <nav aria-label="Main" className="hidden flex-1 flex-wrap justify-end gap-x-8 gap-y-1 text-sm font-medium uppercase tracking-[0.08em] lg:flex">
-              <a href="#features" className="hover:text-mk-mint">Features</a>
-              <a href="#how" className="hover:text-mk-mint">Giving</a>
-              <a href="#members" className="hover:text-mk-mint">For members</a>
-              <a href="#pricing" className="hover:text-mk-mint">Pricing</a>
+            <nav aria-label="Main" className="hidden flex-1 justify-end gap-x-8 text-sm font-medium uppercase tracking-[0.08em] lg:flex">
+              {SECTIONS.map(([href, label]) => <a key={href} href={href} className="hover:text-mk-mint">{label}</a>)}
             </nav>
-            <div className="ml-auto flex flex-wrap items-center gap-x-5 gap-y-3 text-[15px] font-medium lg:ml-0">
-              <Link to="/me" className="hover:text-mk-mint">Sign in</Link>
-              <a href={join} className="inline-flex min-h-11 items-center rounded-full bg-mk-ivory px-5 font-semibold text-mk-forest hover:bg-white">Bring your church</a>
+            <div className="hidden items-center gap-x-5 text-[15px] font-medium lg:flex">
+              <Link to="/admin" className="hover:text-mk-mint">Sign in</Link>
+              <Link to="/start" className="inline-flex min-h-11 items-center rounded-full bg-mk-ivory px-5 font-semibold text-mk-forest hover:bg-white">Bring your church</Link>
             </div>
+            {/* Phones and tablets: everything behind one button */}
+            <button type="button" onClick={() => setMenuOpen((open) => !open)} aria-expanded={menuOpen} aria-controls="mobile-menu"
+              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              className="ml-auto inline-flex h-11 w-11 items-center justify-center rounded-full border border-mk-ivory/30 bg-mk-midnight/35 hover:border-mk-mint lg:hidden">
+              {menuOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
+            </button>
+            {menuOpen && (
+              <div id="mobile-menu" className="absolute inset-x-0 top-full z-20 mt-3 flex flex-col gap-1 rounded-[22px] border border-mk-mint/20 bg-mk-midnight p-3 shadow-[0_28px_56px_-24px_rgba(0,0,0,0.6)] lg:hidden">
+                <nav aria-label="Main" className="flex flex-col">
+                  {SECTIONS.map(([href, label]) => (
+                    <a key={href} href={href} onClick={() => setMenuOpen(false)} className="flex min-h-12 items-center rounded-xl px-4 text-[17px] font-medium hover:bg-mk-ivory/10">{label}</a>
+                  ))}
+                </nav>
+                <div className="mt-2 flex flex-col gap-2 border-t border-mk-ivory/15 pt-3">
+                  <Link to="/admin" className="flex min-h-12 items-center rounded-xl px-4 text-[17px] font-medium hover:bg-mk-ivory/10">Sign in</Link>
+                  <Link to="/start" onClick={() => setMenuOpen(false)} className="inline-flex min-h-12 items-center justify-center rounded-full bg-mk-ivory px-5 font-semibold text-mk-forest hover:bg-white">Bring your church</Link>
+                </div>
+              </div>
+            )}
           </header>
 
           <div className="flex flex-wrap items-end justify-between gap-10">
@@ -93,8 +118,8 @@ export default function PlatformHome() {
                 Members, giving, M-PESA reconciliation and communication in one calm place for church leaders, and one account for every member's giving.
               </p>
               <div className="flex flex-wrap items-center gap-3">
-                <a href={join} className="inline-flex min-h-14 items-center rounded-full bg-mk-mint px-7 text-[17px] font-semibold text-mk-forest hover:bg-white">Bring your church to mKanisa</a>
-                <a href={join} aria-label="Get started" className="hidden h-14 w-14 sm:inline-flex items-center justify-center rounded-full bg-mk-mint text-mk-forest hover:bg-white"><ArrowRight className="h-5 w-5" aria-hidden="true" /></a>
+                <Link to="/start" className="inline-flex min-h-14 items-center rounded-full bg-mk-mint px-7 text-[17px] font-semibold text-mk-forest hover:bg-white">Bring your church to mKanisa</Link>
+                <Link to="/start" aria-label="Get started" className="hidden h-14 w-14 sm:inline-flex items-center justify-center rounded-full bg-mk-mint text-mk-forest hover:bg-white"><ArrowRight className="h-5 w-5" aria-hidden="true" /></Link>
                 <a href="#directory" className="inline-flex min-h-14 items-center px-5 font-semibold underline decoration-mk-ivory/45 underline-offset-[6px] hover:decoration-mk-mint">Find your church</a>
               </div>
               <ul className="flex flex-wrap gap-x-6 gap-y-2.5 text-sm text-mk-mist">
@@ -279,7 +304,7 @@ export default function PlatformHome() {
                 <span className="text-[#C9D6D0]">of collections processed</span>
               </p>
               <p className="text-[#C9D6D0]">Optional. Receive tithes, offerings and project gifts straight through mKanisa, settled to your church's account. Payment network charges are agreed and shown up front.</p>
-              <a href={join} className="mt-auto inline-flex min-h-11 items-center self-start rounded-xl bg-mk-mint px-5 font-semibold text-mk-forest hover:bg-white">Talk to us</a>
+              <a href={talk} className="mt-auto inline-flex min-h-11 items-center self-start rounded-xl bg-mk-mint px-5 font-semibold text-mk-forest hover:bg-white">Talk to us</a>
             </div>
           </div>
         </div>
@@ -294,7 +319,7 @@ export default function PlatformHome() {
           <h2 className="font-display text-[clamp(36px,4.4vw,56px)] font-semibold leading-[1.08] tracking-[-0.02em] text-mk-ivory">Bring your church home.</h2>
           <p className="max-w-xl text-lg">Tell us about your church. We'll set up its address, bring in your members and connect your Paybill.</p>
           <div className="mt-2 flex flex-wrap justify-center gap-3">
-            <a href={join} className="inline-flex min-h-[52px] items-center rounded-xl bg-mk-mint px-7 font-semibold text-mk-forest hover:bg-white">Bring your church to mKanisa</a>
+            <Link to="/start" className="inline-flex min-h-[52px] items-center rounded-xl bg-mk-mint px-7 font-semibold text-mk-forest hover:bg-white">Bring your church to mKanisa</Link>
             <a href="#directory" className="inline-flex min-h-[52px] items-center rounded-xl border border-mk-mist/45 bg-mk-midnight/25 px-6 font-semibold text-mk-ivory hover:bg-mk-midnight/50">Find your church</a>
           </div>
         </div>

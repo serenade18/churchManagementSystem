@@ -55,16 +55,17 @@ export function AuthTitle({ step, title, children }: { step?: string; title: str
   )
 }
 
-/** "Joining the church office": the three steps of a staff signup, ``current`` highlighted. */
-export function SignupSteps({ current }: { current: 1 | 2 | 3 }) {
-  const steps: [string, string][] = [
-    ['Your details', 'Your name, phone and a password.'],
-    ['Confirm your phone', 'Enter the 6-digit code we SMS you.'],
-    ['Get your role', 'The church owner chooses what you look after: a branch, the treasury, SMS.'],
-  ]
+const STAFF_STEPS: [string, string][] = [
+  ['Your details', 'Your name, phone and a password.'],
+  ['Confirm your phone', 'Enter the 6-digit code we SMS you.'],
+  ['Get your role', 'The church owner chooses what you look after: a branch, the treasury, SMS.'],
+]
+
+/** "Joining the church office" (or another ``title``): a signup's three steps, ``current`` highlighted. */
+export function SignupSteps({ current, title = 'Joining the church office', steps = STAFF_STEPS }: { current: 1 | 2 | 3; title?: string; steps?: [string, string][] }) {
   return (
     <div className="flex flex-col gap-5">
-      <p className="font-display text-[30px] font-semibold leading-[1.15] tracking-[-0.015em] sm:text-[34px]">Joining the church office</p>
+      <p className="font-display text-[30px] font-semibold leading-[1.15] tracking-[-0.015em] sm:text-[34px]">{title}</p>
       <ol className="flex flex-col gap-4">
         {steps.map(([title, text], i) => {
           const n = i + 1
