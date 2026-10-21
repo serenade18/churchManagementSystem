@@ -76,7 +76,7 @@ export default function PublicPageSettings() {
       <Alert>{error}</Alert>
       <form onSubmit={save} className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-4">
-          <Field label="Cover photo" hint="A wide photo of your church or congregation. JPG, PNG or WebP under 3 MB.">
+          <Field label="Cover photo" hint="A wide photo of your church or congregation. JPG, PNG or WebP up to 10 MB. A photo straight from your phone is fine.">
             <div className="flex items-center gap-3">
               {shownCover
                 ? <img src={shownCover} alt="" className="h-20 w-36 rounded-lg object-cover" />

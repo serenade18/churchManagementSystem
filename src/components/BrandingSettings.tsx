@@ -134,7 +134,7 @@ export default function BrandingSettings() {
               hint={errors.primary_color || 'Buttons, highlights and charts.'} />
             <ColorField label="Sidebar colour" value={values.sidebar_color} onChange={set('sidebar_color')} fallback={DEFAULT_SIDEBAR}
               hint={errors.sidebar_color || (sidebarAdjusted(values.sidebar_color) ? 'Darkened a little so white text stays readable.' : 'Sidebar and sign-in background.')} />
-            <LogoField label="Logo" hint={errors.logo || 'Sign-in pages and receipts. PNG, JPG, WebP or SVG, under 1 MB.'}
+            <LogoField label="Logo" hint={errors.logo || 'Sign-in pages and receipts. PNG, JPG, WebP or SVG, up to 5 MB.'}
               current={assetUrl(current.logo_url)} file={files.logo} removed={removed.logo}
               onFile={(f) => { setFiles((x) => ({ ...x, logo: f })); setRemoved((r) => ({ ...r, logo: false })) }}
               onRemove={() => { setFiles((x) => ({ ...x, logo: undefined })); setRemoved((r) => ({ ...r, logo: true })) }} />

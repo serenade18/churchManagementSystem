@@ -49,7 +49,7 @@ function ProjectForm({ project, onClose, onSaved }: { project: Project | null; o
         <div />
         <Field label="Start date" error={errors.start_date}><input className="input" type="date" value={values.start_date} onChange={set('start_date')} /></Field>
         <Field label="End date" error={errors.end_date}><input className="input" type="date" value={values.end_date} onChange={set('end_date')} /></Field>
-        <Field label="Photo" className="sm:col-span-2" hint="Shown on your public home page. JPG, PNG or WebP under 3 MB.">
+        <Field label="Photo" className="sm:col-span-2" hint="Shown on your public home page. JPG, PNG or WebP up to 10 MB. A photo straight from your phone is fine.">
           <div className="flex items-center gap-3">
             {shownPhoto
               ? <img src={shownPhoto} alt="" className="h-16 w-16 rounded-lg object-cover" />
