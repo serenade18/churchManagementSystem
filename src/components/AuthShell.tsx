@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, CircleAlert } from 'lucide-react'
+import { ArrowLeft, CircleAlert, ShieldCheck } from 'lucide-react'
 import Logo, { PoweredBy } from './Logo'
 import { assetUrl, branding } from '../lib/theme'
 
@@ -24,22 +24,68 @@ function ChurchName({ className = '' }: { className?: string }) {
 
 /**
  * Staff sign-in and sign-up: the church's photograph and name on one side (on top on phones),
- * the form on warm ivory on the other.
+ * the form on warm ivory on the other. On mkanisa.com the side is mKanisa's own: the congregation
+ * under deep forest, the ivory wordmark and a gold "Platform admin" badge.
  */
 export function StaffAuthLayout({ aside, children, width = 'max-w-[400px]' }: { aside: ReactNode; children: ReactNode; width?: string }) {
+  const platform = branding.platform
   return (
     <div className="flex min-h-screen flex-wrap bg-mk-ivory font-body text-base leading-relaxed text-mk-slate">
-      <aside className="relative flex min-h-[300px] flex-[1_1_520px] overflow-hidden bg-sidebar text-white">
-        <img src={churchPhoto('/landing/church-cover.jpg')} alt="" className="absolute inset-0 h-full w-full object-cover object-[55%_45%]" />
-        <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${shade(60)} 0%, ${shade(30)} 40%, ${shade(90)} 100%)` }} />
+      <aside className={`relative flex min-h-[300px] flex-[1_1_520px] overflow-hidden ${platform ? 'bg-mk-midnight text-mk-ivory' : 'bg-sidebar text-white'}`}>
+        {platform ? (
+          <>
+            <img src="/landing/hero-congregation.jpg" alt="" className="absolute inset-0 h-full w-full object-cover object-[62%_35%]" />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,29,27,0.82)_0%,rgba(16,43,39,0.66)_40%,rgba(11,29,27,0.96)_100%)]" />
+          </>
+        ) : (
+          <>
+            <img src={churchPhoto('/landing/church-cover.jpg')} alt="" className="absolute inset-0 h-full w-full object-cover object-[55%_45%]" />
+            <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${shade(60)} 0%, ${shade(30)} 40%, ${shade(90)} 100%)` }} />
+          </>
+        )}
         <div className="relative flex w-full flex-col justify-between gap-10 px-6 py-8 sm:px-12 sm:py-10">
-          <ChurchName />
+          {platform ? (
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <Link to="/" className="flex items-center"><img src="/logo-ivory.png" alt="mKanisa" className="h-[30px] w-auto" /></Link>
+              <span className="inline-flex items-center gap-2 rounded-full border border-mk-gold/45 bg-mk-gold/12 py-1.5 pl-2.5 pr-3.5 text-[13px] font-semibold tracking-[0.04em] text-mk-amber">
+                <ShieldCheck className="h-4 w-4" aria-hidden="true" />Platform admin
+              </span>
+            </div>
+          ) : <ChurchName />}
           <div className="max-w-[460px]">{aside}</div>
         </div>
       </aside>
       <main className="flex min-w-0 flex-[1_1_480px] flex-col justify-center px-5 py-12 sm:px-8 sm:py-14">
         <div className={`mx-auto flex w-full flex-col gap-7 ${width}`}>{children}</div>
       </main>
+    </div>
+  )
+}
+
+/** "Setting up platform access": a platform admin's signup, ``current`` highlighted in mint. */
+export function PlatformSteps({ current }: { current: 1 | 2 }) {
+  const steps: [string, string][] = [
+    ['Setup key and your details', 'The key comes from whoever runs the server.'],
+    ['Confirm your phone', 'Enter the 6-digit code we SMS you.'],
+    ['Open the platform', 'Add churches, their first owner, and watch over them all.'],
+  ]
+  return (
+    <div className="flex flex-col gap-5">
+      <p className="font-display text-[30px] font-semibold leading-[1.15] tracking-[-0.015em] sm:text-[34px]">Setting up platform access</p>
+      <ol className="flex flex-col gap-4">
+        {steps.map(([title, text], i) => {
+          const n = i + 1
+          return (
+            <li key={title} className="flex gap-4" aria-current={n === current ? 'step' : undefined}>
+              <span className={`flex h-8 w-8 flex-none items-center justify-center rounded-full border text-sm font-bold ${
+                n === current ? 'border-mk-mint bg-mk-mint text-mk-midnight' : n < current ? 'border-mk-mint/50 bg-mk-mint/20 text-mk-mint' : 'border-mk-ivory/40'}`}>
+                {n < current ? '✓' : n}
+              </span>
+              <span className="flex flex-col"><span className="font-semibold">{title}</span><span className="text-[15px] text-mk-ivory/75">{n < current ? 'Done.' : text}</span></span>
+            </li>
+          )
+        })}
+      </ol>
     </div>
   )
 }

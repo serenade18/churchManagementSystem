@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Check, Lock } from 'lucide-react'
 import { PoweredBy } from '../../components/Logo'
 import { PasswordInput } from '../../components/ui'
 import { AuthAlert, AuthField, AuthTitle, StaffAuthLayout, authInput, authLabel, authPassword, authPrimary, authSecondary } from '../../components/AuthShell'
@@ -42,18 +42,25 @@ export default function Login() {
     }
   }
 
-  const aside = (
+  const aside = branding.platform ? (
+    <div className="flex flex-col gap-[22px]">
+      <p className="font-display text-[30px] font-semibold leading-[1.1] tracking-[-0.015em] sm:text-[40px]">Every church on mKanisa, looked after from one place.</p>
+      <ul className="flex flex-col gap-2.5 text-[15px] text-mk-ivory/85">
+        {['Add a church and invite its first owner', 'Turn a church’s demo on or off', 'See how every church is doing at a glance'].map((duty) => (
+          <li key={duty} className="flex gap-2.5"><Check className="mt-1 h-4 w-4 flex-none text-mk-mint" strokeWidth={2.5} aria-hidden="true" />{duty}</li>
+        ))}
+      </ul>
+    </div>
+  ) : (
     <div className="flex flex-col gap-3.5">
-      <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-white/80">{branding.platform ? 'Platform admin' : 'Church office'}</p>
-      <p className="font-display text-[30px] font-semibold leading-[1.1] tracking-[-0.015em] sm:text-[40px]">
-        {branding.platform ? 'Every church on mKanisa, looked after from one place.' : "Members, giving and the church's work, in one quiet place."}
-      </p>
+      <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-white/80">Church office</p>
+      <p className="font-display text-[30px] font-semibold leading-[1.1] tracking-[-0.015em] sm:text-[40px]">Members, giving and the church's work, in one quiet place.</p>
     </div>
   )
 
   return (
     <StaffAuthLayout aside={aside}>
-      <AuthTitle title="Sign in">{branding.platform ? 'For mKanisa platform admins.' : "For the church's staff and admins."}</AuthTitle>
+      <AuthTitle title="Sign in">{branding.platform ? 'For the people who run mKanisa.' : "For the church's staff and admins."}</AuthTitle>
 
       {error && (
         <AuthAlert>
@@ -85,6 +92,16 @@ export default function Login() {
         </div>
       )}
 
+      {branding.platform && (
+        <div className="flex flex-col gap-3 rounded-2xl bg-mk-mist px-5 py-[18px]">
+          <p className="text-[15px] text-mk-forest"><span className="font-semibold">Church staff or a member?</span> Sign in at your church's own address.</p>
+          <span className="self-start break-all rounded-[10px] border border-mk-border bg-white px-3 py-1.5 font-mono text-sm text-mk-forest">yourchurch.{window.location.host.replace(/^www\./, '')}/admin</span>
+          <a href="/#directory" className="inline-flex items-center gap-2 self-start text-[15px] font-semibold text-brand-700 hover:underline">
+            Find your church <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </a>
+        </div>
+      )}
+
       {!branding.platform && (
         <>
           <div className="flex items-center gap-3.5 text-[13px] text-mk-muted">
@@ -101,10 +118,10 @@ export default function Login() {
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-2 text-[13px] text-mk-muted">
+        <Link to="/" className="hover:text-mk-forest hover:underline">{branding.platform ? `Back to ${window.location.host.replace(/^www\./, '')}` : 'Back to the church website'}</Link>
         {branding.platform
-          ? <span>Church staff sign in at their church's address. <Link to="/" className="font-semibold text-brand-700 hover:underline">Find your church</Link></span>
-          : <Link to="/" className="hover:text-mk-forest hover:underline">Back to the church website</Link>}
-        <PoweredBy className="text-mk-muted" />
+          ? <span className="inline-flex items-center gap-1.5"><Lock className="h-4 w-4" aria-hidden="true" />For mKanisa staff only</span>
+          : <PoweredBy className="text-mk-muted" />}
       </div>
     </StaffAuthLayout>
   )

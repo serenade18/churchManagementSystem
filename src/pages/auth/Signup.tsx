@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent, type InputHTMLAttributes } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
-import { Smartphone } from 'lucide-react'
+import { KeyRound, Lock, Smartphone } from 'lucide-react'
 import { PasswordInput } from '../../components/ui'
-import { AuthAlert, AuthField, AuthTitle, CodeInput, ResendCode, SignupSteps, StaffAuthLayout, authInput, authPassword, authPrimary, maskPhone } from '../../components/AuthShell'
+import { AuthAlert, AuthField, AuthTitle, CodeInput, PlatformSteps, ResendCode, SignupSteps, StaffAuthLayout, authInput, authPassword, authPrimary, maskPhone } from '../../components/AuthShell'
 import { errorMessage, request } from '../../lib/api'
 import { homeFor, useAuth } from '../../lib/auth'
 import { branding } from '../../lib/theme'
@@ -39,11 +39,15 @@ export default function Signup({ superadmin = false }: { superadmin?: boolean })
 
   if (user) return <Navigate to={homeFor(user)} replace />
 
-  const title = pending ? 'Check your phone' : branding.platform ? 'Create a platform admin account' : superadmin ? 'Create a super admin account' : 'Create a staff account'
-  const aside = superadmin
+  const platform = superadmin && branding.platform
+  const title = pending ? 'Check your phone' : platform ? 'Create a platform admin account' : superadmin ? 'Create a super admin account' : 'Create a staff account'
+  const step = platform ? (pending ? 'Step 2 of 2' : 'Step 1 of 2') : superadmin ? undefined : pending ? 'Step 2 of 3' : 'Step 1 of 3'
+  const aside = platform
+    ? <PlatformSteps current={pending ? 2 : 1} />
+    : superadmin
     ? (
       <div className="flex flex-col gap-3.5">
-        <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-white/80">{branding.platform ? 'Platform admin' : 'Super admin'}</p>
+        <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-white/80">Super admin</p>
         <p className="font-display text-[30px] font-semibold leading-[1.1] tracking-[-0.015em] sm:text-[40px]">You'll need the setup key from whoever runs the server.</p>
       </div>
     )
@@ -51,16 +55,23 @@ export default function Signup({ superadmin = false }: { superadmin?: boolean })
 
   return (
     <StaffAuthLayout aside={aside} width={pending ? 'max-w-[420px]' : 'max-w-[480px]'}>
-      <AuthTitle step={superadmin ? undefined : pending ? 'Step 2 of 3' : 'Step 1 of 3'} title={title}>
+      <AuthTitle step={step} title={title}>
+        {!pending && platform && "Platform admins add churches and look after mKanisa itself. Church staff sign up at their church's address instead."}
         {!pending && !superadmin && <>Members don't need one: they <Link to="/me" className="font-semibold text-brand-700 hover:underline">sign in to My giving</Link> with their phone.</>}
       </AuthTitle>
       {pending
         ? <VerifyStep pending={pending} onBack={() => setPending(null)}
+            verifyLabel={platform ? 'Verify and open the platform' : 'Verify and continue'}
             onVerified={async (tokens) => { await acceptTokens(tokens) /* redirect above follows the role */ }} />
         : <DetailsStep superadmin={superadmin} onCreated={(res) => setPending({ username: res.username, phone: res.phone, fresh: true, notice: res.detail, smsFailed: !res.sms_sent })} />}
-      <p className="text-center text-[15px] text-mk-muted">
-        Already have an account? <Link to="/admin" className="font-semibold text-brand-700 hover:underline">Sign in</Link>
-      </p>
+      <div className="flex flex-col items-center gap-2.5 text-center">
+        <p className="text-[15px] text-mk-muted">
+          {platform ? 'Already a platform admin?' : 'Already have an account?'} <Link to="/admin" className="font-semibold text-brand-700 hover:underline">Sign in</Link>
+        </p>
+        {platform && !pending && (
+          <p className="inline-flex items-center gap-1.5 text-[13px] text-mk-muted"><Lock className="h-4 w-4 flex-none" aria-hidden="true" />This page isn't linked anywhere. Keep its address to yourself.</p>
+        )}
+      </div>
     </StaffAuthLayout>
   )
 }
@@ -87,7 +98,18 @@ function DetailsStep({ onCreated, superadmin }: { onCreated: (res: SignupRespons
     <>
       <AuthAlert>{error}</AuthAlert>
       <form onSubmit={save} className="grid gap-[18px] sm:grid-cols-2">
-        {superadmin && <div className="sm:col-span-2">{input('setup_key', 'Setup key', { type: 'password', autoComplete: 'off', autoFocus: true })}</div>}
+        {superadmin && (
+          <div className={`flex flex-col gap-2.5 rounded-2xl border bg-[#FBF4E4] p-[18px] sm:col-span-2 ${errors.setup_key ? 'border-[#F0C7BF]' : 'border-[#EADCB8]'}`}>
+            <label htmlFor="setup-key" className="flex items-center gap-2.5 text-sm font-semibold text-mk-forest">
+              <KeyRound className="h-5 w-5 text-[#7A5A1E]" aria-hidden="true" />{branding.platform ? 'Platform setup key' : 'Setup key'}
+            </label>
+            <PasswordInput id="setup-key" className={`${authPassword.replace('border-mk-border!', '')} ${errors.setup_key ? 'border-[#D9826F]!' : 'border-[#E6D3A8]!'}`} autoComplete="off" autoFocus required
+              aria-invalid={errors.setup_key ? true : undefined} value={values.setup_key} onChange={set('setup_key')} />
+            {errors.setup_key
+              ? <span role="alert" className="text-sm text-[#8E2F22]">{errors.setup_key}</span>
+              : <span className="text-[13px] text-mk-muted">Ask whoever runs the server. It's set there as <code className="font-mono text-mk-forest">{branding.platform ? 'PLATFORM_SETUP_KEY' : 'SUPERADMIN_SETUP_KEY'}</code>.</span>}
+          </div>
+        )}
         {input('first_name', 'First name', { autoComplete: 'given-name', autoFocus: !superadmin })}
         {input('last_name', 'Last name', { autoComplete: 'family-name' })}
         {input('email', 'Email', { type: 'email', autoComplete: 'email' })}
@@ -101,18 +123,18 @@ function DetailsStep({ onCreated, superadmin }: { onCreated: (res: SignupRespons
           <span>
             {superadmin
               ? branding.platform
-                ? "Platform admins add churches and manage mKanisa. We'll SMS a 6-digit code to confirm your phone."
+                ? "We'll SMS a 6-digit code to confirm your phone. Then the platform opens straight away; there's no role to wait for."
                 : "Super admins manage every admin account and the church's settings. We'll SMS a 6-digit code to confirm your phone."
               : "We'll SMS a 6-digit code to confirm your phone. Then the church's owner gives you a role, for example your branch or the treasury."}
           </span>
         </p>
-        <button className={`${authPrimary} sm:col-span-2`} disabled={busy}>{busy ? 'Creating account…' : 'Create account'}</button>
+        <button className={`${authPrimary} sm:col-span-2`} disabled={busy}>{busy ? 'Creating account…' : superadmin && branding.platform ? 'Create platform admin account' : 'Create account'}</button>
       </form>
     </>
   )
 }
 
-function VerifyStep({ pending, onBack, onVerified }: { pending: Pending; onBack: () => void; onVerified: (tokens: Tokens) => Promise<void> }) {
+function VerifyStep({ pending, onBack, onVerified, verifyLabel }: { pending: Pending; onBack: () => void; onVerified: (tokens: Tokens) => Promise<void>; verifyLabel: string }) {
   const [code, setCode] = useState('')
   const [phone, setPhone] = useState(pending.phone)
   const [error, setError] = useState(pending.smsFailed ? pending.notice : '')
@@ -162,7 +184,7 @@ function VerifyStep({ pending, onBack, onVerified }: { pending: Pending; onBack:
       <AuthAlert>{error}</AuthAlert>
       <form onSubmit={verify} className="flex flex-col gap-[18px]">
         <CodeInput id="signup-code" label="Verification code" value={code} onChange={setCode} autoFocus invalid={!!error} />
-        <button className={authPrimary} disabled={busy || code.length !== 6}>{busy ? 'Verifying…' : 'Verify and continue'}</button>
+        <button className={authPrimary} disabled={busy || code.length !== 6}>{busy ? 'Verifying…' : verifyLabel}</button>
       </form>
       <div className="flex flex-col items-center gap-1">
         {phone
