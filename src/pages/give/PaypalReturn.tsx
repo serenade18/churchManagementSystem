@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { CheckCircle2, Clock, Loader2, XCircle } from 'lucide-react'
+import { Check, Clock, Loader2, XCircle } from 'lucide-react'
+import { authPrimary, authSecondary } from '../../components/AuthShell'
 import { errorMessage, request } from '../../lib/api'
 import { currencyMoney } from '../../lib/format'
 import { GiveLayout } from './Give'
@@ -22,42 +23,54 @@ export default function PaypalReturn() {
       .catch((err) => setResult({ error: errorMessage(err) }))
   }, [orderId])
 
-  const again = <Link to="/give" className="btn-primary mt-6 inline-flex">Give again</Link>
+  const title = 'font-display text-[32px] font-semibold leading-[1.1] tracking-[-0.015em] text-mk-forest'
+  const icon = (Icon: typeof Clock, cls: string) => (
+    <span className={`flex h-[60px] w-[60px] items-center justify-center rounded-full ${cls}`}><Icon className="h-7 w-7" aria-hidden="true" /></span>
+  )
 
   return (
     <GiveLayout>
-      <div className="py-6 text-center">
-        {!result ? (
-          <>
-            <Loader2 className="mx-auto mb-3 h-12 w-12 animate-spin text-brand-600" />
-            <h1 className="text-xl font-semibold">Confirming your gift…</h1>
-            <p className="mt-2 text-sm text-slate-600">Please don't close this page.</p>
-          </>
-        ) : result.status === 'completed' ? (
-          <>
-            <CheckCircle2 className="mx-auto mb-3 h-14 w-14 text-emerald-500" />
-            <h1 className="text-xl font-semibold">Thank you!</h1>
-            <p className="mt-2 text-sm text-slate-600">
+      {!result ? (
+        <>
+          {icon(Loader2, 'bg-brand-50 text-brand-700 [&>svg]:animate-spin')}
+          <div className="flex flex-col gap-2" role="status">
+            <h2 className={title}>Confirming your gift…</h2>
+            <p className="text-mk-muted">Please don't close this page.</p>
+          </div>
+        </>
+      ) : result.status === 'completed' ? (
+        <>
+          {icon(Check, 'bg-primary text-on-primary')}
+          <div className="flex flex-col gap-2" role="status">
+            <h2 className={`${title} text-[36px]`}>Thank you!</h2>
+            <p className="text-[17px] text-mk-muted">
               Your gift of {currencyMoney(result.amount, result.currency)}{result.donation_type && ` towards ${result.donation_type}`} has been received. God bless you!
             </p>
-            {again}
-          </>
-        ) : result.status === 'created' ? (
-          <>
-            <Clock className="mx-auto mb-3 h-14 w-14 text-amber-500" />
-            <h1 className="text-xl font-semibold">Payment not finished</h1>
-            <p className="mt-2 text-sm text-slate-600">PayPal hasn't confirmed this payment yet. If you approved it, we'll confirm it shortly and send your receipt.</p>
-            <Link to="/give" className="btn-secondary mt-6 inline-flex">Back to giving</Link>
-          </>
-        ) : (
-          <>
-            <XCircle className="mx-auto mb-3 h-14 w-14 text-red-500" />
-            <h1 className="text-xl font-semibold">Payment not completed</h1>
-            <p className="mt-2 text-sm text-slate-600">{result.error || result.message || 'PayPal did not complete the payment. You have not been charged.'}</p>
-            <Link to="/give" className="btn-primary mt-6 inline-flex">Try again</Link>
-          </>
-        )}
-      </div>
+          </div>
+          <div className="flex flex-wrap gap-2.5">
+            <Link to="/me" className={`${authPrimary} h-12 flex-1 basis-40`}>See all my giving</Link>
+            <Link to="/give" className={`${authSecondary} h-12 flex-1 basis-40`}>Give again</Link>
+          </div>
+        </>
+      ) : result.status === 'created' ? (
+        <>
+          {icon(Clock, 'bg-[#FBF4E4] text-[#7A5A1E]')}
+          <div className="flex flex-col gap-2">
+            <h2 className={title}>Payment not finished</h2>
+            <p className="text-mk-muted">PayPal hasn't confirmed this payment yet. If you approved it, we'll confirm it shortly and send your receipt.</p>
+          </div>
+          <Link to="/give" className={authSecondary}>Back to giving</Link>
+        </>
+      ) : (
+        <>
+          {icon(XCircle, 'bg-[#FBEDEA] text-[#8E2F22]')}
+          <div className="flex flex-col gap-2">
+            <h2 className={title}>Payment not completed</h2>
+            <p className="text-mk-muted">{result.error || result.message || 'PayPal did not complete the payment. You have not been charged.'}</p>
+          </div>
+          <Link to="/give" className={authPrimary}>Try again</Link>
+        </>
+      )}
     </GiveLayout>
   )
 }

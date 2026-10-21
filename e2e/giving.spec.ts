@@ -25,7 +25,7 @@ test('a member gives online; the M-PESA callback confirms it and admins see it',
   const res = await postStkCallback(request, checkoutId, { amount: 250, receipt })
   expect(res.ok()).toBeTruthy()
   await expect(page.getByRole('heading', { name: 'Thank you!' })).toBeVisible({ timeout: 15_000 })
-  await expect(page.getByText('KES 250')).toBeVisible()
+  await expect(page.getByText(/^(Ksh|KES)\s?250$/)).toBeVisible()
 
   // The giver got an SMS receipt.
   await expect.poll(async () => (await smsTo(request, MEMBER.phone)).length).toBeGreaterThan(before)
@@ -35,8 +35,10 @@ test('a member gives online; the M-PESA callback confirms it and admins see it',
   await login(page, ACCOUNTS.clerk)
   await page.getByRole('link', { name: 'Donations' }).click()
   await page.getByPlaceholder('Search member, phone, receipt…').fill(receipt)
-  const row = page.getByRole('row', { name: new RegExp(MEMBER.name) })
+  // The row with this gift's receipt (Grace's other gifts show until the search applies).
+  const row = page.getByRole('row').filter({ hasText: receipt })
   await expect(row).toBeVisible()
+  await expect(row).toContainText(MEMBER.name)
   await expect(row).toContainText('250')
 })
 

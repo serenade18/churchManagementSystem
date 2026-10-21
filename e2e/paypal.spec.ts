@@ -9,7 +9,7 @@ test('a giver abroad pays with PayPal; the gift is confirmed and admins see it i
   const before = (await smsTo(request, MEMBER.phone)).length
 
   await page.goto('/give')
-  await page.getByRole('radio', { name: 'PayPal / card' }).click()
+  await page.getByRole('radio', { name: 'Card / PayPal' }).click()
   await page.getByLabel('Membership number (optional)').fill(MEMBER.number)
   await page.getByLabel('Your name').fill('Grace Abroad')
   await page.getByLabel('Email for your receipt').fill(email)
