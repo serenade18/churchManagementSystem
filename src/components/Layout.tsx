@@ -60,9 +60,11 @@ export default function Layout() {
       window.removeEventListener('cms:registrations-changed', loadRegistrations)
     }
   }, [location.pathname, user])
+  const platform = branding.platform
   const nav: NavItem[] = [
     ...(branding.platform
-      ? [{ to: '/platform', label: 'Churches', icon: Church }, { to: '/users', label: 'Platform admins', icon: ShieldCheck }]
+      ? [{ to: '/platform', label: 'Overview', icon: LayoutDashboard }, { to: '/platform/churches', label: 'Churches', icon: Church },
+          { to: '/users', label: 'Platform admins', icon: ShieldCheck }]
       : [
           ...NAV.filter((item) => !item.feature || can(user, item.feature)),
           ...(isOwner(user) ? [{ to: '/users', label: 'Staff & roles', icon: ShieldCheck }, { to: '/super', label: 'System', icon: Gauge }] : []),
@@ -71,22 +73,33 @@ export default function Layout() {
   ]
 
   const sidebar = (
-    <div className="flex h-full flex-col bg-sidebar text-brand-100">
-      <div className="flex items-center gap-3 px-5 py-5">
-        <Logo tile className="h-12 w-12" />
-        <div>
-          <p className="font-semibold text-white">{branding.name}</p>
-          <p className="text-xs text-brand-200">{branding.tagline}</p>
+    <div className={`flex h-full flex-col ${platform ? 'bg-mk-midnight text-mk-ivory/75' : 'bg-sidebar text-brand-100'}`}>
+      {platform ? (
+        // mKanisa's own: the ivory wordmark and the gold Platform admin badge
+        <div className="flex flex-col gap-3 px-6 pb-6 pt-7">
+          <img src="/logo-ivory.png" alt="mKanisa" className="h-7 w-auto self-start" />
+          <span className="self-start rounded-full border border-mk-gold/45 bg-mk-gold/12 px-2.5 py-1 text-xs font-semibold text-mk-amber">Platform admin</span>
         </div>
-      </div>
+      ) : (
+        <div className="flex items-center gap-3 px-5 py-5">
+          <Logo tile className="h-12 w-12" />
+          <div>
+            <p className="font-semibold text-white">{branding.name}</p>
+            <p className="text-xs text-brand-200">{branding.tagline}</p>
+          </div>
+        </div>
+      )}
       <nav className="flex-1 space-y-1 px-3">
         {nav.map(({ to, label, icon: Icon, badge }) => (
           <NavLink
             key={to}
             to={to}
+            end={to === '/platform'}
             onClick={() => setOpen(false)}
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${isActive ? 'bg-primary font-semibold text-on-primary' : 'hover:bg-white/10 hover:text-white'}`
+              `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${isActive
+                ? (platform ? 'bg-mk-mint/15 font-semibold text-white [&>svg]:text-mk-mint' : 'bg-primary font-semibold text-on-primary')
+                : 'hover:bg-white/10 hover:text-white'}`
             }
           >
             <Icon className="h-5 w-5" /> {label}

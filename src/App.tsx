@@ -32,6 +32,7 @@ import NoAccess from './pages/admin/NoAccess'
 import NoChurch from './pages/platform/NoChurch'
 import PlatformChurches from './pages/platform/PlatformChurches'
 import PlatformHome from './pages/platform/PlatformHome'
+import PlatformOverviewPage from './pages/platform/PlatformOverview'
 import RegisterChurch from './pages/platform/RegisterChurch'
 import { branding } from './lib/theme'
 
@@ -68,7 +69,8 @@ function PlatformApp() {
           <Route path="/signup/platform" element={<Signup superadmin />} />
           <Route path="/signup/superadmin" element={<Signup superadmin />} />
           <Route element={<RequireAuth><Layout /></RequireAuth>}>
-            <Route path="/platform" element={<RequireAuth owner><PlatformChurches /></RequireAuth>} />
+            <Route path="/platform" element={<RequireAuth owner><PlatformOverviewPage /></RequireAuth>} />
+            <Route path="/platform/churches" element={<RequireAuth owner><PlatformChurches /></RequireAuth>} />
             <Route path="/users" element={<RequireAuth owner><Users /></RequireAuth>} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>

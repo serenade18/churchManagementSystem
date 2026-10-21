@@ -696,3 +696,45 @@ export interface PortalGiving {
   years: number[]
   results: PortalGift[]
 }
+
+/** GET /platform/overview/: how every church on the platform is doing. */
+export type OverviewPeriod = '30d' | 'quarter' | '12m'
+export interface PlatformOverview {
+  period: OverviewPeriod
+  today: string
+  churches: { live: number; new_this_month: number; joined_this_year: number; pending: number; closed: number; own_paybill: number }
+  members: { total: number; new_30_days: number }
+  giving: {
+    this_month: Amount
+    last_month: Amount
+    change: number | null
+    /** Oldest first; the last one is still running. */
+    series: { start: string; label: string; amount: Amount; partial: boolean }[]
+    channels: { key: 'prompt' | 'paybill' | 'paypal' | 'recorded'; label: string; amount: Amount; share: number }[]
+  }
+  prompts: { sent_30_days: number; confirmed_rate: number | null; change_points: number | null }
+  sms: { sent_30_days: number; ok_rate: number | null }
+  growth: { start: string; label: string; churches: number }[]
+  attention: {
+    kind: 'failing' | 'unallocated' | 'waiting' | 'quiet'
+    church: Id
+    name: string
+    text: string
+    url?: string
+    username?: string
+  }[]
+  church_rows: {
+    id: Id
+    name: string
+    slug: string
+    url: string
+    domain: string
+    status: 'open' | 'closed' | 'pending'
+    members: number
+    given_this_month: Amount
+    change: number | null
+    weekly: Amount[]
+    own_paybill: boolean
+    created_at: string
+  }[]
+}

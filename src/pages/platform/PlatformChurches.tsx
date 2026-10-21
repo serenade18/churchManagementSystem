@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { ExternalLink, KeyRound, Pencil, Plus, UserPlus } from 'lucide-react'
 import { Alert, Badge, Field, Modal, PageHeader, Table, type Column } from '../../components/ui'
 import { api } from '../../lib/api'
@@ -101,6 +102,16 @@ export default function PlatformChurches() {
   const [editing, setEditing] = useState<PlatformChurch | 'new' | null>(null)
   const [adding, setAdding] = useState<PlatformChurch | null>(null)
   const [notice, setNotice] = useState('')
+  // From the overview: ?new=1 opens "Add a church", ?edit=<id> that church (e.g. to fix its M-PESA keys).
+  const [params, setParams] = useSearchParams()
+  useEffect(() => {
+    if (params.get('new')) setEditing('new')
+    else if (params.get('edit') && rows) {
+      const church = rows.find((c) => String(c.id) === params.get('edit'))
+      if (church) setEditing(church)
+    } else return
+    setParams({}, { replace: true })
+  }, [params, rows, setParams])
 
   const columns: Column<PlatformChurch>[] = [
     { key: 'name', label: 'Church', render: (c) => <span className="font-medium text-slate-900">{c.name}</span> },
