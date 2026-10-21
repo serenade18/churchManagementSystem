@@ -19,6 +19,24 @@
   --color-sidebar: #111613;
   --color-danger: #dc2626;
   --color-danger-dark: #b91c1c;
+
+  /* mkanisa.com, the platform's own pages: a quiet palette and SchoolShop's type (Outfit, Figtree). */
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --color-mk-forest: #102b27;    /* Deep Forest: dark sections, text on light */
+  --color-mk-midnight: #0b1d1b;  /* Midnight Green: behind photographs */
+  --color-mk-green: #286b58;     /* Primary Green: links, accents on light */
+  --color-mk-mint: #b7e4cf;      /* Soft Mint: buttons and highlights on dark */
+  --color-mk-ivory: #f7f5ef;     /* Warm Ivory: page ground */
+  --color-mk-mist: #e9efeb;
+  --color-mk-slate: #344640;     /* body text */
+  --color-mk-muted: #5f6e67;     /* secondary text (darkened for 4.5:1 on ivory) */
+  --color-mk-border: #dce5df;
+  --color-mk-gold: #d6b779;
+  --color-mk-amber: #f2d7a1;
+  --color-mk-sky: #6fa8dc;
+  --color-mk-lavender: #b8a7e6;
+  --color-mk-coral: #f4a59a;
 }
 
 body {
