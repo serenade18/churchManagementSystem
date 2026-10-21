@@ -23,12 +23,15 @@ const NAV: NavItem[] = [
   { to: '/registrations', label: 'Registrations', icon: UserPlus, badge: 'registrations', feature: 'registrations' },
   { to: '/donations', label: 'Donations', icon: HandCoins, feature: 'giving' },
   { to: '/paybill', label: 'Paybill', icon: Smartphone, badge: 'unallocated', feature: 'paybill' },
-  { to: '/donation-types', label: 'Donation Types', icon: Tags, feature: 'donation_types' },
+  { to: '/donation-types', label: 'Donation types', icon: Tags, feature: 'donation_types' },
   { to: '/attendance', label: 'Attendance', icon: CalendarCheck, feature: 'attendance' },
   { to: '/branches', label: 'Branches', icon: Building2, feature: 'branches' },
   { to: '/projects', label: 'Projects', icon: FolderKanban, feature: 'projects' },
   { to: '/sms', label: 'Bulk SMS', icon: MessageSquare, feature: 'sms' },
 ]
+
+const initials = (user: User | null) =>
+  ((user?.first_name?.[0] || '') + (user?.last_name?.[0] || '') || user?.username?.[0] || '?').toUpperCase()
 
 /** Under the name in the sidebar: "Owner", or the roles held. */
 function roleSummary(user: User | null) {
@@ -90,15 +93,15 @@ export default function Layout() {
           <span className="self-start rounded-full border border-mk-gold/45 bg-mk-gold/12 px-2.5 py-1 text-xs font-semibold text-mk-amber">Platform admin</span>
         </div>
       ) : (
-        <div className="flex items-center gap-3 px-5 py-5">
-          <Logo tile className="h-12 w-12" />
-          <div>
-            <p className="font-semibold text-white">{branding.name}</p>
-            <p className="text-xs text-brand-200">{branding.tagline}</p>
+        <div className="flex items-center gap-3 px-5 py-6">
+          <Logo tile className="h-10 w-10" />
+          <div className="min-w-0 leading-tight">
+            <p className="font-display font-semibold text-white">{branding.name}</p>
+            <p className="text-xs text-white/65">Church office</p>
           </div>
         </div>
       )}
-      <nav className="flex-1 space-y-1 px-3">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3.5">
         {nav.map(({ to, label, icon: Icon, badge }) => (
           <NavLink
             key={to}
@@ -106,23 +109,26 @@ export default function Layout() {
             end={to === '/platform'}
             onClick={() => setOpen(false)}
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${isActive
+              `flex min-h-10 items-center gap-3 rounded-[10px] px-3 py-2 text-[15px] font-medium transition ${isActive
                 ? (platform ? 'bg-mk-mint/15 font-semibold text-white [&>svg]:text-mk-mint' : 'bg-primary font-semibold text-on-primary')
-                : 'hover:bg-white/10 hover:text-white'}`
+                : 'text-white/75 hover:bg-white/10 hover:text-white'}`
             }
           >
-            <Icon className="h-5 w-5" /> {label}
+            <Icon className="h-[18px] w-[18px]" /> {label}
             {badge && counts[badge] > 0 && (
-              <span className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${platform ? 'bg-mk-gold text-mk-forest' : 'bg-danger text-white'}`}
+              <span className={`ml-auto min-w-[22px] rounded-full px-[7px] text-center text-xs font-bold leading-[22px] ${platform ? 'bg-mk-gold text-mk-forest' : 'bg-white text-sidebar'}`}
                 title={platform ? 'Churches waiting on their owner' : badge === 'unallocated' ? 'Payments to allocate' : 'Sign-ups to review'}>{counts[badge]}</span>
             )}
           </NavLink>
         ))}
       </nav>
-      <div className="border-t border-white/10 p-4">
-        <p className="truncate text-sm font-medium text-white">{user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username}</p>
-        <p className="mb-3 text-xs text-brand-200">{roleSummary(user)}</p>
-        <button onClick={logout} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-white/10 hover:text-white">
+      <div className="mx-3.5 flex items-center gap-3 border-t border-white/15 px-1.5 py-4">
+        <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-white text-sm font-bold text-sidebar" aria-hidden="true">{initials(user)}</span>
+        <span className="flex min-w-0 flex-1 flex-col leading-tight">
+          <span className="truncate text-sm font-semibold text-white">{user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username}</span>
+          <span className="truncate text-xs text-white/65">{roleSummary(user)}</span>
+        </span>
+        <button onClick={logout} title="Sign out" className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/10 hover:text-white">
           <LogOut className="h-4 w-4" /> Sign out
         </button>
       </div>
@@ -140,12 +146,12 @@ export default function Layout() {
         </div>
       )}
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
+        <header className="sticky top-0 z-30 flex items-center gap-3 bg-sidebar px-4 py-3 text-white lg:hidden">
           <button onClick={() => setOpen(true)} aria-label="Open menu"><Menu className="h-6 w-6" /></button>
-          <Logo mark className="h-8" />
-          <span className="font-semibold">{branding.name}</span>
+          <Logo tile className="h-8 w-8" />
+          <span className="font-display font-semibold">{branding.name}</span>
         </header>
-        <main className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+        <main className="mx-auto max-w-[1240px] p-4 font-body sm:p-6 lg:px-10 lg:py-8">
           {user?.view_only && (
             <div className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-slate-700">
               <Eye className="h-4 w-4 shrink-0 text-brand-700" />

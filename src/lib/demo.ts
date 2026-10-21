@@ -251,13 +251,35 @@ const success = () => db().donations.filter((d) => d.status === 'success')
 const sum = (list: { amount: number }[]) => list.reduce((s, d) => s + d.amount, 0)
 
 function memberJson(m: DemoMember) {
-  return { ...m, branch_name: branchName(m.branch), total_given: amt(sum(success().filter((d) => d.member === m))) }
+  const gifts = success().filter((d) => d.member === m)
+  const yearStart = new Date(new Date(db().now).getFullYear(), 0, 1).getTime()
+  return {
+    ...m, branch_name: branchName(m.branch), total_given: amt(sum(gifts)),
+    given_this_year: amt(sum(gifts.filter((d) => d.at >= yearStart))),
+    last_gift_at: gifts.length ? new Date(Math.max(...gifts.map((d) => d.at))).toISOString() : null,
+    last_attended: db().services.filter((s) => s.present.includes(m.id)).map((s) => s.date).sort().pop() || null,
+  }
+}
+
+function memberSummary() {
+  const { now, members, services } = db()
+  const monthStart = new Date(new Date(now).getFullYear(), new Date(now).getMonth(), 1).getTime()
+  const active = members.filter((m) => m.status === 'active')
+  const cutoff = ymd(now - 28 * DAY)
+  const gave = new Set(success().filter((d) => d.at >= monthStart && d.member).map((d) => d.member!.id))
+  return {
+    total: members.length, active: active.length,
+    new_this_month: members.filter((m) => new Date(m.created_at).getTime() >= monthStart).length,
+    gave_this_month: active.filter((m) => gave.has(m.id)).length,
+    away: active.filter((m) => (services.filter((s) => s.present.includes(m.id)).map((s) => s.date).sort().pop() || '') < cutoff).length,
+    no_phone: active.filter((m) => !m.phone_number).length,
+  }
 }
 
 function serviceJson(s: DemoService) {
   return {
     id: s.id, name: s.name, service_type: s.service_type, date: s.date, start_time: s.start_time, branch: s.branch,
-    branch_name: branchName(s.branch), visitor_count: s.visitor_count, notes: '', members_present: s.present.length,
+    branch_name: branchName(s.branch), visitor_count: s.visitor_count, first_timers: Math.round(s.visitor_count / 4), notes: '', members_present: s.present.length,
     total_attendance: s.present.length + s.visitor_count, created_by_name: 'secretary', created_at: `${s.date}T12:00:00Z`, updated_at: `${s.date}T12:00:00Z`,
   }
 }
@@ -357,7 +379,20 @@ function dashboard() {
   })
   const last = [...services].reverse().find((s) => s.branch)
   const unallocated = db().donations.filter((d) => d.unallocated)
+  const lastSunday = today.getTime() - today.getDay() * DAY
+  const attendance_trend = Array.from({ length: 8 }, (_, i) => {
+    const day = ymd(lastSunday - (7 - i) * 7 * DAY)
+    const held = services.filter((s) => s.date === day)
+    const members = held.reduce((n, s) => n + s.present.length, 0)
+    const visitors = held.reduce((n, s) => n + s.visitor_count, 0)
+    return { date: day, members, visitors, first_timers: Math.round(visitors / 4), services: held.length, total: members + visitors }
+  })
+  const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1).getTime()
   return {
+    attendance_trend,
+    pending_registrations: null,
+    failed_receipts: { count: 0, phones: [] },
+    month_by_type: groupTotals(since(monthStart), (d) => d.type.id, (d) => ({ donation_type: d.type.id, name: d.type.name })).map(({ count, ...t }) => t),
     unallocated_payments: unallocated.length,
     unallocated_amount: amt(sum(unallocated)),
     last_service: last && { id: last.id, name: last.name, date: last.date, branch_name: branchName(last.branch), members_present: last.present.length, visitors: last.visitor_count, total: last.present.length + last.visitor_count },
@@ -367,6 +402,8 @@ function dashboard() {
     donations: {
       today: amt(sum(since(today.getTime()))), this_month: amt(sum(since(monthStart))), this_year: amt(sum(since(yearStart))),
       all_time: amt(sum(ok)), pending: db().donations.filter((d) => d.status === 'pending').length,
+      last_month: amt(sum(ok.filter((d) => d.at >= lastMonthStart && d.at < monthStart))),
+      by_phone_share: sum(since(monthStart)) ? Math.round((sum(since(monthStart).filter((d) => ['mpesa', 'paybill', 'sasapay'].includes(d.channel))) * 100) / sum(since(monthStart))) : null,
     },
     trend,
     by_type: groupTotals(since(yearStart), (d) => d.type.id, (d) => ({ donation_type: d.type.id, name: d.type.name })).map(({ count, ...t }) => t),
@@ -454,6 +491,7 @@ const ROUTES: [RegExp, (params: Query, ids: string[]) => unknown][] = [
     (!p.branch || m.branch === Number(p.branch)) && (!p.status || m.status === p.status) && (!p.gender || m.gender === p.gender)
     && matches(p.search, m.full_name, m.membership_number, m.phone_number))
     .sort((a, b) => a.first_name.localeCompare(b.first_name)).map(memberJson), p)],
+  [/^\/cms\/members\/summary\/$/, memberSummary],
   [/^\/cms\/members\/export\/$/, () => csv([['Membership No', 'Name', 'Phone', 'Branch', 'Status'],
     ...db().members.map((m) => [m.membership_number, m.full_name, m.phone_number, branchName(m.branch), m.status])])],
   [/^\/cms\/members\/(\d+)\/$/, (_p, [id]) => memberJson(findOr404(db().members, id))],
@@ -463,7 +501,13 @@ const ROUTES: [RegExp, (params: Query, ids: string[]) => unknown][] = [
     const cutoff = ymd(db().now - 90 * DAY)
     const relevant = db().services.filter((s) => s.date >= cutoff && (!s.branch || s.branch === m.branch))
     const attended = relevant.filter((s) => s.present.includes(m.id))
-    return { services_last_90_days: relevant.length, attended_last_90_days: attended.length, rate: relevant.length ? Math.round(attended.length * 100 / relevant.length) : 0, last_attended: attended.map((s) => s.date).sort().pop() || null }
+    const today = new Date(db().now); today.setHours(0, 0, 0, 0)
+    const sundays = Array.from({ length: 12 }, (_, i) => {
+      const day = ymd(today.getTime() - today.getDay() * DAY - (11 - i) * 7 * DAY)
+      const held = relevant.filter((s) => s.date === day)
+      return { date: day, state: held.some((s) => s.present.includes(m.id)) ? 'came' : held.length ? 'missed' : 'none' }
+    })
+    return { sundays, services_last_90_days: relevant.length, attended_last_90_days: attended.length, rate: relevant.length ? Math.round(attended.length * 100 / relevant.length) : 0, last_attended: attended.map((s) => s.date).sort().pop() || null }
   }],
   [/^\/cms\/members\/(\d+)\/statement\/$/, (p, [id]) => statement(findOr404(db().members, id), p)],
   [/^\/cms\/donations\/$/, (p) => page([...filterDonations(p)].reverse().map(donationJson), p)],

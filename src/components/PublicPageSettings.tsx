@@ -30,7 +30,7 @@ export default function PublicPageSettings() {
     }).catch((e) => setError(errorMessage(e)))
   }, [])
 
-  if (!values) return <div className="card p-6 text-sm text-slate-500">{error || 'Loading…'}</div>
+  if (!values) return <div className="card p-6 text-sm text-mk-muted">{error || 'Loading…'}</div>
   const readOnly = user?.view_only
   const set = (key: PageField) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setValues({ ...values, [key]: e.target.value })
   const shownCover = cover ? URL.createObjectURL(cover) : removeCover ? null : coverUrl
@@ -68,7 +68,7 @@ export default function PublicPageSettings() {
       <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
         <div>
           <h2 className="font-semibold">Public home page</h2>
-          <p className="text-sm text-slate-500">What visitors see at your church's web address: a welcome, photo, service times and how to reach you.</p>
+          <p className="text-sm text-mk-muted">What visitors see at your church's web address: a welcome, photo, service times and how to reach you.</p>
         </div>
         <a href="/" target="_blank" rel="noreferrer" className="btn-secondary"><ExternalLink className="h-4 w-4" /> View page</a>
       </div>
@@ -80,7 +80,7 @@ export default function PublicPageSettings() {
             <div className="flex items-center gap-3">
               {shownCover
                 ? <img src={shownCover} alt="" className="h-20 w-36 rounded-lg object-cover" />
-                : <span className="flex h-20 w-36 items-center justify-center rounded-lg border border-dashed border-slate-300 text-xs text-slate-400">No photo</span>}
+                : <span className="flex h-20 w-36 items-center justify-center rounded-lg border border-dashed border-mk-border text-xs text-mk-muted">No photo</span>}
               {!readOnly && (
                 <div className="flex flex-col gap-2">
                   <label className="btn-secondary cursor-pointer"><ImageUp className="h-4 w-4" /> Choose photo
@@ -109,7 +109,7 @@ export default function PublicPageSettings() {
           {input('facebook_url', 'Facebook page', { type: 'url', placeholder: 'https://facebook.com/…' })}
           {input('youtube_url', 'YouTube channel', { type: 'url', placeholder: 'https://youtube.com/…' })}
           {input('instagram_url', 'Instagram', { type: 'url', placeholder: 'https://instagram.com/…' })}
-          <p className="self-end text-xs text-slate-500 sm:col-span-2">Phone, email and location also appear on receipts and statements.</p>
+          <p className="self-end text-xs text-mk-muted sm:col-span-2">Phone, email and location also appear on receipts and statements.</p>
         </div>
         {!readOnly && <div className="lg:col-span-2"><button className="btn-primary" disabled={busy}>{busy ? 'Saving…' : 'Save public page'}</button></div>}
       </form>

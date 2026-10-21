@@ -17,8 +17,8 @@
   --color-primary-hover: #135c27;
   --color-on-primary: #ffffff;
   --color-sidebar: #111613;
-  --color-danger: #dc2626;
-  --color-danger-dark: #b91c1c;
+  --color-danger: #b42318;
+  --color-danger-dark: #8e2f22;
 
   /* mkanisa.com, the platform's own pages: a quiet palette and SchoolShop's type (Outfit, Figtree). */
   --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
@@ -40,35 +40,36 @@
 }
 
 body {
-  @apply bg-slate-50 text-slate-800 antialiased;
+  @apply bg-mk-ivory font-body text-mk-slate antialiased;
 }
 
+/* The church office's look: calm ivory ground, white cards, pill buttons, the church's colour for actions. */
 @utility input {
-  @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:bg-slate-100;
+  @apply min-h-11 w-full rounded-xl border border-mk-border bg-white px-3.5 py-2 text-[15px] text-mk-forest outline-none transition placeholder:text-mk-muted/80 focus:border-brand-600 focus:ring-2 focus:ring-brand-100 disabled:bg-mk-mist;
 }
 @utility label {
-  @apply mb-1 block text-sm font-medium text-slate-700;
+  @apply mb-1.5 block text-sm font-semibold text-mk-forest;
 }
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60;
+  @apply inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-full px-[18px] py-2 text-[15px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60;
 }
 @utility btn-primary {
   @apply btn bg-primary text-on-primary hover:bg-primary-hover;
 }
 @utility btn-secondary {
-  @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+  @apply btn border border-mk-border bg-white text-mk-forest hover:border-brand-200 hover:bg-mk-ivory;
 }
 @utility btn-danger {
   @apply btn bg-danger text-white hover:bg-danger-dark;
 }
 @utility card {
-  @apply rounded-xl border border-slate-200 bg-white shadow-sm;
+  @apply rounded-[22px] border border-mk-border bg-white;
 }
 @utility th {
-  @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500;
+  @apply whitespace-nowrap bg-mk-ivory px-3 py-3 text-left text-[13px] font-semibold text-mk-muted first:pl-6 last:pr-6;
 }
 @utility td {
-  @apply px-4 py-3 text-sm whitespace-nowrap;
+  @apply whitespace-nowrap px-3 py-3.5 text-[15px] first:pl-6 last:pr-6;
 }
 
 @media print {

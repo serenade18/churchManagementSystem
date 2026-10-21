@@ -42,30 +42,30 @@ export default function Donations() {
     { key: 'created_at', label: 'Date', render: (d) => dateTime(d.created_at) },
     { key: 'member', label: 'Giver', render: (d) => (
       d.unallocated ? (
-        <div><Badge tone="amber">Unallocated</Badge><p className="mt-1 text-xs text-slate-500">Giver not yet known</p></div>
+        <div><Badge tone="amber">Unallocated</Badge><p className="mt-1 text-xs text-mk-muted">Giver not yet known</p></div>
       ) : (
-        <div><p className="font-medium text-slate-900">{d.member_name || d.giver_name || d.membership_number || 'Anonymous'}</p>
-          <p className="text-xs text-slate-500">{d.member_name ? d.membership_number : d.phone_number}</p></div>
+        <div><p className="font-medium text-mk-forest">{d.member_name || d.giver_name || d.membership_number || 'Anonymous'}</p>
+          <p className="text-xs text-mk-muted">{d.member_name ? d.membership_number : d.phone_number}</p></div>
       )
     ) },
-    { key: 'donation_type', label: 'Type', render: (d) => <>{d.donation_type_name}{d.project_name && <p className="text-xs text-slate-500">{d.project_name}</p>}</> },
+    { key: 'donation_type', label: 'Type', render: (d) => <>{d.donation_type_name}{d.project_name && <p className="text-xs text-mk-muted">{d.project_name}</p>}</> },
     { key: 'branch_name', label: 'Branch', render: (d) => d.branch_name || '—' },
-    { key: 'channel', label: 'Channel', render: (d) => <>{CHANNELS[d.channel]}{d.receipt && <p className="font-mono text-xs text-slate-500">{d.receipt}</p>}</> },
+    { key: 'channel', label: 'Channel', render: (d) => <>{CHANNELS[d.channel]}{d.receipt && <p className="font-mono text-xs text-mk-muted">{d.receipt}</p>}</> },
     { key: 'status', label: 'Status', render: (d) => <Badge status={d.status}>{DONATION_STATUS[d.status]}</Badge> },
     { key: 'receipt_sms_status', label: 'SMS', render: (d) => d.status === 'success' ? <ReceiptSmsBadge donation={d} /> : '—' },
     { key: 'amount', label: 'Amount', className: 'text-right font-medium', render: (d) => (
-      <>{money(d.amount)}{d.currency !== 'KES' && d.amount_original && <p className="text-xs font-normal text-slate-500">{currencyMoney(d.amount_original, d.currency)}</p>}</>
+      <>{money(d.amount)}{d.currency !== 'KES' && d.amount_original && <p className="text-xs font-normal text-mk-muted">{currencyMoney(d.amount_original, d.currency)}</p>}</>
     ) },
     { key: 'actions', label: '', render: (d) => (
       <div className="flex justify-end gap-1">
         {d.status === 'success' && (
           <a href={`/print/receipt/${d.id}`} target="_blank" rel="noreferrer" title="Print receipt" aria-label="Print receipt"
-            className="rounded p-1 text-slate-400 hover:bg-brand-50 hover:text-brand-700" onClick={(e) => e.stopPropagation()}>
+            className="rounded p-1 text-mk-muted hover:bg-brand-50 hover:text-brand-700" onClick={(e) => e.stopPropagation()}>
             <Printer className="h-4 w-4" />
           </a>
         )}
         {!PROVIDER_CHANNELS.includes(d.channel) && (
-          <button className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600" aria-label="Delete donation"
+          <button className="rounded p-1 text-mk-muted hover:bg-red-50 hover:text-red-600" aria-label="Delete donation"
             onClick={(e) => { e.stopPropagation(); setDeleting(d) }}><Trash2 className="h-4 w-4" /></button>
         )}
       </div>
@@ -94,7 +94,7 @@ export default function Donations() {
 
       <div className="card mb-4 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="relative lg:col-span-2">
-          <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+          <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-mk-muted" />
           <input className="input pl-9" placeholder="Search member, phone, receipt…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }} />
         </div>
         <input className="input" type="date" value={filters.date_from} onChange={(e) => setFilter('date_from')(e.target.value)} aria-label="From date" />

@@ -53,16 +53,16 @@ function ProjectForm({ project, onClose, onSaved }: { project: Project | null; o
           <div className="flex items-center gap-3">
             {shownPhoto
               ? <img src={shownPhoto} alt="" className="h-16 w-16 rounded-lg object-cover" />
-              : <span className="flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-slate-300 text-xs text-slate-400">None</span>}
+              : <span className="flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-mk-border text-xs text-mk-muted">None</span>}
             <label className="btn-secondary cursor-pointer"><ImageUp className="h-4 w-4" /> Choose photo
               <input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(e) => { setPhoto(e.target.files?.[0] || null); setRemovePhoto(false) }} />
             </label>
             {shownPhoto && <button type="button" className="btn-secondary" onClick={() => { setPhoto(null); setRemovePhoto(true) }}>Remove</button>}
           </div>
         </Field>
-        <label className="flex items-start gap-2 text-sm text-slate-700 sm:col-span-2">
+        <label className="flex items-start gap-2 text-sm text-mk-slate sm:col-span-2">
           <input type="checkbox" className="mt-0.5 accent-[var(--color-primary)]" checked={values.show_on_site} onChange={set('show_on_site')} />
-          <span>Show on the public home and give pages while it's planned or ongoing<span className="block text-xs text-slate-500">Untick to keep it internal: it stops taking gifts from the public give page.</span></span>
+          <span>Show on the public home and give pages while it's planned or ongoing<span className="block text-xs text-mk-muted">Untick to keep it internal: it stops taking gifts from the public give page.</span></span>
         </label>
       </form>
     </Modal>
@@ -91,7 +91,7 @@ export default function Projects() {
         </>} />
       <Alert>{error?.message || actionError}</Alert>
       {loading && !data ? <Spinner className="mx-auto mt-10 h-8 w-8" /> : data?.results.length === 0 ? (
-        <div className="card p-12 text-center text-sm text-slate-500">No projects yet.</div>
+        <div className="card p-12 text-center text-sm text-mk-muted">No projects yet.</div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {data?.results.map((p) => {
@@ -102,20 +102,20 @@ export default function Projects() {
                 <div className="flex items-start justify-between gap-3">
                   {p.image_url && <img src={assetUrl(p.image_url) ?? undefined} alt="" className="h-12 w-12 shrink-0 rounded-lg object-cover" />}
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-slate-900">{p.name}</h3>
-                    <p className="flex items-center gap-1 text-xs text-slate-500">{p.branch_name || 'Church-wide'}
-                      {!p.show_on_site && <span className="inline-flex items-center gap-1 text-slate-400"> · <EyeOff className="h-3 w-3" /> Not on public page</span>}</p>
+                    <h3 className="font-semibold text-mk-forest">{p.name}</h3>
+                    <p className="flex items-center gap-1 text-xs text-mk-muted">{p.branch_name || 'Church-wide'}
+                      {!p.show_on_site && <span className="inline-flex items-center gap-1 text-mk-muted"> · <EyeOff className="h-3 w-3" /> Not on public page</span>}</p>
                   </div>
                   <Badge status={p.status}>{PROJECT_STATUS[p.status]}</Badge>
                 </div>
-                {p.description && <p className="mt-2 line-clamp-2 text-sm text-slate-600">{p.description}</p>}
+                {p.description && <p className="mt-2 line-clamp-2 text-sm text-mk-slate">{p.description}</p>}
                 <div className="mt-4 flex-1">
                   <div className="mb-1 flex justify-between text-sm">
                     <span className="font-semibold">{money(p.amount_raised)}</span>
-                    <span className="text-slate-500">{target > 0 ? `${pct}% of ${money(target)}` : 'No target set'}</span>
+                    <span className="text-mk-muted">{target > 0 ? `${pct}% of ${money(target)}` : 'No target set'}</span>
                   </div>
                   <Progress value={p.amount_raised ?? 0} max={target} />
-                  <p className="mt-2 flex items-center gap-1 text-xs text-slate-500">
+                  <p className="mt-2 flex items-center gap-1 text-xs text-mk-muted">
                     <CalendarDays className="h-3.5 w-3.5" /> {p.start_date ? date(p.start_date) : 'No start date'} – {p.end_date ? date(p.end_date) : 'open'} · {p.donation_count} contribution{p.donation_count === 1 ? '' : 's'}
                   </p>
                 </div>

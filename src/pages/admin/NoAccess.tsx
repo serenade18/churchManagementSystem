@@ -12,8 +12,8 @@ export default function NoAccess() {
   return (
     <div className="card mx-auto mt-10 max-w-lg p-8 text-center">
       <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand-50 text-brand-700"><KeyRound className="h-7 w-7" /></span>
-      <h1 className="text-xl font-semibold text-slate-900">Waiting for a role</h1>
-      <p className="mt-2 text-sm text-slate-600">
+      <h1 className="text-xl font-semibold text-mk-forest">Waiting for a role</h1>
+      <p className="mt-2 text-sm text-mk-slate">
         Your account is ready, but {branding.name}'s owner hasn't given you a role yet. Once they choose what you look
         after (for example, a branch, the treasury or SMS), it opens here.
       </p>

@@ -12,7 +12,7 @@ test('create a donation type; a Paybill payment using its code is allocated auto
   // Codes avoid O/I (read as 0/1), so build one from safe letters.
   const code = `B${unique().replace(/[^A-HJ-NP-Z]/g, '').slice(0, 4).padEnd(2, 'X')}`
   const name = `Building fund ${code}`
-  await page.getByRole('link', { name: 'Donation Types', exact: true }).click()
+  await page.getByRole('link', { name: 'Donation types', exact: true }).click()
   await page.getByRole('button', { name: 'New type' }).click()
   await page.getByLabel('Name *').fill(name)
   await page.getByLabel('Paybill code *').fill(code)
@@ -60,7 +60,9 @@ test('unallocated Paybill money is counted in Donations and on the dashboard', a
   await postC2B(request, { transId, amount: 777, account: 'NOIDEA', firstName: 'UNKNOWN' })
 
   await page.getByRole('link', { name: 'Dashboard' }).click()
-  await expect(page.getByRole('link', { name: /counted in the totals below but not yet assigned/ })).toBeVisible()
+  const needs = page.getByRole('region', { name: 'Needs you' })
+  await expect(needs).toContainText(/from \d+ Paybill payments?/)
+  await expect(needs.getByRole('link', { name: /Allocate/ })).toHaveAttribute('href', '/paybill')
 
   await page.getByRole('link', { name: 'Donations', exact: true }).click()
   await page.getByPlaceholder('Search member, phone, receipt…').fill(transId)

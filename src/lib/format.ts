@@ -1,10 +1,14 @@
 import { BRAND } from '../brand'
 import type { Channel, DonationStatus, Gender, MaritalStatus, MemberStatus, RegistrationStatus, ProjectStatus, Tone } from '../types'
 
-const kes = new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 })
+const whole = new Intl.NumberFormat('en-KE', { maximumFractionDigits: 0 })
 type MoneyValue = string | number | null | undefined
 
-export const money = (value: MoneyValue) => kes.format(Number(value || 0))
+/** KES 1,250 (always "KES": browsers differ on "Ksh"). */
+export const money = (value: MoneyValue) => {
+  const n = Number(value || 0)
+  return `${n < 0 ? '−' : ''}KES ${whole.format(Math.abs(n))}`
+}
 /** Amount in any currency, e.g. USD 25.00 for PayPal gifts. */
 export const currencyMoney = (value: MoneyValue, currency = 'KES') =>
   currency === 'KES' ? money(value) : new Intl.NumberFormat('en-KE', { style: 'currency', currency }).format(Number(value || 0))
@@ -17,6 +21,18 @@ export const dateTime = (value: string | number | Date | null | undefined) =>
   value
     ? new Date(value).toLocaleString('en-KE', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
     : '—'
+/** "today", "yesterday", "3 days ago", "6 weeks ago", "2 months ago". */
+export function ago(value: string | null | undefined) {
+  if (!value) return null
+  const then = new Date(value.length === 10 ? `${value}T00:00:00` : value)
+  const days = Math.floor((new Date(new Date().toDateString()).getTime() - new Date(then.toDateString()).getTime()) / 86400000)
+  if (days <= 0) return 'today'
+  if (days === 1) return 'yesterday'
+  if (days < 14) return `${days} days ago`
+  if (days < 60) return `${Math.floor(days / 7)} weeks ago`
+  if (days < 730) return `${Math.floor(days / 30)} months ago`
+  return `${Math.floor(days / 365)} years ago`
+}
 export const today = () => new Date().toISOString().slice(0, 10)
 
 export const CHANNELS: Record<Channel, string> = { mpesa: 'M-PESA', paybill: 'M-PESA Paybill', paypal: 'PayPal', sasapay: 'SasaPay', cash: 'Cash', bank: 'Bank', cheque: 'Cheque' }

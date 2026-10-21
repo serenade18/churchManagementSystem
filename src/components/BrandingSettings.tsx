@@ -25,7 +25,7 @@ function ColorField({ label, value, onChange, fallback, hint }: ColorFieldProps)
   return (
     <Field label={label} hint={hint}>
       <div className="flex items-center gap-2">
-        <input type="color" aria-label={`${label} picker`} className="h-10 w-12 cursor-pointer rounded border border-slate-300 bg-white p-1"
+        <input type="color" aria-label={`${label} picker`} className="h-10 w-12 cursor-pointer rounded border border-mk-border bg-white p-1"
           value={shown} onChange={(e) => onChange(e.target.value)} />
         <input className="input font-mono uppercase" maxLength={7} placeholder={fallback} value={value}
           onChange={(e) => onChange(e.target.value.startsWith('#') || !e.target.value ? e.target.value : `#${e.target.value}`)} />
@@ -50,8 +50,8 @@ function LogoField({ label, hint, current, file, onFile, removed, onRemove }: Lo
   return (
     <Field label={label} hint={hint}>
       <div className="flex items-center gap-3">
-        <span className="flex h-16 w-28 shrink-0 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white p-1">
-          {preview ? <img src={preview} alt="" className="max-h-full max-w-full object-contain" /> : <span className="text-xs text-slate-400">Default</span>}
+        <span className="flex h-16 w-28 shrink-0 items-center justify-center rounded-lg border border-dashed border-mk-border bg-white p-1">
+          {preview ? <img src={preview} alt="" className="max-h-full max-w-full object-contain" /> : <span className="text-xs text-mk-muted">Default</span>}
         </span>
         <div className="flex flex-col gap-1.5">
           <label className="btn-secondary cursor-pointer px-3 py-1.5">
@@ -59,7 +59,7 @@ function LogoField({ label, hint, current, file, onFile, removed, onRemove }: Lo
             <input type="file" className="sr-only" accept="image/png,image/jpeg,image/webp,image/svg+xml"
               onChange={(e) => { if (e.target.files?.[0]) onFile(e.target.files[0]); e.target.value = '' }} />
           </label>
-          {(preview) && <button type="button" className="text-left text-xs text-slate-500 hover:text-red-600" onClick={onRemove}>Use the default</button>}
+          {(preview) && <button type="button" className="text-left text-xs text-mk-muted hover:text-red-600" onClick={onRemove}>Use the default</button>}
         </div>
       </div>
     </Field>
@@ -106,7 +106,7 @@ export default function BrandingSettings() {
     }
   }
 
-  if (!current) return <div className="card p-6 text-sm text-slate-500">{error || 'Loading…'}</div>
+  if (!current) return <div className="card p-6 text-sm text-mk-muted">{error || 'Loading…'}</div>
 
   const primary = isHex(values.primary_color) ? values.primary_color : DEFAULT_PRIMARY
   const sidebar = isHex(values.sidebar_color) ? values.sidebar_color : DEFAULT_SIDEBAR
@@ -118,7 +118,7 @@ export default function BrandingSettings() {
   return (
     <div className="card p-6">
       <h2 className="font-semibold">Branding</h2>
-      <p className="mb-4 text-sm text-slate-500">Your name, logo and colours, used across the app, the sign-in and give pages, receipts and SMS.</p>
+      <p className="mb-4 text-sm text-mk-muted">Your name, logo and colours, used across the app, the sign-in and give pages, receipts and SMS.</p>
       <Alert>{error}</Alert>
       {readOnly && <Alert tone="amber">View-only accounts can't change the branding.</Alert>}
       <form onSubmit={save}>
@@ -146,7 +146,7 @@ export default function BrandingSettings() {
 
           <div>
             <span className="label">Preview</span>
-            <div className="overflow-hidden rounded-xl border border-slate-200" style={themeTokens(primary, sidebar)}>
+            <div className="overflow-hidden rounded-xl border border-mk-border" style={themeTokens(primary, sidebar)}>
               <div className="flex items-center gap-3 bg-sidebar p-4">
                 <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white p-1"><img src={previewMark} alt="" className="h-full w-auto object-contain" /></span>
                 <div className="min-w-0">

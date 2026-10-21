@@ -23,10 +23,10 @@ function HowToGive({ codes }: { codes: DonationType[] }) {
     <div className="card mb-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700"><Smartphone /></span>
       <div className="text-sm">
-        <p className="font-semibold text-slate-900">How members give by M-PESA</p>
-        <p className="text-slate-600">
+        <p className="font-semibold text-mk-forest">How members give by M-PESA</p>
+        <p className="text-mk-slate">
           Lipa na M-PESA → Paybill <strong className="font-mono">{paybillNumber()}</strong> → Account: <strong>phone number + code</strong>, e.g.{' '}
-          <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono">0712345678{example}</span>
+          <span className="rounded bg-mk-mist px-1.5 py-0.5 font-mono">0712345678{example}</span>
           {' '}(a membership number also works, e.g. <span className="font-mono">M0001{example}</span>). Givers get an SMS receipt automatically.
         </p>
       </div>
@@ -67,16 +67,16 @@ function AllocateModal({ payment, codes, onClose, onDone }: AllocateModalProps) 
   return (
     <Modal open onClose={onClose} title="Allocate payment" wide
       footer={<>
-        <button className="btn-secondary mr-auto text-slate-500" onClick={ignore} disabled={busy}>Set aside (not a donation)</button>
+        <button className="btn-secondary mr-auto text-mk-muted" onClick={ignore} disabled={busy}>Set aside (not a donation)</button>
         <button className="btn-secondary" onClick={onClose}>Cancel</button>
         <button className="btn-primary" onClick={save} disabled={busy || !values.code || (mode === 'member' && !member) || (mode === 'phone' && !values.phone_number)}>{busy ? 'Saving…' : 'Allocate'}</button>
       </>}>
       <Alert>{error}</Alert>
-      <div className="mb-4 grid gap-3 rounded-lg bg-slate-50 p-4 text-sm sm:grid-cols-4">
-        <div><p className="text-xs text-slate-500">Amount</p><p className="font-semibold">{money(payment.amount)}</p></div>
-        <div><p className="text-xs text-slate-500">Paid by</p><p className="font-medium">{payment.payer_name || '—'}</p></div>
-        <div><p className="text-xs text-slate-500">Account typed</p><p className="font-mono">{payment.account || '(blank)'}</p></div>
-        <div><p className="text-xs text-slate-500">M-PESA ref</p><p className="font-mono">{payment.trans_id}</p></div>
+      <div className="mb-4 grid gap-3 rounded-lg bg-mk-ivory p-4 text-sm sm:grid-cols-4">
+        <div><p className="text-xs text-mk-muted">Amount</p><p className="font-semibold">{money(payment.amount)}</p></div>
+        <div><p className="text-xs text-mk-muted">Paid by</p><p className="font-medium">{payment.payer_name || '—'}</p></div>
+        <div><p className="text-xs text-mk-muted">Account typed</p><p className="font-mono">{payment.account || '(blank)'}</p></div>
+        <div><p className="text-xs text-mk-muted">M-PESA ref</p><p className="font-mono">{payment.trans_id}</p></div>
         {payment.reason && <p className="flex items-center gap-2 text-amber-700 sm:col-span-4"><AlertTriangle className="h-4 w-4" />{payment.reason}</p>}
       </div>
 
@@ -84,7 +84,7 @@ function AllocateModal({ payment, codes, onClose, onDone }: AllocateModalProps) 
       <div className="mb-3 flex gap-2">
         {([['member', 'A member'], ['phone', 'A visitor (phone number)']] as [Giver, string][]).map(([k, label]) => (
           <button key={k} type="button" onClick={() => setMode(k)}
-            className={`rounded-full border px-3 py-1 text-sm ${mode === k ? 'border-brand-600 bg-brand-50 text-brand-800' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}>{label}</button>
+            className={`rounded-full border px-3 py-1 text-sm ${mode === k ? 'border-brand-600 bg-brand-50 text-brand-800' : 'border-mk-border text-mk-slate hover:bg-mk-ivory'}`}>{label}</button>
         ))}
       </div>
       <div className="mb-5">
@@ -124,10 +124,10 @@ export default function Paybill() {
         actions={<Link to="/donation-types" className="btn-secondary"><Tags className="h-4 w-4" /> Donation types &amp; codes</Link>} />
       <HowToGive codes={codeList} />
 
-      <div className="mb-4 flex gap-1 border-b border-slate-200">
+      <div className="mb-4 flex gap-1 border-b border-mk-border">
         {(can('reconciliation', true) ? TABS : TABS.slice(0, 1)).map(([k, label]) => (
           <button key={k} onClick={() => setTab(k)}
-            className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${tab === k ? 'border-brand-700 text-brand-800' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>{label}</button>
+            className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${tab === k ? 'border-brand-700 text-brand-800' : 'border-transparent text-mk-muted hover:text-mk-slate'}`}>{label}</button>
         ))}
       </div>
 
@@ -140,7 +140,7 @@ export default function Paybill() {
           <div className="mb-4 flex flex-col gap-3 sm:flex-row">
             <div className="w-48"><Select value={status} onChange={(v) => { setStatus(v); setPage(1) }} options={{ unallocated: 'Unallocated', allocated: 'Allocated', ignored: 'Set aside' }} placeholder="All payments" /></div>
             <div className="relative flex-1 sm:max-w-sm">
-              <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-mk-muted" />
               <input className="input pl-9" placeholder="Search ref, account, name…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }} />
             </div>
           </div>
@@ -150,11 +150,11 @@ export default function Paybill() {
             onRowClick={(p) => p.status === 'unallocated' && setAllocating(p)}
             columns={[
               { key: 'trans_time', label: 'Date', render: (p) => dateTime(p.trans_time) },
-              { key: 'payer_name', label: 'Paid by', render: (p) => <><p className="font-medium text-slate-900">{p.payer_name || '—'}</p><p className="font-mono text-xs text-slate-500">{p.trans_id}</p></> },
+              { key: 'payer_name', label: 'Paid by', render: (p) => <><p className="font-medium text-mk-forest">{p.payer_name || '—'}</p><p className="font-mono text-xs text-mk-muted">{p.trans_id}</p></> },
               { key: 'account', label: 'Account typed', render: (p) => <span className="font-mono">{p.account || '(blank)'}</span> },
               { key: 'allocation', label: 'Allocation', className: 'whitespace-normal', render: (p) => p.donation_summary ? (
                 <span className="text-sm">{p.donation_summary.member_name || (p.parsed_phone ? `Visitor ${p.parsed_phone}` : 'Anonymous')}
-                  <span className="text-slate-500"> · {p.donation_summary.donation_type_name}{p.donation_summary.project_name && ` · ${p.donation_summary.project_name}`}</span></span>
+                  <span className="text-mk-muted"> · {p.donation_summary.donation_type_name}{p.donation_summary.project_name && ` · ${p.donation_summary.project_name}`}</span></span>
               ) : <span className="text-xs text-amber-700">{p.reason}</span> },
               { key: 'checks', label: 'Status', render: (p) => (
                 <div className="flex flex-col items-start gap-1">

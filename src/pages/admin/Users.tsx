@@ -31,10 +31,10 @@ function RolePicker({ value, onChange, branches }: { value: RoleState; onChange:
       {ROLES.map(({ key, label, description }) => {
         const held = value[key]
         return (
-          <div key={key} className={`rounded-lg border px-3 py-2 text-sm ${held ? 'border-brand-600 bg-brand-50' : 'border-slate-200'}`}>
+          <div key={key} className={`rounded-lg border px-3 py-2 text-sm ${held ? 'border-brand-600 bg-brand-50' : 'border-mk-border'}`}>
             <label className="flex cursor-pointer items-start gap-3">
               <input type="checkbox" className="mt-0.5 accent-[var(--color-primary)]" checked={Boolean(held)} onChange={() => toggle(key)} />
-              <span><span className="font-medium text-slate-900">{label}</span><span className="block text-xs text-slate-500">{description}</span></span>
+              <span><span className="font-medium text-mk-forest">{label}</span><span className="block text-xs text-mk-muted">{description}</span></span>
             </label>
             {held && (
               <div className="mt-2 pl-7">
@@ -44,12 +44,12 @@ function RolePicker({ value, onChange, branches }: { value: RoleState; onChange:
                 </div>
                 {!held.whole && (
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {branches.length === 0 && <span className="text-xs text-slate-500">Add branches first (Branches page).</span>}
+                    {branches.length === 0 && <span className="text-xs text-mk-muted">Add branches first (Branches page).</span>}
                     {branches.map((b) => {
                       const on = held.branches.includes(b.id)
                       return (
                         <button type="button" key={b.id} aria-pressed={on}
-                          className={`rounded-full border px-3 py-1 text-xs ${on ? 'border-brand-600 bg-white font-medium text-brand-800' : 'border-slate-300 text-slate-600'}`}
+                          className={`rounded-full border px-3 py-1 text-xs ${on ? 'border-brand-600 bg-white font-medium text-brand-800' : 'border-mk-border text-mk-slate'}`}
                           onClick={() => update(key, { branches: on ? held.branches.filter((id) => id !== b.id) : [...held.branches, b.id] })}>
                           {b.name}
                         </button>
@@ -105,7 +105,7 @@ function UserForm({ user, onClose, onSaved }: { user: User | null; onClose: () =
         {!platform && (
           <label className="flex items-start gap-2 text-sm sm:col-span-2">
             <input type="checkbox" className="mt-0.5" checked={values.is_superuser} onChange={set('is_superuser')} />
-            <span><span className="font-medium">Church owner</span><span className="block text-xs text-slate-500">Everything, in every branch: staff and roles, branches, settings and the public page.</span></span>
+            <span><span className="font-medium">Church owner</span><span className="block text-xs text-mk-muted">Everything, in every branch: staff and roles, branches, settings and the public page.</span></span>
           </label>
         )}
         {!platform && !values.is_superuser && <RolePicker value={roles} onChange={setRoles} branches={branches} />}
@@ -153,7 +153,7 @@ export default function Users() {
         { key: 'email', label: 'Email', render: (u) => u.email || '—' },
         { key: 'role', label: 'Role', render: (u) => (u.is_superuser
           ? <Badge tone="purple">{platform ? 'Platform admin' : 'Owner'}</Badge>
-          : u.roles.length ? <span className="text-sm text-slate-700">{rolesText(u, branchNames)}</span> : <Badge tone="amber">No role yet</Badge>) },
+          : u.roles.length ? <span className="text-sm text-mk-slate">{rolesText(u, branchNames)}</span> : <Badge tone="amber">No role yet</Badge>) },
         { key: 'status', label: 'Status', render: (u) => <Badge tone={STATUS[u.status][0]}>{STATUS[u.status][1]}</Badge> },
         { key: 'last_login', label: 'Last login', render: (u) => dateTime(u.last_login) },
         { key: 'actions', label: '', render: (u) => u.id !== me?.id && (

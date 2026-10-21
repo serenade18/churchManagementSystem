@@ -30,8 +30,8 @@ function DemoSwitch() {
     <div className="card mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700"><MonitorPlay /></span>
       <div className="flex-1 text-sm">
-        <p className="font-semibold text-slate-900">Demo mode <Badge tone={enabled ? 'green' : 'slate'}>{enabled ? 'On' : 'Off'}</Badge></p>
-        <p className="mt-1 text-slate-600">
+        <p className="font-semibold text-mk-forest">Demo mode <Badge tone={enabled ? 'green' : 'slate'}>{enabled ? 'On' : 'Off'}</Badge></p>
+        <p className="mt-1 text-mk-slate">
           When on, the sign-in page offers "Explore the demo": visitors see the whole app filled with built-in sample data,
           view only. It runs in their browser and never shows or changes your real members and giving.
         </p>
@@ -65,9 +65,9 @@ function Panel({ title, action, children, className = '' }: { title: string; act
 
 function Line({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="flex justify-between border-b border-slate-100 py-2 text-sm last:border-0">
-      <span className="text-slate-600">{label}</span>
-      <span className="font-medium text-slate-900">{value}</span>
+    <div className="flex justify-between border-b border-mk-mist py-2 text-sm last:border-0">
+      <span className="text-mk-slate">{label}</span>
+      <span className="font-medium text-mk-forest">{value}</span>
     </div>
   )
 }
@@ -98,15 +98,15 @@ export default function SuperDashboard() {
 
       <div className="mt-6 grid gap-6 xl:grid-cols-3">
         <Panel title="System status" className="xl:col-span-2">
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-mk-mist">
             {d.checks.map((c) => {
               const [Icon, color, tone, label] = CHECK[c.state]
               return (
                 <li key={c.key} className="flex items-start gap-3 py-2.5">
                   <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${color}`} />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-slate-900">{c.label}</p>
-                    <p className="text-xs text-slate-500">{c.detail}</p>
+                    <p className="text-sm font-medium text-mk-forest">{c.label}</p>
+                    <p className="text-xs text-mk-muted">{c.detail}</p>
                   </div>
                   <Badge tone={tone}>{label}</Badge>
                 </li>
@@ -121,21 +121,21 @@ export default function SuperDashboard() {
           <Line label="Active" value={a.active} />
           <Line label="Disabled" value={a.disabled} />
           <Line label="Phone not verified" value={a.unverified} />
-          <p className="mt-3 text-xs text-slate-500">Disable accounts that are no longer needed, and remove unfinished signups you don't recognise.</p>
+          <p className="mt-3 text-xs text-mk-muted">Disable accounts that are no longer needed, and remove unfinished signups you don't recognise.</p>
         </Panel>
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-2">
         <Panel title="Recent sign-ins">
           <Table rows={d.recent_logins} empty="Nobody has signed in yet." columns={[
-            { key: 'name', label: 'Name', render: (p) => <><p className="font-medium text-slate-900">{p.name}</p><p className="text-xs text-slate-500">{p.username}</p></> },
+            { key: 'name', label: 'Name', render: (p) => <><p className="font-medium text-mk-forest">{p.name}</p><p className="text-xs text-mk-muted">{p.username}</p></> },
             { key: 'role', label: 'Role', render: (p) => <Badge tone={p.role === 'Super admin' ? 'purple' : 'blue'}>{p.role}</Badge> },
             { key: 'last_login', label: 'Last sign-in', render: (p) => dateTime(p.last_login) },
           ]} />
         </Panel>
         <Panel title="Newest accounts">
           <Table rows={d.recent_signups} empty="No accounts yet." columns={[
-            { key: 'name', label: 'Name', render: (p) => <><p className="font-medium text-slate-900">{p.name}</p><p className="text-xs text-slate-500">{p.username}</p></> },
+            { key: 'name', label: 'Name', render: (p) => <><p className="font-medium text-mk-forest">{p.name}</p><p className="text-xs text-mk-muted">{p.username}</p></> },
             { key: 'role', label: 'Role', render: (p) => <Badge tone={p.role === 'Super admin' ? 'purple' : 'blue'}>{p.role}</Badge> },
             { key: 'status', label: 'Status', render: (p) => <Badge tone={STATUS[p.status][0]}>{STATUS[p.status][1]}</Badge> },
             { key: 'date_joined', label: 'Created', render: (p) => date(p.date_joined) },

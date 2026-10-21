@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, FileText, MessageSquare, Pencil, Printer, Trash2 } from 'lucide-react'
 import MemberForm from '../../components/MemberForm'
-import { Alert, Badge, ConfirmDialog, Field, Modal, Pagination, Spinner, Table } from '../../components/ui'
+import { Alert, Badge, ConfirmDialog, Field, Modal, Pagination, Spinner, StatCard, Table } from '../../components/ui'
 import { api, errorMessage } from '../../lib/api'
 import { useApi } from '../../lib/hooks'
-import { CHANNELS, DONATION_STATUS, GENDERS, MARITAL, MEMBER_STATUS, date, dateTime, money, today } from '../../lib/format'
+import { CHANNELS, DONATION_STATUS, GENDERS, MARITAL, MEMBER_STATUS, ago, date, dateTime, money, today } from '../../lib/format'
 import type { AttendanceSummary, Donation, Member, Page } from '../../types'
 import { useCan } from '../../lib/access'
+
+const SUNDAY = { came: 'came', missed: 'missed', none: 'no service recorded' }
 
 export default function MemberDetail() {
   const can = useCan()
@@ -51,59 +53,85 @@ export default function MemberDetail() {
 
   return (
     <>
-      <Link to="/members" className="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700"><ArrowLeft className="h-4 w-4" /> Members</Link>
+      <Link to="/members" className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-mk-muted hover:text-mk-forest"><ArrowLeft className="h-4 w-4" /> Members</Link>
       <Alert>{deleteError}</Alert>
-      <div className="card mb-6 p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex items-center gap-4">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-100 text-lg font-semibold text-brand-800">
-              {member.first_name[0]}{member.last_name[0]}
-            </span>
-            <div>
-              <h1 className="text-xl font-semibold">{member.full_name}</h1>
-              <p className="text-sm text-slate-500">Member No. <span className="font-mono">{member.membership_number}</span> · <Badge status={member.status}>{MEMBER_STATUS[member.status]}</Badge></p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            {member.phone_number && can('sms', true) && (
-              <button className="btn-secondary" onClick={() => navigate('/sms', { state: { members: [member] } })}><MessageSquare className="h-4 w-4" /> SMS</button>
-            )}
-            {seesGiving && <button className="btn-secondary" onClick={() => setStatementOpen(true)}><FileText className="h-4 w-4" /> Giving statement</button>}
-            {can('members', true) && <>
-              <button className="btn-secondary" onClick={() => setEditing(true)}><Pencil className="h-4 w-4" /> Edit</button>
-              <button className="btn-secondary text-red-600" onClick={() => setDeleting(true)}><Trash2 className="h-4 w-4" /> Delete</button>
-            </>}
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4">
+          <span className="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-brand-50 font-display text-lg font-semibold text-brand-700">
+            {member.first_name[0]}{member.last_name[0]}
+          </span>
+          <div>
+            <h1 className="font-display text-[28px] font-semibold leading-tight tracking-[-0.015em] text-mk-forest sm:text-[34px]">{member.full_name}</h1>
+            <p className="mt-1 flex flex-wrap items-center gap-2 text-[15px] text-mk-muted">
+              <span className="font-mono text-sm">{member.membership_number}</span>
+              {member.branch_name && <span>· {member.branch_name}</span>}
+              <Badge status={member.status}>{MEMBER_STATUS[member.status]}</Badge>
+            </p>
           </div>
         </div>
-        <dl className="mt-6 grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
-          {seesGiving && (
-            <div className="rounded-lg bg-brand-50 p-3">
-              <dt className="text-xs text-brand-700">Total given</dt>
-              <dd className="text-lg font-semibold text-brand-900">{money(member.total_given)}</dd>
-            </div>
+        <div className="flex flex-wrap gap-2">
+          {member.phone_number && can('sms', true) && (
+            <button className="btn-secondary" onClick={() => navigate('/sms', { state: { members: [member] } })}><MessageSquare className="h-4 w-4" /> SMS</button>
           )}
-          <div className="rounded-lg bg-emerald-50 p-3">
-            <dt className="text-xs text-emerald-700">Attendance (last 90 days)</dt>
-            <dd className="text-lg font-semibold text-emerald-900">
-              {attendance.data?.rate != null ? `${attendance.data.rate}%` : '—'}
-              {attendance.data && attendance.data.services_last_90_days > 0 && (
-                <span className="ml-1 text-xs font-normal text-emerald-700">{attendance.data.attended_last_90_days} of {attendance.data.services_last_90_days}</span>
-              )}
-            </dd>
-            <dd className="text-xs text-emerald-700">Last attended: {attendance.data?.last_attended ? date(attendance.data.last_attended) : 'never recorded'}</dd>
-          </div>
+          {seesGiving && <button className="btn-secondary" onClick={() => setStatementOpen(true)}><FileText className="h-4 w-4" /> Giving statement</button>}
+          {can('members', true) && <>
+            <button className="btn-secondary" onClick={() => setEditing(true)}><Pencil className="h-4 w-4" /> Edit</button>
+            <button className="btn-secondary text-danger" onClick={() => setDeleting(true)}><Trash2 className="h-4 w-4" /> Delete</button>
+          </>}
+        </div>
+      </div>
+
+      <div className="mb-6 grid gap-4 lg:grid-cols-2">
+        {seesGiving && (
+          <section aria-labelledby="giving-title" className="card flex flex-col gap-4 p-6">
+            <h2 id="giving-title" className="font-display text-xl font-semibold text-mk-forest">Giving</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <StatCard label="This year" value={money(member.given_this_year ?? 0)} />
+              <StatCard label="All time" value={money(member.total_given)} />
+            </div>
+            <p className="text-sm text-mk-muted">{member.last_gift_at ? `Last gift ${ago(member.last_gift_at)}.` : 'No gifts recorded yet.'}</p>
+          </section>
+        )}
+        {can('attendance') && (
+          <section aria-labelledby="att-title" className="card flex flex-col gap-4 p-6">
+            <h2 id="att-title" className="font-display text-xl font-semibold text-mk-forest">At church</h2>
+            {attendance.data?.sundays && (
+              <ol aria-label="Last 12 Sundays" className="flex flex-wrap gap-2">
+                {attendance.data.sundays.map((d) => (
+                  <li key={d.date} title={`${date(d.date)}: ${SUNDAY[d.state]}`} aria-label={`${date(d.date)}: ${SUNDAY[d.state]}`}
+                    className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${d.state === 'came'
+                      ? 'bg-brand-600 text-white' : d.state === 'missed' ? 'border-2 border-mk-border text-mk-muted' : 'border border-dashed border-mk-border text-mk-border'}`}>
+                    {d.state === 'came' ? '✓' : new Date(d.date).getDate()}
+                  </li>
+                ))}
+              </ol>
+            )}
+            <p className="text-sm text-mk-muted">
+              {attendance.data?.rate != null
+                ? <><span className="font-semibold text-mk-forest">{attendance.data.rate}%</span> of services in the last 90 days ({attendance.data.attended_last_90_days} of {attendance.data.services_last_90_days}). </>
+                : 'No services recorded in the last 90 days. '}
+              Last here: {attendance.data?.last_attended ? `${date(attendance.data.last_attended)} (${ago(attendance.data.last_attended)})` : 'never recorded'}.
+            </p>
+            {attendance.data?.sundays && <p className="text-[13px] text-mk-muted">Last 12 Sundays: ✓ came · number: missed · dashed: no service recorded.</p>}
+          </section>
+        )}
+      </div>
+
+      <section aria-labelledby="details-title" className="card mb-6 p-6">
+        <h2 id="details-title" className="mb-4 font-display text-xl font-semibold text-mk-forest">Details</h2>
+        <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
           {details.map(([label, value]) => (
             <div key={label}>
-              <dt className="text-xs text-slate-500">{label}</dt>
-              <dd className="text-sm">{value || '—'}</dd>
+              <dt className="text-[13px] text-mk-muted">{label}</dt>
+              <dd className="text-[15px] text-mk-forest">{value || '—'}</dd>
             </div>
           ))}
         </dl>
-        {member.notes && <p className="mt-4 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">{member.notes}</p>}
-      </div>
+        {member.notes && <p className="mt-4 rounded-xl bg-mk-ivory p-3 text-sm text-mk-slate">{member.notes}</p>}
+      </section>
 
       {seesGiving && <>
-      <h2 className="mb-3 text-lg font-semibold">Giving history</h2>
+      <h2 className="mb-3 font-display text-xl font-semibold text-mk-forest">Giving history</h2>
       <Table
         loading={donations.loading}
         rows={donations.data?.results}
@@ -118,7 +146,7 @@ export default function MemberDetail() {
           { key: 'amount', label: 'Amount', className: 'text-right', render: (d) => money(d.amount) },
           { key: 'print', label: '', render: (d) => d.status === 'success' && (
             <a href={`/print/receipt/${d.id}`} target="_blank" rel="noreferrer" title="Print receipt" aria-label="Print receipt"
-              className="inline-flex rounded p-1 text-slate-400 hover:bg-brand-50 hover:text-brand-700"><Printer className="h-4 w-4" /></a>
+              className="inline-flex rounded p-1 text-mk-muted hover:bg-brand-50 hover:text-brand-700"><Printer className="h-4 w-4" /></a>
           ) },
         ]}
       />
@@ -135,7 +163,7 @@ export default function MemberDetail() {
         <div className="mb-3 flex flex-wrap gap-2">
           {[[`${thisYear}-01-01`, today(), 'This year'], [`${thisYear - 1}-01-01`, `${thisYear - 1}-12-31`, 'Last year']].map(([from, to, label]) => (
             <button key={label} type="button" onClick={() => setPeriod({ date_from: from, date_to: to })}
-              className={`rounded-full border px-3 py-1 text-sm ${period.date_from === from && period.date_to === to ? 'border-brand-600 bg-brand-50 text-brand-800' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}>{label}</button>
+              className={`rounded-full border px-3 py-1 text-sm ${period.date_from === from && period.date_to === to ? 'border-brand-600 bg-brand-50 text-brand-800' : 'border-mk-border text-mk-slate hover:bg-mk-ivory'}`}>{label}</button>
           ))}
         </div>
         <div className="grid grid-cols-2 gap-3">

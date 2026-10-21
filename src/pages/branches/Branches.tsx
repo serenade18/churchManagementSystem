@@ -56,26 +56,26 @@ export default function Branches() {
         actions={can('branches', true) && <button className="btn-primary" onClick={() => setEditing('new')}><Plus className="h-4 w-4" /> Add branch</button>} />
       <Alert>{error?.message || actionError}</Alert>
       {loading && !data ? <Spinner className="mx-auto mt-10 h-8 w-8" /> : data?.results.length === 0 ? (
-        <div className="card p-12 text-center text-sm text-slate-500">No branches yet. Add your first branch to start grouping members.</div>
+        <div className="card p-12 text-center text-sm text-mk-muted">No branches yet. Add your first branch to start grouping members.</div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {data?.results.map((b) => (
             <div key={b.id} className="card flex flex-col p-5">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-semibold text-slate-900">{b.name}</h3>
-                  {b.code && <p className="font-mono text-xs text-slate-500">{b.code}</p>}
+                  <h3 className="font-semibold text-mk-forest">{b.name}</h3>
+                  {b.code && <p className="font-mono text-xs text-mk-muted">{b.code}</p>}
                 </div>
                 {!b.is_active && <Badge status="inactive">Inactive</Badge>}
               </div>
-              <ul className="mt-3 flex-1 space-y-1 text-sm text-slate-600">
-                {b.location && <li className="flex items-center gap-2"><MapPin className="h-4 w-4 text-slate-400" />{b.location}</li>}
-                {b.leader_name && <li className="flex items-center gap-2"><User className="h-4 w-4 text-slate-400" />{b.leader_name}</li>}
-                {b.phone_number && <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-slate-400" />{b.phone_number}</li>}
+              <ul className="mt-3 flex-1 space-y-1 text-sm text-mk-slate">
+                {b.location && <li className="flex items-center gap-2"><MapPin className="h-4 w-4 text-mk-muted" />{b.location}</li>}
+                {b.leader_name && <li className="flex items-center gap-2"><User className="h-4 w-4 text-mk-muted" />{b.leader_name}</li>}
+                {b.phone_number && <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-mk-muted" />{b.phone_number}</li>}
               </ul>
-              <div className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-100 pt-4">
-                <div><p className="text-xs text-slate-500">Members</p><p className="font-semibold">{b.member_count}</p></div>
-                <div><p className="text-xs text-slate-500">Total giving</p><p className="font-semibold">{money(b.total_donations)}</p></div>
+              <div className="mt-4 grid grid-cols-2 gap-3 border-t border-mk-mist pt-4">
+                <div><p className="text-xs text-mk-muted">Members</p><p className="font-semibold">{b.member_count}</p></div>
+                <div><p className="text-xs text-mk-muted">Total giving</p><p className="font-semibold">{money(b.total_donations)}</p></div>
               </div>
               <div className="mt-4 flex gap-2">
                 <button className="btn-secondary flex-1" onClick={() => setEditing(b)}><Pencil className="h-4 w-4" /> Edit</button>

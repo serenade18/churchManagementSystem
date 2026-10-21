@@ -16,10 +16,10 @@ function TrendTooltip({ active, payload }: Partial<TooltipContentProps<number, s
   if (!active || !payload?.length) return null
   const t = payload[0].payload as AttendanceStats['trend'][number]
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-md">
-      <p className="text-slate-500">{t.name} · {date(t.date)}</p>
-      <p className="font-semibold text-slate-900">{t.total} attended</p>
-      <p className="text-xs text-slate-500">{t.members_present} members · {t.visitors} visitors</p>
+    <div className="rounded-lg border border-mk-border bg-white px-3 py-2 text-sm shadow-md">
+      <p className="text-mk-muted">{t.name} · {date(t.date)}</p>
+      <p className="font-semibold text-mk-forest">{t.total} attended</p>
+      <p className="text-xs text-mk-muted">{t.members_present} members · {t.visitors} visitors</p>
     </div>
   )
 }
@@ -61,7 +61,7 @@ export default function Attendance() {
       <div className="mt-6 grid gap-6 xl:grid-cols-3">
         <div className="card p-5 xl:col-span-2">
           <h2 className="font-semibold">Attendance trend</h2>
-          <p className="mb-4 text-sm text-slate-500">Total attendance per service day (last {trend.length || 12})</p>
+          <p className="mb-4 text-sm text-mk-muted">Total attendance per service day (last {trend.length || 12})</p>
           {trend.length ? (
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -74,7 +74,7 @@ export default function Attendance() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          ) : <p className="py-16 text-center text-sm text-slate-500">Create a service and mark attendance to see the trend.</p>}
+          ) : <p className="py-16 text-center text-sm text-mk-muted">Create a service and mark attendance to see the trend.</p>}
         </div>
 
         <div className="card flex flex-col p-5">
@@ -82,13 +82,13 @@ export default function Attendance() {
             <h2 className="font-semibold">Follow up</h2>
             <div className="w-32"><Select value={weeks} onChange={setWeeks} options={{ 2: '2+ weeks', 4: '4+ weeks', 8: '8+ weeks', 12: '12+ weeks' }} /></div>
           </div>
-          <p className="mb-3 text-sm text-slate-500">Active members who haven't attended in {weeks}+ weeks.</p>
-          <ul className="max-h-64 flex-1 divide-y divide-slate-100 overflow-y-auto">
-            {s?.follow_up?.length === 0 && <li className="py-6 text-center text-sm text-slate-500">Everyone has been around recently.</li>}
+          <p className="mb-3 text-sm text-mk-muted">Active members who haven't attended in {weeks}+ weeks.</p>
+          <ul className="max-h-64 flex-1 divide-y divide-mk-mist overflow-y-auto">
+            {s?.follow_up?.length === 0 && <li className="py-6 text-center text-sm text-mk-muted">Everyone has been around recently.</li>}
             {s?.follow_up?.map((m) => (
-              <li key={m.id} className="flex cursor-pointer justify-between gap-3 py-2 text-sm hover:bg-slate-50" onClick={() => navigate(`/members/${m.id}`)}>
-                <span><span className="font-medium">{m.full_name}</span> <span className="text-slate-400">· {m.branch_name || 'No branch'}</span></span>
-                <span className="whitespace-nowrap text-xs text-slate-500">{m.last_attended ? `Last: ${date(m.last_attended)}` : 'Never recorded'}</span>
+              <li key={m.id} className="flex cursor-pointer justify-between gap-3 py-2 text-sm hover:bg-mk-ivory" onClick={() => navigate(`/members/${m.id}`)}>
+                <span><span className="font-medium">{m.full_name}</span> <span className="text-mk-muted">· {m.branch_name || 'No branch'}</span></span>
+                <span className="whitespace-nowrap text-xs text-mk-muted">{m.last_attended ? `Last: ${date(m.last_attended)}` : 'Never recorded'}</span>
               </li>
             ))}
           </ul>
@@ -107,8 +107,8 @@ export default function Attendance() {
       <Table loading={services.loading} rows={services.data?.results} onRowClick={(row) => navigate(`/attendance/${row.id}`)}
         empty="No services yet. Create one to start taking attendance."
         columns={[
-          { key: 'date', label: 'Date', render: (r) => <>{date(r.date)}{r.start_time && <span className="text-slate-400"> · {r.start_time.slice(0, 5)}</span>}</> },
-          { key: 'name', label: 'Service', render: (r) => <span className="font-medium text-slate-900">{r.name}</span> },
+          { key: 'date', label: 'Date', render: (r) => <>{date(r.date)}{r.start_time && <span className="text-mk-muted"> · {r.start_time.slice(0, 5)}</span>}</> },
+          { key: 'name', label: 'Service', render: (r) => <span className="font-medium text-mk-forest">{r.name}</span> },
           { key: 'branch_name', label: 'Branch', render: (r) => r.branch_name || 'Church-wide' },
           { key: 'members_present', label: 'Members', className: 'text-right' },
           { key: 'visitor_count', label: 'Visitors', className: 'text-right' },

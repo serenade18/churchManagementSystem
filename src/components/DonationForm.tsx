@@ -98,7 +98,7 @@ export default function DonationForm({ donation, onClose, onSaved, onResent }: D
       footer={<><button className="btn-secondary" onClick={onClose}>Cancel</button><button className="btn-primary" form="donation-form" disabled={busy}>{busy ? 'Saving…' : 'Save'}</button></>}>
       <Alert>{error}</Alert>
       {isProvider && donation && (
-        <p className="mb-4 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
+        <p className="mb-4 rounded-lg bg-mk-ivory p-3 text-sm text-mk-slate">
           {donation.channel === 'paypal' ? (
             <>PayPal donation of <strong>{currencyMoney(donation.amount_original, donation.currency)}</strong> ({money(donation.amount)}) from {donation.giver_name || donation.email || 'a PayPal giver'}</>
           ) : (
@@ -155,11 +155,11 @@ export default function DonationForm({ donation, onClose, onSaved, onResent }: D
         </div>
       )}
       {donation && donation.status === 'success' && (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 p-3 text-sm">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-mk-border p-3 text-sm">
           <span className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-slate-400" />
+            <MessageSquare className="h-4 w-4 text-mk-muted" />
             SMS receipt: <ReceiptSmsBadge donation={donation} />
-            {resent && <span className="text-slate-600">{resent}</span>}
+            {resent && <span className="text-mk-slate">{resent}</span>}
           </span>
           <div className="flex gap-2">
             <a className="btn-secondary px-3 py-1.5" href={`/print/receipt/${donation.id}`} target="_blank" rel="noreferrer">

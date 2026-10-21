@@ -11,7 +11,7 @@ const TABS = [['pending', 'Waiting'], ['approved', 'Approved'], ['rejected', 'Re
 
 function Detail({ label, children }: { label: string; children: ReactNode }) {
   if (!children) return null
-  return <p className="text-sm"><span className="block text-xs text-slate-500">{label}</span>{children}</p>
+  return <p className="text-sm"><span className="block text-xs text-mk-muted">{label}</span>{children}</p>
 }
 
 /** Review one sign-up: create a member (or link to the one it matches), or reject it. */
@@ -47,7 +47,7 @@ function Review({ reg, onClose, onDone }: { reg: Registration; onClose: () => vo
   return (
     <Modal open wide onClose={onClose} title={reg.full_name} footer={footer}>
       <Alert>{error}</Alert>
-      <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+      <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-mk-muted">
         <Badge status={reg.status}>{REGISTRATION_STATUS[reg.status]}</Badge>
         <span>{reg.kind === 'visitor' ? 'Visitor' : 'Wants to become a member'} · signed up {dateTime(reg.created_at)}</span>
       </div>
@@ -61,10 +61,10 @@ function Review({ reg, onClose, onDone }: { reg: Registration; onClose: () => vo
         <Detail label="Lives in">{reg.address}</Detail>
         <Detail label="Previous church">{reg.previous_church}</Detail>
       </div>
-      {reg.message && <p className="mt-3 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">“{reg.message}”</p>}
+      {reg.message && <p className="mt-3 rounded-lg bg-mk-ivory p-3 text-sm text-mk-slate">“{reg.message}”</p>}
 
       {!pending && (
-        <p className="mt-4 text-sm text-slate-600">
+        <p className="mt-4 text-sm text-mk-slate">
           {reg.status === 'approved'
             ? <>Approved by {reg.reviewed_by_name} on {dateTime(reg.reviewed_at)}{reg.member && <> · <Link className="font-medium text-brand-700 hover:underline" to={`/members/${reg.member}`}>member {reg.member_number}</Link></>}</>
             : <>Rejected by {reg.reviewed_by_name} on {dateTime(reg.reviewed_at)}{reg.review_note && `: ${reg.review_note}`}</>}
@@ -78,20 +78,20 @@ function Review({ reg, onClose, onDone }: { reg: Registration; onClose: () => vo
       )}
 
       {pending && !rejecting && (
-        <div className="mt-5 space-y-4 border-t border-slate-200 pt-4">
+        <div className="mt-5 space-y-4 border-t border-mk-border pt-4">
           {reg.possible_matches.length > 0 && (
             <div>
               <p className="label">Already a member?</p>
               <div className="space-y-1.5">
                 {[{ id: '' as const, full_name: 'No, create a new member' }, ...reg.possible_matches].map((m) => (
-                  <label key={m.id || 'new'} className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm ${link === m.id ? 'border-brand-600 bg-brand-50' : 'border-slate-200'}`}>
+                  <label key={m.id || 'new'} className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm ${link === m.id ? 'border-brand-600 bg-brand-50' : 'border-mk-border'}`}>
                     <input type="radio" checked={link === m.id} onChange={() => setLink(m.id)} className="accent-[var(--color-primary)]" />
                     <span className="flex-1">{'membership_number' in m ? <><span className="font-medium">{m.full_name}</span> · <span className="font-mono text-xs">{m.membership_number}</span>{m.branch && ` · ${m.branch}`}</> : m.full_name}</span>
                     {'reason' in m && <span className="text-xs text-amber-700">{m.reason}</span>}
                   </label>
                 ))}
               </div>
-              {link && <p className="mt-1 text-xs text-slate-500">Their record keeps what it has; only empty details (email, date of birth…) are filled in.</p>}
+              {link && <p className="mt-1 text-xs text-mk-muted">Their record keeps what it has; only empty details (email, date of birth…) are filled in.</p>}
             </div>
           )}
           <div className="grid gap-4 sm:grid-cols-3">
@@ -109,7 +109,7 @@ function Review({ reg, onClose, onDone }: { reg: Registration; onClose: () => vo
               <Select value={form.status} onChange={(v) => setForm({ ...form, status: v })} options={{ active: 'Member (active)', visitor: 'Visitor' }} />
             </Field>
           </div>
-          <label className="flex items-center gap-2 text-sm text-slate-700">
+          <label className="flex items-center gap-2 text-sm text-mk-slate">
             <input type="checkbox" checked={form.notify} onChange={(e) => setForm({ ...form, notify: e.target.checked })} className="accent-[var(--color-primary)]" />
             Send a welcome SMS{!link && form.status === 'active' ? ' with their membership number' : ''}
           </label>
@@ -135,7 +135,7 @@ export default function Registrations() {
 
   const columns: Column<Registration>[] = [
     { key: 'created_at', label: 'Signed up', render: (r) => dateTime(r.created_at) },
-    { key: 'full_name', label: 'Name', render: (r) => <span className="font-medium text-slate-900">{r.full_name}</span> },
+    { key: 'full_name', label: 'Name', render: (r) => <span className="font-medium text-mk-forest">{r.full_name}</span> },
     { key: 'phone_number', label: 'Phone' },
     { key: 'kind', label: 'Type', render: (r) => (r.kind === 'visitor' ? 'Visitor' : 'Member') },
     { key: 'branch_name', label: 'Branch', render: (r) => r.branch_name || '—' },
@@ -150,21 +150,21 @@ export default function Registrations() {
           <a href="/register" target="_blank" rel="noreferrer" className="btn-secondary"><ExternalLink className="h-4 w-4" /> Open the form</a>
           <button className="btn-primary" onClick={copy}><Copy className="h-4 w-4" /> {copied ? 'Link copied' : 'Copy registration link'}</button>
         </>} />
-      <div className="card mb-4 flex items-center gap-3 p-4 text-sm text-slate-600">
+      <div className="card mb-4 flex items-center gap-3 p-4 text-sm text-mk-slate">
         <UserPlus className="h-5 w-5 shrink-0 text-brand-700" />
-        <span>Share <span className="font-mono text-slate-900">{link}</span> in church announcements, on WhatsApp or as a QR code. Sign-ups wait here until you review them.</span>
+        <span>Share <span className="font-mono text-mk-forest">{link}</span> in church announcements, on WhatsApp or as a QR code. Sign-ups wait here until you review them.</span>
       </div>
       <Alert tone="green">{notice}</Alert>
       <Alert>{error?.message}</Alert>
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <div className="flex border-b border-slate-200">
+        <div className="flex border-b border-mk-border">
           {TABS.map(([k, label]) => (
             <button key={k || 'all'} onClick={() => { setTab(k); setPage(1) }}
-              className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${tab === k ? 'border-brand-700 text-brand-800' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>{label}</button>
+              className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${tab === k ? 'border-brand-700 text-brand-800' : 'border-transparent text-mk-muted hover:text-mk-slate'}`}>{label}</button>
           ))}
         </div>
         <div className="relative ml-auto w-full sm:w-64">
-          <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+          <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-mk-muted" />
           <input className="input pl-9" placeholder="Search name or phone" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }} />
         </div>
       </div>

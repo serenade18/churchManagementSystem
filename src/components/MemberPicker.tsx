@@ -28,12 +28,12 @@ export default function MemberPicker({ value, onChange }: { value: MemberRef | n
         onBlur={() => setTimeout(() => setOpen(false), 150)}
       />
       {open && results.length > 0 && (
-        <ul className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+        <ul className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-mk-border bg-white py-1 shadow-lg">
           {results.map((m) => (
             <li key={m.id}>
-              <button type="button" className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50"
+              <button type="button" className="w-full px-3 py-2 text-left text-sm hover:bg-mk-ivory"
                 onMouseDown={() => { onChange(m); setTerm(`${m.full_name} (${m.membership_number})`); setOpen(false) }}>
-                <span className="font-medium">{m.full_name}</span> <span className="text-slate-500">· {m.membership_number}{m.branch_name ? ` · ${m.branch_name}` : ''}</span>
+                <span className="font-medium">{m.full_name}</span> <span className="text-mk-muted">· {m.membership_number}{m.branch_name ? ` · ${m.branch_name}` : ''}</span>
               </button>
             </li>
           ))}

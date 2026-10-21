@@ -207,9 +207,14 @@ export interface Member {
   is_confirmed: boolean
   notes: string
   total_given: Amount
+  given_this_year?: Amount | null
+  last_gift_at?: string | null
+  last_attended?: string | null
   created_at: string
   updated_at: string
 }
+
+export interface MemberSummary { total: number; active: number; new_this_month: number; gave_this_month: number | null; away: number; no_phone: number }
 
 /** The fields a member picker needs; a full Member fits too. */
 export interface MemberRef {
@@ -274,6 +279,7 @@ export interface AttendanceSummary {
   attended_last_90_days: number
   rate: number | null
   last_attended: string | null
+  sundays?: { date: string; state: 'came' | 'missed' | 'none' }[]
 }
 
 // --- giving -------------------------------------------------------------------------------------
@@ -496,6 +502,7 @@ export interface Service {
   branch: Id | null
   branch_name: string | null
   visitor_count: number
+  first_timers?: number
   notes: string
   members_present: number
   total_attendance: number
@@ -538,14 +545,22 @@ export interface AttendanceStats {
 export interface DashboardData {
   unallocated_payments: number
   unallocated_amount: Amount
-  last_service: { id: Id; name: string; date: string; branch_name: string | null; members_present: number; visitors: number; total: number } | null
+  last_service: { id: Id; name: string; date: string; branch_name: string | null; members_present: number; visitors: number; first_timers?: number; total: number } | null
   members: { total: number; active: number; new_this_month: number }
   branches: { total: number; active: number }
   projects: { total: number; ongoing: number }
-  donations: { today: Amount; this_month: Amount; this_year: Amount; all_time: Amount; pending: number }
+  donations: {
+    today: Amount; this_month: Amount; this_year: Amount; all_time: Amount; pending: number
+    last_month?: Amount; last_year_to_date?: Amount; by_phone_share?: number | null
+  }
   trend: { month: string; total: Amount }[]
   by_type: { donation_type: Id; name: string; total: Amount }[]
+  month_by_type?: { donation_type: Id; name: string; total: Amount }[]
   top_branches: { id: Id; name: string; total: Amount; member_count: number }[]
+  branch_rows?: { id: Id; name: string; total: Amount; member_count: number }[]
+  attendance_trend?: { date: string; members: number; visitors: number; first_timers: number; services: number; total: number }[]
+  pending_registrations?: { count: number; names: string[] } | null
+  failed_receipts?: { count: number; phones: string[] }
   recent_donations: Donation[]
   active_projects: { id: Id; name: string; target_amount: Amount; amount_raised: Amount; status: ProjectStatus }[]
 }

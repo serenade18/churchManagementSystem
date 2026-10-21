@@ -31,7 +31,7 @@ const segments = (text: string) => (text.length <= 160 ? 1 : Math.ceil(text.leng
 function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
   return (
     <button type="button" onClick={onClick}
-      className={`rounded-full border px-3 py-1 text-sm transition ${active ? 'border-brand-600 bg-brand-50 text-brand-800' : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'}`}>
+      className={`rounded-full border px-3 py-1 text-sm transition ${active ? 'border-brand-600 bg-brand-50 font-semibold text-brand-700' : 'border-mk-border bg-white text-mk-slate hover:bg-mk-ivory'}`}>
       {children}
     </button>
   )
@@ -43,8 +43,8 @@ function SmsDetail({ sms, onClose }: { sms: SmsMessage; onClose: () => void }) {
   const { data, loading } = useApi<Page<SmsRecipient>>(`/cms/sms/${sms.id}/recipients/`, { status, page })
   return (
     <Modal open onClose={onClose} title="SMS details" wide>
-      <p className="mb-1 text-xs text-slate-500">{dateTime(sms.created_at)} · {sms.sent_by_name} · {sms.audience_label}</p>
-      <p className="mb-4 whitespace-pre-wrap rounded-lg bg-slate-50 p-3 text-sm">{sms.message}</p>
+      <p className="mb-1 text-xs text-mk-muted">{dateTime(sms.created_at)} · {sms.sent_by_name} · {sms.audience_label}</p>
+      <p className="mb-4 whitespace-pre-wrap rounded-lg bg-mk-ivory p-3 text-sm">{sms.message}</p>
       <div className="mb-3 flex items-center justify-between">
         <p className="text-sm"><strong>{sms.sent_count}</strong> sent · <strong>{sms.failed_count}</strong> failed · <strong>{sms.skipped_count}</strong> skipped (no valid phone)</p>
         <div className="w-40"><Select value={status} onChange={(v) => { setStatus(v); setPage(1) }} options={{ sent: 'Sent', failed: 'Failed' }} placeholder="All" /></div>
@@ -79,6 +79,8 @@ export default function Sms() {
   const [error, setError] = useState('')
   const [result, setResult] = useState<SmsMessage | null>(null)
   const [viewing, setViewing] = useState<SmsMessage | null>(null)
+  const [test, setTest] = useState<{ tone: 'green' | 'red'; text: string } | null>(null)
+  const [testing, setTesting] = useState(false)
   const [page, setPage] = useState(1)
   const history = useApi<Page<SmsMessage>>('/cms/sms/', { page })
 
@@ -131,6 +133,20 @@ export default function Sms() {
     }
   }
 
+  // The message, as a member would get it, to the admin's own phone.
+  const sendTest = async () => {
+    setTesting(true)
+    setTest(null)
+    try {
+      const res = await api.post<{ detail: string }>('/cms/sms/test/', { message })
+      setTest({ tone: 'green', text: res.detail })
+    } catch (e) {
+      setTest({ tone: 'red', text: errorMessage(e) })
+    } finally {
+      setTesting(false)
+    }
+  }
+
   const count = preview?.recipient_count ?? 0
   const parts = segments(message)
 
@@ -147,13 +163,13 @@ export default function Sms() {
               {result.failed_count > 0 && <p>{result.failed_count} failed. <button className="font-medium underline" onClick={() => setViewing(result)}>See which</button></p>}
             </div>
           </div>
-          <button onClick={() => setResult(null)} aria-label="Dismiss"><X className="h-4 w-4 text-slate-500" /></button>
+          <button onClick={() => setResult(null)} aria-label="Dismiss"><X className="h-4 w-4 text-mk-muted" /></button>
         </div>
       )}
 
       <div className="grid gap-6 xl:grid-cols-5">
         <div className="card p-5 xl:col-span-3">
-          <h2 className="mb-4 font-semibold">Compose</h2>
+          <h2 className="mb-4 font-display text-xl font-semibold text-mk-forest">Compose</h2>
           <Alert>{error}</Alert>
 
           <span className="label">Recipients</span>
@@ -163,16 +179,16 @@ export default function Sms() {
           </div>
 
           {mode === 'filter' ? (
-            <div className="mb-5 space-y-4 rounded-lg border border-slate-200 p-4">
+            <div className="mb-5 space-y-4 rounded-2xl border border-mk-border p-4">
               <div>
-                <p className="mb-2 text-sm text-slate-600">Branches <span className="text-slate-400">(none selected = all branches)</span></p>
+                <p className="mb-2 text-sm text-mk-slate">Branches <span className="text-mk-muted">(none selected = all branches)</span></p>
                 <div className="flex flex-wrap gap-2">
                   {branches.map((b) => <Chip key={b.id} active={audience.branches.includes(b.id)} onClick={() => toggle('branches', b.id)}>{b.name}</Chip>)}
-                  {!branches.length && <span className="text-sm text-slate-400">No branches yet.</span>}
+                  {!branches.length && <span className="text-sm text-mk-muted">No branches yet.</span>}
                 </div>
               </div>
               <div>
-                <p className="mb-2 text-sm text-slate-600">Membership status</p>
+                <p className="mb-2 text-sm text-mk-slate">Membership status</p>
                 <div className="flex flex-wrap gap-2">
                   {(Object.entries(MEMBER_STATUS) as [MemberStatus, string][]).map(([k, v]) => <Chip key={k} active={audience.statuses.includes(k)} onClick={() => toggle('statuses', k)}>{v}</Chip>)}
                 </div>
@@ -182,7 +198,7 @@ export default function Sms() {
               </Field>
             </div>
           ) : (
-            <div className="mb-5 space-y-3 rounded-lg border border-slate-200 p-4">
+            <div className="mb-5 space-y-3 rounded-2xl border border-mk-border p-4">
               <MemberPicker key={selected.length} value={null} onChange={(m) => m && !selected.some((s) => s.id === m.id) && setSelected([...selected, m])} />
               <div className="flex flex-wrap gap-2">
                 {selected.map((m) => (
@@ -191,7 +207,7 @@ export default function Sms() {
                     <button onClick={() => setSelected(selected.filter((s) => s.id !== m.id))} className="rounded-full p-0.5 hover:bg-brand-100" aria-label={`Remove ${m.full_name}`}><X className="h-3.5 w-3.5" /></button>
                   </span>
                 ))}
-                {!selected.length && <span className="text-sm text-slate-400">Search above to add members.</span>}
+                {!selected.length && <span className="text-sm text-mk-muted">Search above to add members.</span>}
               </div>
             </div>
           )}
@@ -202,39 +218,43 @@ export default function Sms() {
           </Field>
           <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap gap-1.5">
-              <span className="text-xs text-slate-500">Insert:</span>
+              <span className="text-xs text-mk-muted">Insert:</span>
               {PLACEHOLDERS.map(([token, label]) => (
-                <button key={token} type="button" onClick={() => insert(token)} className="rounded border border-slate-300 px-2 py-0.5 text-xs text-slate-600 hover:bg-slate-50">{label}</button>
+                <button key={token} type="button" onClick={() => insert(token)} className="rounded-full border border-mk-border px-2.5 py-0.5 text-[13px] text-mk-slate hover:bg-mk-ivory">{label}</button>
               ))}
             </div>
-            <span className="text-xs text-slate-500">{message.length} characters · {parts} SMS{parts > 1 ? ' each' : ''}</span>
+            <span className={`text-[13px] ${parts > 1 ? 'font-semibold text-[#8A5A00]' : 'text-mk-muted'}`}>{message.length} characters · {parts} SMS{parts > 1 ? ' each' : ''}</span>
           </div>
 
-          <div className="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="flex items-center gap-2 text-sm text-slate-600">
-              <Users className="h-4 w-4 text-slate-400" />
-              <span><strong className="text-slate-900">{count}</strong> recipient{count === 1 ? '' : 's'}
+          <div className="mt-5 flex flex-col gap-3 border-t border-mk-mist pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="flex items-center gap-2 text-sm text-mk-slate">
+              <Users className="h-4 w-4 text-mk-muted" />
+              <span><strong className="text-mk-forest">{count}</strong> recipient{count === 1 ? '' : 's'}
                 {!!preview?.skipped_count && <span className="text-amber-700"> · {preview.skipped_count} skipped (no valid phone)</span>}</span>
             </p>
-            <button className="btn-primary" disabled={!message.trim() || !count} onClick={() => setConfirming(true)}>
-              <Send className="h-4 w-4" /> Send SMS
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button className="btn-secondary" disabled={!message.trim() || testing} onClick={sendTest}>{testing ? 'Sending…' : 'Send me a test'}</button>
+              <button className="btn-primary" disabled={!message.trim() || !count} onClick={() => setConfirming(true)}>
+                <Send className="h-4 w-4" /> Send SMS
+              </button>
+            </div>
           </div>
+          {test && <div className="mt-3"><Alert tone={test.tone}>{test.text}</Alert></div>}
         </div>
 
         <div className="card p-5 xl:col-span-2">
-          <h2 className="mb-4 font-semibold">Preview</h2>
+          <h2 className="mb-4 font-display text-xl font-semibold text-mk-forest">Preview</h2>
           {preview?.sample?.length && message ? (
             <ul className="space-y-3">
               {preview.sample.map((s) => (
                 <li key={s.phone_number}>
-                  <p className="mb-1 text-xs text-slate-500">To {s.name} · {s.phone_number}</p>
-                  <p className="whitespace-pre-wrap rounded-2xl rounded-tl-sm bg-slate-100 px-4 py-2 text-sm">{s.text}</p>
+                  <p className="mb-1 text-xs text-mk-muted">To {s.name} · {s.phone_number}</p>
+                  <p className="whitespace-pre-wrap rounded-[18px] rounded-tl-[4px] bg-brand-50 px-4 py-2.5 text-[15px] text-mk-forest">{s.text}</p>
                 </li>
               ))}
             </ul>
           ) : (
-            <div className="py-10 text-center text-sm text-slate-400">
+            <div className="py-10 text-center text-sm text-mk-muted">
               <MessageSquare className="mx-auto mb-2 h-8 w-8" />
               {count ? 'Type a message to see how it will look.' : 'Choose who should receive the message.'}
             </div>
@@ -242,7 +262,7 @@ export default function Sms() {
         </div>
       </div>
 
-      <h2 className="mb-3 mt-8 text-lg font-semibold">Sent messages</h2>
+      <h2 className="mb-3 mt-8 font-display text-xl font-semibold text-mk-forest">Sent messages</h2>
       <Table loading={history.loading} rows={history.data?.results} onRowClick={setViewing} empty="No SMS sent yet." columns={[
         { key: 'created_at', label: 'Date', render: (s) => dateTime(s.created_at) },
         { key: 'message', label: 'Message', className: 'max-w-xs', render: (s) => <span className="block truncate">{s.message}</span> },
@@ -256,7 +276,7 @@ export default function Sms() {
       <Modal open={confirming} onClose={() => !sending && setConfirming(false)} title="Send SMS?"
         footer={<><button className="btn-secondary" onClick={() => setConfirming(false)} disabled={sending}>Cancel</button>
           <button className="btn-primary" onClick={send} disabled={sending}>{sending ? 'Sending…' : `Send to ${count}`}</button></>}>
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-mk-slate">
           This will send <strong>{count}</strong> SMS{parts > 1 && <> ({parts} parts each, {count * parts} in total)</>} to {preview?.audience_label}. This can't be undone.
         </p>
       </Modal>

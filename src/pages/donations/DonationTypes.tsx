@@ -87,22 +87,22 @@ export default function DonationTypes() {
       <Table loading={loading} rows={types} onRowClick={setEditing} empty="No donation types yet."
         columns={[
           { key: 'name', label: 'Type', render: (t) => (
-            <span className="flex items-center gap-1.5 font-medium text-slate-900">
+            <span className="flex items-center gap-1.5 font-medium text-mk-forest">
               {t.name}
               {t.is_default && <span title="Default type"><Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" /></span>}
             </span>
           ) },
-          { key: 'code', label: 'Paybill code', render: (t) => <span className="rounded bg-slate-100 px-2 py-0.5 font-mono font-semibold">{t.code}</span> },
-          { key: 'links', label: 'Credits', render: (t) => [t.project_name, t.branch_name].filter(Boolean).join(' · ') || <span className="text-slate-400">—</span> },
-          { key: 'example', label: 'Account example', render: (t) => <span className="font-mono text-xs text-slate-500">0712345678{t.code}</span> },
-          { key: 'total_given', label: 'Given', className: 'text-right', render: (t) => <>{money(t.total_given)} <span className="text-xs text-slate-400">({t.donation_count})</span></> },
+          { key: 'code', label: 'Paybill code', render: (t) => <span className="rounded bg-mk-mist px-2 py-0.5 font-mono font-semibold">{t.code}</span> },
+          { key: 'links', label: 'Credits', render: (t) => [t.project_name, t.branch_name].filter(Boolean).join(' · ') || <span className="text-mk-muted">—</span> },
+          { key: 'example', label: 'Account example', render: (t) => <span className="font-mono text-xs text-mk-muted">0712345678{t.code}</span> },
+          { key: 'total_given', label: 'Given', className: 'text-right', render: (t) => <>{money(t.total_given)} <span className="text-xs text-mk-muted">({t.donation_count})</span></> },
           { key: 'is_active', label: 'Status', render: (t) => (
             <div className="flex flex-col items-start gap-1">
               <button type="button" title={t.is_default ? 'The default type is always on' : t.is_active ? 'Turn off' : 'Turn on'} disabled={t.is_default}
                 onClick={(e) => { e.stopPropagation(); toggle(t) }}>
                 <Badge tone={t.is_active ? 'green' : 'slate'}>{t.is_active ? 'On' : 'Off'}</Badge>
               </button>
-              {!t.show_on_give && <span className="text-xs text-slate-400">Hidden from give page</span>}
+              {!t.show_on_give && <span className="text-xs text-mk-muted">Hidden from give page</span>}
             </div>
           ) },
           { key: 'actions', label: '', render: (t) => (

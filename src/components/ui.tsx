@@ -3,18 +3,19 @@ import { ChevronLeft, ChevronRight, Eye, EyeOff, Loader2, X } from 'lucide-react
 import { STATUS_TONES } from '../lib/format'
 import type { Tone } from '../types'
 
+// Status chips: a word on a tint, never colour alone.
 const TONES: Record<Tone, string> = {
-  green: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
-  blue: 'bg-brand-50 text-brand-700 ring-brand-600/20',
-  amber: 'bg-amber-50 text-amber-700 ring-amber-600/20',
-  red: 'bg-red-50 text-red-700 ring-red-600/20',
-  purple: 'bg-purple-50 text-purple-700 ring-purple-600/20',
-  slate: 'bg-slate-100 text-slate-600 ring-slate-500/20',
+  green: 'bg-[#E3F1EA] text-[#286B58]',
+  blue: 'bg-brand-50 text-brand-700',
+  amber: 'bg-[#FBF4E4] text-[#8A5A00]',
+  red: 'bg-[#FBEDEA] text-[#B42318]',
+  purple: 'bg-purple-50 text-purple-700',
+  slate: 'bg-mk-mist text-mk-muted',
 }
 
 export function Badge({ children, tone, status }: { children: ReactNode; tone?: Tone; status?: string }) {
   const cls = TONES[tone || (status && STATUS_TONES[status]) || 'slate']
-  return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${cls}`}>{children}</span>
+  return <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[13px] font-semibold ${cls}`}>{children}</span>
 }
 
 export function Spinner({ className = '' }: { className?: string }) {
@@ -24,9 +25,9 @@ export function Spinner({ className = '' }: { className?: string }) {
 export function PageHeader({ title, subtitle, actions }: { title: ReactNode; subtitle?: ReactNode; actions?: ReactNode }) {
   return (
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
+      <div className="max-w-2xl">
+        <h1 className="font-display text-[30px] font-semibold leading-tight tracking-[-0.015em] text-mk-forest sm:text-[34px]">{title}</h1>
+        {subtitle && <p className="mt-1 text-[15px] text-mk-muted">{subtitle}</p>}
       </div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
     </div>
@@ -46,8 +47,8 @@ export function Field({ label, children, error, className = '', hint }: FieldPro
     <label className={`block ${className}`}>
       {label && <span className="label">{label}</span>}
       {children}
-      {hint && !error && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
-      {error && <span className="mt-1 block text-xs text-red-600">{error}</span>}
+      {hint && !error && <span className="mt-1 block text-[13px] text-mk-muted">{hint}</span>}
+      {error && <span className="mt-1 block text-[13px] text-danger">{error}</span>}
     </label>
   )
 }
@@ -60,7 +61,7 @@ export function PasswordInput({ className = '', ...props }: InputHTMLAttributes<
     <div className="relative">
       <input {...props} type={shown ? 'text' : 'password'} className={`input pr-10! ${className}`} />
       <button type="button" onClick={() => setShown((s) => !s)} aria-label={shown ? 'Hide password' : 'Show password'} aria-pressed={shown}
-        className="absolute inset-y-0 right-0 flex items-center rounded-r-lg px-3 text-slate-400 hover:text-slate-600 focus-visible:text-brand-700 focus-visible:outline-none">
+        className="absolute inset-y-0 right-0 flex items-center rounded-r-xl px-3 text-mk-muted hover:text-mk-forest focus-visible:text-brand-700 focus-visible:outline-none">
         <Icon className="h-4 w-4" />
       </button>
     </div>
@@ -107,17 +108,17 @@ export function Modal({ open, onClose, title, children, footer, wide }: ModalPro
   }, [open, onClose])
   if (!open) return null
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/40 p-4 sm:p-8" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-mk-forest/40 p-4 sm:p-8" onMouseDown={onClose}>
       <div role="dialog" aria-modal="true" aria-label={title} className={`card my-auto w-full ${wide ? 'max-w-3xl' : 'max-w-lg'}`}
         onMouseDown={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-          <h2 className="text-lg font-semibold">{title}</h2>
-          <button onClick={onClose} className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label="Close">
+        <div className="flex items-center justify-between border-b border-mk-mist px-6 py-5">
+          <h2 className="font-display text-xl font-semibold text-mk-forest">{title}</h2>
+          <button onClick={onClose} className="rounded-full p-1.5 text-mk-muted hover:bg-mk-mist hover:text-mk-forest" aria-label="Close">
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="px-5 py-4">{children}</div>
-        {footer && <div className="flex justify-end gap-2 border-t border-slate-200 px-5 py-3">{footer}</div>}
+        <div className="px-6 py-5">{children}</div>
+        {footer && <div className="flex justify-end gap-2 border-t border-mk-mist px-6 py-4">{footer}</div>}
       </div>
     </div>
   )
@@ -145,15 +146,15 @@ export function ConfirmDialog({ open, title, message, onConfirm, onClose, busy }
         </>
       }
     >
-      <p className="text-sm text-slate-600">{message}</p>
+      <p className="text-[15px] text-mk-slate">{message}</p>
     </Modal>
   )
 }
 
 export function Alert({ children, tone = 'red' }: { children?: ReactNode; tone?: 'red' | 'amber' | 'green' }) {
   if (!children) return null
-  const cls = ({ red: 'border-red-200 bg-red-50 text-red-700', amber: 'border-amber-200 bg-amber-50 text-amber-800' } as Record<string, string>)[tone] || 'border-emerald-200 bg-emerald-50 text-emerald-700'
-  return <div className={`mb-4 rounded-lg border px-3 py-2 text-sm ${cls}`}>{children}</div>
+  const cls = ({ red: 'border-[#F0C7BF] bg-[#FBEDEA] text-[#8E2F22]', amber: 'border-[#EADCB8] bg-[#FBF4E4] text-[#8A5A00]' } as Record<string, string>)[tone] || 'border-[#BFE0CF] bg-[#E3F1EA] text-[#286B58]'
+  return <div className={`mb-4 rounded-[14px] border px-4 py-3 text-[15px] ${cls}`}>{children}</div>
 }
 
 export interface Column<R> {
@@ -176,18 +177,18 @@ export function Table<R extends { id: Key }>({ columns, rows, loading, empty = '
   return (
     <div className="card overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-slate-200">
-          <thead className="bg-slate-50">
+        <table className="min-w-full">
+          <thead>
             <tr>{columns.map((c) => <th key={c.key} className={`th ${c.className || ''}`}>{c.label}</th>)}</tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-mk-mist border-t border-mk-mist text-mk-slate">
             {loading && !rows?.length ? (
               <tr><td colSpan={columns.length} className="py-12"><Spinner className="mx-auto" /></td></tr>
             ) : !rows?.length ? (
-              <tr><td colSpan={columns.length} className="py-12 text-center text-sm text-slate-500">{empty}</td></tr>
+              <tr><td colSpan={columns.length} className="py-12 text-center text-[15px] text-mk-muted">{empty}</td></tr>
             ) : (
               rows.map((row) => (
-                <tr key={row.id} onClick={onRowClick ? () => onRowClick(row) : undefined} className={onRowClick ? 'cursor-pointer hover:bg-slate-50' : ''}>
+                <tr key={row.id} onClick={onRowClick ? () => onRowClick(row) : undefined} className={onRowClick ? 'cursor-pointer hover:bg-mk-ivory' : ''}>
                   {columns.map((c) => <td key={c.key} className={`td ${c.className || ''}`}>{c.render ? c.render(row) : ((row as Record<string, ReactNode>)[c.key] ?? '—')}</td>)}
                 </tr>
               ))
@@ -210,12 +211,12 @@ export function Pagination({ page, count, pageSize = 20, onChange }: PaginationP
   const pages = Math.max(1, Math.ceil((count || 0) / pageSize))
   if (!count) return null
   return (
-    <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
+    <div className="mt-4 flex items-center justify-between text-sm text-mk-muted">
       <span>{count.toLocaleString()} record{count === 1 ? '' : 's'}</span>
       <div className="flex items-center gap-2">
-        <button className="btn-secondary px-2 py-1" disabled={page <= 1} onClick={() => onChange(page - 1)} aria-label="Previous page"><ChevronLeft className="h-4 w-4" /></button>
+        <button className="btn-secondary min-h-9 px-2.5 py-1" disabled={page <= 1} onClick={() => onChange(page - 1)} aria-label="Previous page"><ChevronLeft className="h-4 w-4" /></button>
         <span>Page {page} of {pages}</span>
-        <button className="btn-secondary px-2 py-1" disabled={page >= pages} onClick={() => onChange(page + 1)} aria-label="Next page"><ChevronRight className="h-4 w-4" /></button>
+        <button className="btn-secondary min-h-9 px-2.5 py-1" disabled={page >= pages} onClick={() => onChange(page + 1)} aria-label="Next page"><ChevronRight className="h-4 w-4" /></button>
       </div>
     </div>
   )
@@ -230,14 +231,14 @@ interface StatCardProps {
 
 export function StatCard({ label, value, hint, icon: Icon }: StatCardProps) {
   return (
-    <div className="card p-5">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-slate-500">{label}</p>
-          <p className="mt-1 text-2xl font-semibold text-slate-900">{value}</p>
-          {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
+    <div className="min-w-0 rounded-[20px] border border-mk-border bg-white px-[22px] py-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm text-mk-muted">{label}</p>
+          <p className="mt-1.5 font-display text-[28px] font-semibold leading-tight tracking-[-0.02em] text-mk-forest">{value}</p>
+          {hint && <p className="mt-1.5 text-[13px] text-mk-muted">{hint}</p>}
         </div>
-        {Icon && <span className="rounded-lg bg-brand-50 p-2 text-brand-700"><Icon className="h-5 w-5" /></span>}
+        {Icon && <span className="rounded-xl bg-brand-50 p-2 text-brand-700"><Icon className="h-5 w-5" /></span>}
       </div>
     </div>
   )
@@ -246,7 +247,7 @@ export function StatCard({ label, value, hint, icon: Icon }: StatCardProps) {
 export function Progress({ value, max }: { value: number | string; max: number | string }) {
   const pct = Number(max) > 0 ? Math.min(100, (Number(value) / Number(max)) * 100) : 0
   return (
-    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+    <div className="h-2 w-full overflow-hidden rounded-full bg-mk-mist">
       <div className="h-full rounded-full bg-brand-600" style={{ width: `${pct}%` }} />
     </div>
   )

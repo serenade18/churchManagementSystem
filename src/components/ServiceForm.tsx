@@ -21,6 +21,7 @@ export default function ServiceForm({ service, onClose, onSaved }: ServiceFormPr
     start_time: service?.start_time?.slice(0, 5) || '',
     branch: service?.branch || '' as number | string,
     visitor_count: service?.visitor_count ?? 0 as number | string,
+    first_timers: service?.first_timers ?? 0 as number | string,
     notes: service?.notes || '',
   })
 
@@ -32,7 +33,7 @@ export default function ServiceForm({ service, onClose, onSaved }: ServiceFormPr
 
   const save = async (e: FormEvent) => {
     e.preventDefault()
-    const payload = { ...clean(values), notes: values.notes, visitor_count: Number(values.visitor_count) || 0 }
+    const payload = { ...clean(values), notes: values.notes, visitor_count: Number(values.visitor_count) || 0, first_timers: Number(values.first_timers) || 0 }
     const saved = await submit(() => (service ? api.patch<Service>(`/cms/services/${service.id}/`, payload) : api.post<Service>('/cms/services/', payload))).catch(() => null)
     if (saved) onSaved(saved)
   }
@@ -50,6 +51,9 @@ export default function ServiceForm({ service, onClose, onSaved }: ServiceFormPr
           <Select value={values.branch} onChange={set('branch')} options={branches.map((b) => ({ value: b.id, label: b.name }))} placeholder="Church-wide" />
         </Field>
         <Field label="Visitors (head count)" error={errors.visitor_count}><input className="input" type="number" min="0" value={values.visitor_count} onChange={set('visitor_count')} /></Field>
+        <Field label="Of them, first-timers" error={errors.first_timers} hint="Visitors here for the first time.">
+          <input className="input" type="number" min="0" value={values.first_timers} onChange={set('first_timers')} />
+        </Field>
         <Field label="Notes" error={errors.notes} className="sm:col-span-2"><textarea className="input" rows={2} value={values.notes} onChange={set('notes')} /></Field>
       </form>
     </Modal>
