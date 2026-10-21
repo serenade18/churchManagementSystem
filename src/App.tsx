@@ -32,6 +32,7 @@ import NoAccess from './pages/admin/NoAccess'
 import NoChurch from './pages/platform/NoChurch'
 import PlatformChurches from './pages/platform/PlatformChurches'
 import PlatformHome from './pages/platform/PlatformHome'
+import RegisterChurch from './pages/platform/RegisterChurch'
 import { branding } from './lib/theme'
 
 // Charts are heavy; keep them out of the public donation page bundle.
@@ -57,6 +58,7 @@ function PlatformApp() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<PlatformHome />} />
+          <Route path="/start" element={<RegisterChurch />} />
           <Route path="/me" element={<Portal />} />
           <Route path="/me/receipt/:id" element={<ReceiptPrint portal />} />
           <Route path="/me/statement" element={<StatementPrint portal />} />

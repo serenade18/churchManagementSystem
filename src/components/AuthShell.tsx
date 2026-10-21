@@ -25,9 +25,9 @@ function ChurchName({ className = '' }: { className?: string }) {
 /**
  * Staff sign-in and sign-up: the church's photograph and name on one side (on top on phones),
  * the form on warm ivory on the other. On mkanisa.com the side is mKanisa's own: the congregation
- * under deep forest, the ivory wordmark and a gold "Platform admin" badge.
+ * under deep forest and the ivory wordmark, with a gold ``badge`` ("Platform admin") where it helps.
  */
-export function StaffAuthLayout({ aside, children, width = 'max-w-[400px]' }: { aside: ReactNode; children: ReactNode; width?: string }) {
+export function StaffAuthLayout({ aside, children, width = 'max-w-[400px]', badge }: { aside: ReactNode; children: ReactNode; width?: string; badge?: string }) {
   const platform = branding.platform
   return (
     <div className="flex min-h-screen flex-wrap bg-mk-ivory font-body text-base leading-relaxed text-mk-slate">
@@ -47,9 +47,11 @@ export function StaffAuthLayout({ aside, children, width = 'max-w-[400px]' }: { 
           {platform ? (
             <div className="flex flex-wrap items-center justify-between gap-4">
               <Link to="/" className="flex items-center"><img src="/logo-ivory.png" alt="mKanisa" className="h-[30px] w-auto" /></Link>
-              <span className="inline-flex items-center gap-2 rounded-full border border-mk-gold/45 bg-mk-gold/12 py-1.5 pl-2.5 pr-3.5 text-[13px] font-semibold tracking-[0.04em] text-mk-amber">
-                <ShieldCheck className="h-4 w-4" aria-hidden="true" />Platform admin
-              </span>
+              {badge && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-mk-gold/45 bg-mk-gold/12 py-1.5 pl-2.5 pr-3.5 text-[13px] font-semibold tracking-[0.04em] text-mk-amber">
+                  <ShieldCheck className="h-4 w-4" aria-hidden="true" />{badge}
+                </span>
+              )}
             </div>
           ) : <ChurchName />}
           <div className="max-w-[460px]">{aside}</div>
@@ -101,16 +103,17 @@ export function AuthTitle({ step, title, children }: { step?: string; title: str
   )
 }
 
-/** "Joining the church office": the three steps of a staff signup, ``current`` highlighted. */
-export function SignupSteps({ current }: { current: 1 | 2 | 3 }) {
-  const steps: [string, string][] = [
-    ['Your details', 'Your name, phone and a password.'],
-    ['Confirm your phone', 'Enter the 6-digit code we SMS you.'],
-    ['Get your role', 'The church owner chooses what you look after: a branch, the treasury, SMS.'],
-  ]
+const STAFF_STEPS: [string, string][] = [
+  ['Your details', 'Your name, phone and a password.'],
+  ['Confirm your phone', 'Enter the 6-digit code we SMS you.'],
+  ['Get your role', 'The church owner chooses what you look after: a branch, the treasury, SMS.'],
+]
+
+/** "Joining the church office" (or another ``title``): a signup's three steps, ``current`` highlighted. */
+export function SignupSteps({ current, title = 'Joining the church office', steps = STAFF_STEPS }: { current: 1 | 2 | 3; title?: string; steps?: [string, string][] }) {
   return (
     <div className="flex flex-col gap-5">
-      <p className="font-display text-[30px] font-semibold leading-[1.15] tracking-[-0.015em] sm:text-[34px]">Joining the church office</p>
+      <p className="font-display text-[30px] font-semibold leading-[1.15] tracking-[-0.015em] sm:text-[34px]">{title}</p>
       <ol className="flex flex-col gap-4">
         {steps.map(([title, text], i) => {
           const n = i + 1

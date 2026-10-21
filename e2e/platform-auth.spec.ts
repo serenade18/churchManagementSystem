@@ -14,18 +14,16 @@ async function asPlatform(page: Page) {
 test.describe('Platform admin sign-in', () => {
   test.beforeEach(async ({ page }) => asPlatform(page))
 
-  test("shows mKanisa's own side and sends church people to their church", async ({ page }) => {
+  test("shows mKanisa's own side, with ways in for churches and members", async ({ page }) => {
     await page.goto('/admin')
     await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
-    await expect(page.getByText('Platform admin', { exact: true })).toBeVisible()
-    await expect(page.getByText('For the people who run mKanisa.')).toBeVisible()
-    await expect(page.getByText('Add a church and invite its first owner')).toBeVisible()
-    await expect(page.getByText(/^yourchurch\..+\/admin$/)).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Find your church' })).toHaveAttribute('href', '/#directory')
-    await expect(page.getByText('For mKanisa staff only')).toBeVisible()
-    // Platform signup is reached by its address only.
-    await expect(page.getByRole('link', { name: /Create .*account/ })).toHaveCount(0)
-    await expect(page.getByText("You don't need an account here.")).toHaveCount(0)
+    await expect(page.getByRole('img', { name: 'mKanisa' })).toBeVisible() // the ivory wordmark, not a church's logo
+    await expect(page.getByText('Every church on mKanisa, looked after from one place.')).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Bring your church' })).toHaveAttribute('href', '/start')
+    await expect(page.getByRole('link', { name: /Sign in to My giving/ })).toHaveAttribute('href', '/me')
+    // The badge is for the hidden platform signup; church staff sign in here too.
+    await expect(page.getByText('Platform admin', { exact: true })).toHaveCount(0)
+    await expect(page.getByRole('link', { name: 'Create a staff account' })).toHaveCount(0)
   })
 
   test('a wrong password is refused', async ({ page }) => {
@@ -45,6 +43,7 @@ test.describe('Platform admin signup', () => {
     const [phone, normalised] = randomPhone()
     await page.goto('/signup/platform')
     await expect(page.getByText('Step 1 of 2')).toBeVisible()
+    await expect(page.getByText('Platform admin', { exact: true })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Create a platform admin account' })).toBeVisible()
     await expect(page.getByRole('listitem').filter({ hasText: 'Setup key and your details' })).toHaveAttribute('aria-current', 'step')
     await expect(page.getByText('PLATFORM_SETUP_KEY')).toBeVisible()
