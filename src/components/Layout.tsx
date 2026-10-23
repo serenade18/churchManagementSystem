@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { type LucideIcon, Building2, Church, CreditCard, Eye, Inbox, CalendarCheck, Gauge, FolderKanban, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, UserPlus, Users, X } from 'lucide-react'
+import { type LucideIcon, Building2, Church, CreditCard, Eye, Inbox, CalendarCheck, Gauge, FolderKanban, HandCoins, KeyRound, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, UserPlus, Users, X } from 'lucide-react'
 import { api } from '../lib/api'
 import { can, isOwner, roleLabel } from '../lib/access'
 import { useAuth } from '../lib/auth'
@@ -76,6 +76,7 @@ export default function Layout() {
       ? [{ to: '/platform', label: 'Overview', icon: LayoutDashboard }, { to: '/platform/churches', label: 'Churches', icon: Church },
           { to: '/platform/registrations', label: 'Registrations', icon: Inbox, badge: 'registrations' as const },
           { to: '/platform/payments', label: 'Payments', icon: CreditCard }, { to: '/platform/sms', label: 'SMS', icon: MessageSquare },
+          { to: '/platform/integrations', label: 'Integrations', icon: KeyRound },
           { to: '/users', label: 'Platform admins', icon: ShieldCheck }]
       : [
           ...NAV.filter((item) => !item.feature || can(user, item.feature)),

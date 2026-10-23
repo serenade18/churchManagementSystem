@@ -32,6 +32,7 @@ import NoAccess from './pages/admin/NoAccess'
 import NoChurch from './pages/platform/NoChurch'
 import PlatformChurches from './pages/platform/PlatformChurches'
 import PlatformHome from './pages/platform/PlatformHome'
+import PlatformIntegrations from './pages/platform/PlatformIntegrations'
 import PlatformOverviewPage from './pages/platform/PlatformOverview'
 import PlatformPayments from './pages/platform/PlatformPayments'
 import PlatformRegistrations from './pages/platform/PlatformRegistrations'
@@ -77,6 +78,7 @@ function PlatformApp() {
             <Route path="/platform/registrations" element={<RequireAuth owner><PlatformRegistrations /></RequireAuth>} />
             <Route path="/platform/payments" element={<RequireAuth owner><PlatformPayments /></RequireAuth>} />
             <Route path="/platform/sms" element={<RequireAuth owner><PlatformSms /></RequireAuth>} />
+            <Route path="/platform/integrations" element={<RequireAuth owner><PlatformIntegrations /></RequireAuth>} />
             <Route path="/users" element={<RequireAuth owner><Users /></RequireAuth>} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
