@@ -112,7 +112,7 @@ export default function PlatformHome() {
     <div className="mk-landing bg-mk-ivory font-body text-base leading-relaxed text-mk-slate">
       {/* Stays at the top: clear over the photograph, solid once the page scrolls (or the menu is open) */}
       <header className={`fixed inset-x-0 top-0 z-40 text-mk-ivory transition-[background-color,box-shadow] duration-300 ${scrolled || menuOpen ? 'bg-mk-midnight/90 shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)] backdrop-blur-md' : 'bg-transparent'}`}>
-        <div className={`relative mx-auto flex max-w-7xl items-center gap-x-10 px-5 transition-[padding] duration-300 sm:px-10 ${scrolled ? 'py-3' : 'pb-3 pt-7'}`}>
+        <div className={`page-width relative flex items-center gap-x-10 transition-[padding] duration-300 ${scrolled ? 'py-3' : 'pb-3 pt-7'}`}>
           <a href="#top"><img src="/logo-ivory.png" alt={BRAND.name} className="h-7 w-auto sm:h-[30px]" /></a>
           <nav aria-label="Main" className="hidden flex-1 justify-end gap-x-8 text-sm font-medium uppercase tracking-[0.08em] lg:flex">
             {SECTIONS.map(([href, label]) => (
@@ -150,7 +150,7 @@ export default function PlatformHome() {
       <section id="top" className="relative overflow-hidden bg-mk-midnight text-mk-ivory">
         <img src="/landing/hero-congregation.jpg" alt="" className="mk-settle absolute inset-0 h-full w-full object-cover object-[62%_35%]" />
         <div className="absolute inset-0" style={{ background: HERO_VEIL }} />
-        <div className="relative mx-auto flex min-h-[760px] max-w-7xl sm:min-h-[860px] flex-col justify-end px-5 pb-14 pt-32 sm:px-10">
+        <div className="page-width relative flex min-h-[760px] sm:min-h-[860px] flex-col justify-end pb-14 pt-32">
 
           <div className="flex flex-wrap items-end justify-between gap-10">
             <div className="flex min-w-0 flex-[1_1_620px] flex-col gap-7">
@@ -201,7 +201,7 @@ export default function PlatformHome() {
 
       {/* One platform, two homes */}
       <section id="members" className="border-y border-mk-border bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-14 px-5 py-24 sm:px-8">
+        <div className="page-width flex flex-col gap-14 py-24">
           <div data-reveal className="flex max-w-3xl flex-col gap-4">
             <Eyebrow>One platform, two homes</Eyebrow>
             <Heading>For the people who keep a church running, and the people who keep it alive.</Heading>
@@ -240,7 +240,7 @@ export default function PlatformHome() {
 
       {/* Features */}
       <section id="features">
-        <div className="mx-auto flex max-w-6xl flex-col gap-14 px-5 py-28 sm:px-8">
+        <div className="page-width flex flex-col gap-14 py-28">
           <div data-reveal className="flex flex-wrap items-end justify-between gap-6">
             <div className="flex max-w-2xl flex-col gap-4">
               <Eyebrow>Everything in one place</Eyebrow>
@@ -262,7 +262,7 @@ export default function PlatformHome() {
 
       {/* How giving works */}
       <section id="how" className="bg-mk-forest text-mk-mist">
-        <div className="mx-auto flex max-w-6xl flex-col gap-16 px-5 py-28 sm:px-8">
+        <div className="page-width flex flex-col gap-16 py-28">
           <div data-reveal className="flex max-w-2xl flex-col gap-4">
             <Eyebrow dark>How giving works</Eyebrow>
             <Heading dark>Every gift, accounted for. From the phone to the statement.</Heading>
@@ -281,7 +281,7 @@ export default function PlatformHome() {
 
       {/* Find your church: the live directory */}
       <section id="directory" className="bg-mk-mist">
-        <div className="mx-auto flex max-w-6xl flex-col gap-10 px-5 py-28 sm:px-8">
+        <div className="page-width flex flex-col gap-10 py-28">
           <div data-reveal className="flex flex-wrap items-end justify-between gap-6">
             <div className="flex max-w-2xl flex-col gap-4">
               <Eyebrow>Find your church</Eyebrow>
@@ -321,7 +321,7 @@ export default function PlatformHome() {
 
       {/* Pricing */}
       <section id="pricing">
-        <div className="mx-auto flex max-w-6xl flex-col gap-12 px-5 py-28 sm:px-8">
+        <div className="page-width flex flex-col gap-12 py-28">
           <div data-reveal className="flex max-w-2xl flex-col gap-4">
             <Eyebrow>Pricing</Eyebrow>
             <Heading>Simple and transparent.</Heading>
@@ -333,8 +333,8 @@ export default function PlatformHome() {
                 <span className="rounded-full bg-mk-amber px-3 py-1 text-[13px] font-semibold text-mk-forest">Every feature</span>
               </div>
               <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span className="font-display text-[56px] font-semibold leading-none text-mk-forest">US$49</span>
-                <span className="text-mk-muted">per church, per month · KES 6,500</span>
+                <span className="font-display text-[56px] font-semibold leading-none text-mk-forest">KES 9,999</span>
+                <span className="text-mk-muted">per church, per month.</span>
               </p>
               <ul className="flex flex-wrap gap-x-6 gap-y-3 text-[15px]">
                 {['Your own address and public page', 'Members and self-registration', 'Digital giving, receipts and statements', 'Reconciliation and reports', 'Branches, roles and attendance', 'Bulk SMS (credits billed separately)'].map((t) => (
@@ -360,7 +360,7 @@ export default function PlatformHome() {
       <section className="relative overflow-hidden bg-mk-forest text-mk-mist">
         <img src="/landing/community.jpg" alt="" className="absolute inset-0 h-full w-full object-cover object-[50%_45%]" />
         <div className="absolute inset-0" style={{ background: CLOSING_VEIL }} />
-        <div data-reveal className="relative mx-auto flex max-w-3xl flex-col items-center gap-6 px-5 py-36 text-center sm:px-8">
+        <div data-reveal className="page-width relative flex flex-col items-center gap-6 py-36 text-center">
           <img src={BRAND.logoMark} alt="" className="h-14 w-14" />
           <h2 className="font-display text-[clamp(36px,4.4vw,56px)] font-semibold leading-[1.08] tracking-[-0.02em] text-mk-ivory">Bring your church home.</h2>
           <p className="max-w-xl text-lg">Tell us about your church. We'll set up its address, bring in your members and connect your Paybill.</p>
@@ -372,7 +372,7 @@ export default function PlatformHome() {
       </section>
 
       <footer className="border-t border-mk-border">
-        <div className="mx-auto flex max-w-6xl flex-col gap-10 px-5 pb-10 pt-14 sm:px-8">
+        <div className="page-width flex flex-col gap-10 pb-10 pt-14">
           <div className="flex flex-wrap justify-between gap-10">
             <div className="flex flex-[1_1_280px] flex-col gap-3.5">
               <img src={BRAND.logo} alt={BRAND.name} className="h-[26px] w-auto self-start" />

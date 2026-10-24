@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { type LucideIcon, Building2, Church, CreditCard, Eye, Inbox, CalendarCheck, Gauge, FolderKanban, HandCoins, KeyRound, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, UserPlus, Users, X } from 'lucide-react'
+import { type LucideIcon, Building2, Church, CreditCard, Eye, Inbox, CalendarCheck, FolderKanban, HandCoins, KeyRound, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, UserPlus, Users, X } from 'lucide-react'
 import { api } from '../lib/api'
 import { can, isOwner, roleLabel } from '../lib/access'
 import { useAuth } from '../lib/auth'
@@ -81,7 +81,7 @@ export default function Layout() {
           { to: '/users', label: 'Platform admins', icon: ShieldCheck }]
       : [
           ...NAV.filter((item) => !item.feature || can(user, item.feature)),
-          ...(isOwner(user) ? [{ to: '/users', label: 'Staff & roles', icon: ShieldCheck }, { to: '/super', label: 'System', icon: Gauge }] : []),
+          ...(isOwner(user) ? [{ to: '/users', label: 'Staff & roles', icon: ShieldCheck }] : []),
         ]),
     { to: '/settings', label: 'Settings', icon: Settings },
   ]

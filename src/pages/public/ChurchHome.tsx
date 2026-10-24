@@ -117,7 +117,7 @@ export default function ChurchHome() {
       <section id="top" className="relative overflow-hidden bg-sidebar text-white">
         <img src={cover} alt="" className="absolute inset-0 h-full w-full object-cover object-[50%_45%]" />
         <div className="absolute inset-0" style={{ background: HERO_VEIL }} />
-        <div className="relative mx-auto flex min-h-[720px] max-w-7xl flex-col justify-between gap-14 px-5 pb-32 sm:min-h-[800px] sm:px-10 sm:pb-36">
+        <div className="page-width relative flex min-h-[720px] flex-col justify-between gap-14 pb-32 sm:min-h-[800px] sm:pb-36">
           <header className="flex flex-wrap items-center gap-x-10 gap-y-4 pt-7">
             <Link to="/" className="flex min-w-0 items-center gap-3">
               <Logo tile className="h-11 w-11" />
@@ -173,7 +173,7 @@ export default function ChurchHome() {
 
       {/* The three things people come to do */}
       <section aria-label="Quick actions" className="relative z-10">
-        <div className="mx-auto -mt-[88px] flex max-w-6xl flex-wrap gap-5 px-5 sm:px-8">
+        <div className="page-width -mt-[88px] flex flex-wrap gap-5">
           <ActionCard to="/give" icon={HeartHandshake} title="Give" text="M-PESA, Airtel Money or card" />
           <ActionCard to="/register" icon={UserPlus} title="Become a member" text="Register in two minutes" />
           <ActionCard to="/me" icon={FileText} title="My giving" text="Receipts and yearly statements" />
@@ -182,16 +182,16 @@ export default function ChurchHome() {
 
       {/* About */}
       <section id="about">
-        <div className="mx-auto flex max-w-4xl flex-col gap-5 px-5 py-28 sm:px-8">
+        <div className="page-width flex flex-col gap-5 py-28">
           <Eyebrow>About us</Eyebrow>
           <Heading>{tagline || `About ${branding.name}`}</Heading>
-          <p className="whitespace-pre-line text-lg">{page.about || DEFAULT_ABOUT}</p>
+          <p className="max-w-3xl whitespace-pre-line text-lg">{page.about || DEFAULT_ABOUT}</p>
         </div>
       </section>
 
       {/* Give */}
       <section id="give" className="bg-sidebar text-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-14 px-5 py-28 sm:px-8">
+        <div className="page-width flex flex-wrap items-center gap-14 py-28">
           <div className="flex min-w-0 flex-[1_1_440px] flex-col gap-5">
             <Eyebrow light>Give</Eyebrow>
             <Heading light>Give in seconds, from your phone.</Heading>
@@ -234,7 +234,7 @@ export default function ChurchHome() {
       {/* Projects */}
       {projects.length > 0 && (
         <section id="projects">
-          <div className="mx-auto flex max-w-6xl flex-col gap-12 px-5 py-28 sm:px-8">
+          <div className="page-width flex flex-col gap-12 py-28">
             <div className="flex flex-wrap items-end justify-between gap-5">
               <div className="flex max-w-2xl flex-col gap-4">
                 <Eyebrow>Projects</Eyebrow>
@@ -252,7 +252,7 @@ export default function ChurchHome() {
       {/* Visit us: when we meet, where, how to reach us */}
       {(services.length > 0 || hasContacts) && (
         <section id="visit" className="border-y border-mk-border bg-white">
-          <div className="mx-auto flex max-w-6xl flex-wrap gap-14 px-5 py-28 sm:px-8">
+          <div className="page-width flex flex-wrap gap-14 py-28">
             <div className="flex min-w-0 flex-[1.2_1_460px] flex-col gap-6">
               <Eyebrow>Visit us</Eyebrow>
               <Heading>There's a seat for you.</Heading>
@@ -292,7 +292,7 @@ export default function ChurchHome() {
       <section className="relative overflow-hidden bg-sidebar text-white">
         <img src={cover} alt="" className="absolute inset-0 h-full w-full object-cover object-[50%_45%]" />
         <div className="absolute inset-0" style={{ background: JOIN_VEIL }} />
-        <div className="relative mx-auto flex max-w-3xl flex-col items-center gap-5 px-5 py-32 text-center sm:px-8">
+        <div className="page-width relative flex flex-col items-center gap-5 py-32 text-center">
           <h2 className="font-display text-[clamp(36px,4.4vw,56px)] font-semibold leading-[1.08] tracking-[-0.02em]">New here? You're welcome.</h2>
           <p className="max-w-xl text-lg text-white/90">Register as a member in two minutes. Already a member? Sign in with your phone to see your giving, receipts and statements.</p>
           <div className="mt-1.5 flex flex-wrap justify-center gap-3">
@@ -303,7 +303,7 @@ export default function ChurchHome() {
       </section>
 
       <footer>
-        <div className="mx-auto flex max-w-6xl flex-col gap-9 px-5 pb-9 pt-14 sm:px-8">
+        <div className="page-width flex flex-col gap-9 pb-9 pt-14">
           <div className="flex flex-wrap justify-between gap-9">
             <div className="flex min-w-0 items-center gap-3">
               <Logo tile className="h-11 w-11" />

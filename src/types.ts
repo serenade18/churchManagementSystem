@@ -565,34 +565,6 @@ export interface DashboardData {
   active_projects: { id: Id; name: string; target_amount: Amount; amount_raised: Amount; status: ProjectStatus }[]
 }
 
-export type CheckState = 'ok' | 'warn' | 'error'
-
-export interface AccountRow {
-  id: Id
-  name: string
-  username: string
-  role: string
-  status: AccountStatus
-  last_login: string | null
-  date_joined: string | null
-}
-
-export interface SuperOverview {
-  accounts: {
-    total: number
-    superadmins: number
-    admins: number
-    active: number
-    disabled: number
-    unverified: number
-    signed_in_30d: number
-    signups_30d: number
-  }
-  checks: { key: string; label: string; detail: string; state: CheckState }[]
-  recent_logins: AccountRow[]
-  recent_signups: AccountRow[]
-}
-
 // --- SMS ----------------------------------------------------------------------------------------
 
 export type SmsStatus = 'sent' | 'partial' | 'failed'

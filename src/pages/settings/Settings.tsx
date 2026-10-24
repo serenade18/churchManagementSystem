@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import BrandingSettings from '../../components/BrandingSettings'
+import DemoSettings from '../../components/DemoSettings'
 import PublicPageSettings from '../../components/PublicPageSettings'
 import { branding } from '../../lib/theme'
 import { Alert, Field, PageHeader, PasswordInput } from '../../components/ui'
@@ -29,6 +30,7 @@ export default function SettingsPage() {
       {/* The church's look and public page are the owner's. */}
       {!branding.platform && isOwner(user) && <div className="mb-6"><BrandingSettings /></div>}
       {!branding.platform && isOwner(user) && <div className="mb-6"><PublicPageSettings /></div>}
+      {!branding.platform && isOwner(user) && <div className="mb-6"><DemoSettings /></div>}
       <div className="card max-w-md p-6">
         <h2 className="mb-4 font-semibold">Change password</h2>
         <Alert tone="green">{done}</Alert>

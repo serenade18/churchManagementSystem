@@ -26,7 +26,6 @@ import ServiceDetail from './pages/attendance/ServiceDetail'
 import SettingsPage from './pages/settings/Settings'
 import Signup from './pages/auth/Signup'
 import Sms from './pages/sms/Sms'
-import SuperDashboard from './pages/admin/SuperDashboard'
 import StatementPrint from './pages/print/StatementPrint'
 import Users from './pages/admin/Users'
 import NoAccess from './pages/admin/NoAccess'
@@ -116,7 +115,6 @@ export default function App() {
           <Route path="/print/receipt/:id" element={<RequireAuth><ReceiptPrint /></RequireAuth>} />
           <Route path="/print/statement/:id" element={<RequireAuth><StatementPrint /></RequireAuth>} />
           <Route element={<RequireAuth><Layout /></RequireAuth>}>
-            <Route path="/super" element={<RequireAuth owner><SuperDashboard /></RequireAuth>} />
             <Route path="/no-access" element={<NoAccess />} />
             <Route path="/dashboard" element={<RequireAuth feature="dashboard">{lazyPage(<Dashboard />)}</RequireAuth>} />
             <Route path="/members" element={<RequireAuth feature="members"><Members /></RequireAuth>} />
