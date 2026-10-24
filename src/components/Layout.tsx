@@ -37,6 +37,7 @@ const initials = (user: User | null) =>
 function roleSummary(user: User | null) {
   if (branding.platform) return 'Platform admin'
   if (!user) return ''
+  if (user.is_platform_admin) return 'mKanisa platform admin'
   if (user.is_owner) return 'Owner'
   return user.roles?.length ? user.roles.map((r) => roleLabel(r.role)).join(' · ') : 'No role yet'
 }
@@ -160,6 +161,14 @@ export default function Layout() {
                 {user.username === 'demo'
                   ? <><strong>Demo, view only.</strong> Look around freely: everything here is sample data, and changes are turned off.</>
                   : <><strong>View only.</strong> Your role lets you look, but not change anything.</>}
+              </span>
+            </div>
+          )}
+          {!platform && user?.is_platform_admin && (
+            <div className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-[#EADCB8] bg-[#FBF4E4] px-4 py-3 text-sm text-slate-700">
+              <ShieldCheck className="h-4 w-4 shrink-0 text-[#8A5A00]" />
+              <span>
+                <strong>Platform admin.</strong> You're in {branding.name}'s office as an mKanisa platform admin, with full access. Changes are recorded as you.
               </span>
             </div>
           )}

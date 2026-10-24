@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ExternalLink, KeyRound, Pencil, Plus, UserPlus } from 'lucide-react'
+import { ExternalLink, KeyRound, LogIn, Pencil, Plus, UserPlus } from 'lucide-react'
 import { Alert, Badge, Field, Modal, PageHeader, Table, type Column } from '../../components/ui'
-import { api } from '../../lib/api'
+import { api, errorMessage } from '../../lib/api'
 import { useApi } from '../../lib/hooks'
 import { date } from '../../lib/format'
 import { useForm } from '../../lib/useForm'
@@ -102,6 +102,7 @@ export default function PlatformChurches() {
   const [editing, setEditing] = useState<PlatformChurch | 'new' | null>(null)
   const [adding, setAdding] = useState<PlatformChurch | null>(null)
   const [notice, setNotice] = useState('')
+  const [failed, setFailed] = useState('')
   // From the overview: ?new=1 opens "Add a church", ?edit=<id> that church (e.g. to fix its M-PESA keys).
   const [params, setParams] = useSearchParams()
   useEffect(() => {
@@ -113,6 +114,22 @@ export default function PlatformChurches() {
     setParams({}, { replace: true })
   }, [params, rows, setParams])
 
+  // The church's office in a new tab, signed in as you (a one-minute, one-use link).
+  const openOffice = async (c: PlatformChurch) => {
+    setFailed('')
+    const tab = window.open('', '_blank') // now, while it still counts as a click; popup blockers refuse it later
+    try {
+      const { url } = await api.post<{ url: string }>(`/platform/churches/${c.id}/office/`)
+      if (tab) {
+        tab.opener = null
+        tab.location.href = url
+      } else window.location.href = url
+    } catch (err) {
+      tab?.close()
+      setFailed(`Couldn't open ${c.name}'s office: ${errorMessage(err)}`)
+    }
+  }
+
   const columns: Column<PlatformChurch>[] = [
     { key: 'name', label: 'Church', render: (c) => <span className="font-medium text-slate-900">{c.name}</span> },
     { key: 'url', label: 'Address', render: (c) => <a href={c.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-mono text-xs text-brand-700 hover:underline" onClick={(e) => e.stopPropagation()}>{c.domain || c.slug}<ExternalLink className="h-3 w-3" /></a> },
@@ -123,6 +140,7 @@ export default function PlatformChurches() {
     { key: 'created_at', label: 'Added', render: (c) => date(c.created_at) },
     { key: 'id', label: '', render: (c) => (
       <span className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+        <button className="btn-secondary px-2 py-1 text-xs" onClick={() => openOffice(c)} title="Open church office (signed in as you)"><LogIn className="h-4 w-4" /></button>
         <button className="btn-secondary px-2 py-1 text-xs" onClick={() => setAdding(c)} title="Add an admin"><UserPlus className="h-4 w-4" /></button>
         <button className="btn-secondary px-2 py-1 text-xs" onClick={() => setEditing(c)} title="Edit"><Pencil className="h-4 w-4" /></button>
       </span>
@@ -134,7 +152,7 @@ export default function PlatformChurches() {
       <PageHeader title="Churches" subtitle="Every church on the platform: its address, payment accounts and admins."
         actions={<button className="btn-primary" onClick={() => setEditing('new')}><Plus className="h-4 w-4" /> Add a church</button>} />
       <Alert tone="green">{notice}</Alert>
-      <Alert>{error?.message}</Alert>
+      <Alert>{failed || error?.message}</Alert>
       <Table columns={columns} rows={rows} loading={loading} onRowClick={setEditing}
         empty="No churches yet. Add the first one." />
       {editing && <ChurchForm church={editing === 'new' ? null : editing} onClose={() => setEditing(null)} onSaved={(c) => {

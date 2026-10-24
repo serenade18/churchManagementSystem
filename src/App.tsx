@@ -16,6 +16,7 @@ import Register from './pages/public/Register'
 import Registrations from './pages/members/Registrations'
 import PaypalReturn from './pages/give/PaypalReturn'
 import Login from './pages/auth/Login'
+import OpenOffice from './pages/auth/OpenOffice'
 import MemberDetail from './pages/members/MemberDetail'
 import Members from './pages/members/Members'
 import Paybill from './pages/donations/Paybill'
@@ -104,6 +105,7 @@ export default function App() {
           <Route path="/me/receipt/:id" element={<ReceiptPrint portal />} />
           <Route path="/me/statement" element={<StatementPrint portal />} />
           <Route path="/admin" element={<Login />} />
+          <Route path="/admin/open" element={<OpenOffice />} />
           <Route path="/login" element={<Navigate to="/admin" replace />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/signup" element={<Signup />} />
