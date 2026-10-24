@@ -17,6 +17,7 @@ function ChurchForm({ church, onClose, onSaved }: { church: PlatformChurch | nul
     mpesa_shortcode: church?.mpesa_shortcode || '', mpesa_shortcode_type: church?.mpesa_shortcode_type || 'Paybill',
     mpesa_passkey: '', mpesa_consumer_key: '', mpesa_consumer_secret: '', sasapay_merchant_code: church?.sasapay_merchant_code || '',
   })
+  const moving = Boolean(church && values.slug && values.slug !== church.slug)
   const save = async (e: FormEvent) => {
     e.preventDefault()
     const body = { ...values, custom_domain: values.custom_domain.trim() || null }
@@ -32,12 +33,18 @@ function ChurchForm({ church, onClose, onSaved }: { church: PlatformChurch | nul
       <Alert>{error}</Alert>
       <form id="church-form" onSubmit={save} className="grid gap-4 sm:grid-cols-2">
         <Field label="Church name *" error={errors.name}><input className="input" required value={values.name} onChange={set('name')} /></Field>
-        <Field label="Address *" error={errors.slug} hint={church ? "A church's address can't change." : 'Lowercase letters, digits and hyphens.'}>
+        <Field label="Address *" error={errors.slug} hint={moving ? undefined : 'Lowercase letters, digits and hyphens.'}>
           <div className="flex items-center">
-            <input className="input rounded-r-none font-mono" required disabled={Boolean(church)} value={values.slug}
+            <input className="input rounded-r-none font-mono" required value={values.slug}
               onChange={(e) => set('slug')(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} placeholder="pceasukari" />
             <span className="rounded-r-lg border border-l-0 border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-500">.{host()}</span>
           </div>
+          {moving && !errors.slug && (
+            <span role="status" className="mt-1.5 block rounded-lg bg-[#FBF4E4] px-3 py-2 text-[13px] text-[#8A5A00]">
+              Moves the whole site to {values.slug}.{host()}. {church?.slug}.{host()} stops working straight away: nothing forwards from it,
+              so update printed QR codes and shared links, and staff sign in again at the new address.
+            </span>
+          )}
         </Field>
         <Field label="Own domain (optional)" error={errors.custom_domain} hint="e.g. pceasukari.org: point its DNS at this server first." className="sm:col-span-2">
           <input className="input font-mono" value={values.custom_domain} onChange={set('custom_domain')} placeholder="pceasukari.org" />
