@@ -155,18 +155,18 @@ export default function PlatformHome() {
           <div className="flex flex-wrap items-end justify-between gap-10">
             <div className="flex min-w-0 flex-[1_1_620px] flex-col gap-7">
               <p className="mk-rise inline-flex items-center gap-2.5 self-start rounded-full border border-mk-ivory/30 bg-mk-midnight/35 py-1.5 pl-2 pr-4 text-sm font-medium">
-                <img src={BRAND.logoMark} alt="" className="h-[22px] w-[22px]" /> Church management, giving &amp; community
+                <img src={BRAND.logoMark} alt="" className="h-[22px] w-[22px]" /> Church Management. Giving. Community
               </p>
-              <h1 style={delay(90)} className="mk-rise font-display text-[clamp(48px,7.2vw,108px)] font-semibold leading-[0.98] tracking-[-0.025em]">
-                A quiet, well-ordered home <span className="font-light text-mk-mint">for your church.</span>
+              <h1 style={delay(90)} className="mk-rise font-display text-[clamp(42px,6vw,92px)] font-semibold leading-[1.02] tracking-[-0.025em]">
+                The Easiest Way to Manage &amp; Run <span className="font-light text-mk-mint">Your Church.</span>
               </h1>
-              <p style={delay(180)} className="mk-rise max-w-[560px] text-[19px] leading-relaxed text-mk-mist">
-                Members, giving, M-PESA reconciliation and communication in one calm place for church leaders, and one account for every member's giving.
+              <p style={delay(180)} className="mk-rise max-w-[620px] text-[19px] leading-relaxed text-mk-mist">
+                Everything your church needs to grow, connect and thrive, all in one simple platform. Effortlessly manage members, receive tithes and offerings, reconcile payments, track finances and stay connected with your church community.
               </p>
               <div style={delay(270)} className="mk-rise flex flex-wrap items-center gap-3">
-                <Link to="/start" className="inline-flex min-h-14 items-center rounded-full bg-mk-mint px-7 text-[17px] font-semibold text-mk-forest transition hover:-translate-y-px hover:bg-white">Bring your church to mKanisa</Link>
+                <Link to="/start" className="inline-flex min-h-14 items-center rounded-full bg-mk-mint px-7 text-[17px] font-semibold text-mk-forest transition hover:-translate-y-px hover:bg-white">Bring Your Church to mKanisa</Link>
                 <Link to="/start" aria-label="Get started" className="group hidden h-14 w-14 sm:inline-flex items-center justify-center rounded-full bg-mk-mint text-mk-forest transition hover:-translate-y-px hover:bg-white"><ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" /></Link>
-                <a href="#directory" className="inline-flex min-h-14 items-center px-5 font-semibold underline decoration-mk-ivory/45 underline-offset-[6px] hover:decoration-mk-mint">Find your church</a>
+                <a href="#directory" className="inline-flex min-h-14 items-center px-5 font-semibold underline decoration-mk-ivory/45 underline-offset-[6px] hover:decoration-mk-mint">Find Your Church</a>
               </div>
               <ul style={delay(360)} className="mk-rise flex flex-wrap gap-x-6 gap-y-2.5 text-sm text-mk-mist">
                 {['M-PESA & Airtel Money', 'An SMS receipt for every gift', "Your church's own address"].map((t) => (
