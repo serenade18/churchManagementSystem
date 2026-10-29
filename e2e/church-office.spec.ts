@@ -36,6 +36,17 @@ test('the dashboard greets, shows the numbers and records a gift', async ({ page
   }
 })
 
+test('the dashboard shares the church page as a link and a QR code', async ({ page }) => {
+  const share = page.getByRole('region', { name: 'Share your church page' })
+  const host = new URL(page.url()).host
+  await expect(share.getByRole('img', { name: `QR code for ${host}` })).toBeVisible()
+  await expect(share.getByRole('link', { name: host })).toHaveAttribute('href', `${new URL(page.url()).origin}/`)
+
+  const download = page.waitForEvent('download')
+  await share.getByRole('button', { name: 'Download QR code' }).click()
+  expect((await download).suggestedFilename()).toMatch(/-qr\.png$/)
+})
+
 test('members show their activity and the summary tiles', async ({ page }) => {
   await page.getByRole('link', { name: 'Members', exact: true }).click()
   for (const tile of ['Active members', 'Gave this month', 'Away 4+ weeks', 'Have no phone']) {

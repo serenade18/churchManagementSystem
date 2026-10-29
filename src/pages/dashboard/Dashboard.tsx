@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { type LucideIcon, Banknote, ChevronDown, ChevronUp, CircleX, Globe, Plus, Smartphone, UserPlus } from 'lucide-react'
 import DonationForm from '../../components/DonationForm'
+import ShareChurch from '../../components/ShareChurch'
 import { Alert, Spinner } from '../../components/ui'
 import { useCan } from '../../lib/access'
 import { useAuth } from '../../lib/auth'
@@ -428,6 +429,8 @@ export default function Dashboard() {
           <Tile label="Gifts by phone" value={`${d.by_phone_share}%`}>of this month’s giving</Tile>
         )}
       </div>
+
+      <ShareChurch />
 
       {giving && (
         <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">
