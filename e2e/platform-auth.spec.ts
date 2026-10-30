@@ -28,7 +28,7 @@ test.describe('Platform admin sign-in', () => {
 
   test('church staff signing in here are taken to their own church office', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('link', { name: 'Admin login' }).first().click()
+    await page.getByRole('link', { name: 'Login', exact: true }).first().click()
     await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
     // The platform answers a church's staff with a one-time link into their office (see test_handoff.py)
     await page.route('**/api/auth/login/', (route) => route.fulfill({ status: 400, json: {

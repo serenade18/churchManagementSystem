@@ -134,7 +134,7 @@ export default function ChurchHome() {
             </nav>
             <div className="ml-auto flex flex-wrap items-center gap-x-5 gap-y-3 text-[15px] font-medium lg:ml-0">
               <Link to="/me" className="hover:text-white/75">My giving</Link>
-              <Link to="/admin" className="inline-flex min-h-11 items-center rounded-full border border-white/50 px-[18px] font-semibold hover:bg-white/10">Admin login</Link>
+              <Link to="/admin" className="inline-flex min-h-11 items-center rounded-full border border-white/50 px-[18px] font-semibold hover:bg-white/10">Login</Link>
               <Link to="/give" className="inline-flex min-h-11 items-center rounded-full bg-white px-[22px] font-semibold text-sidebar hover:bg-white/90">Give</Link>
             </div>
           </header>

@@ -35,7 +35,7 @@ test('a prayer request reaches the church leaders', async ({ page }) => {
 
 test("the church's site has a way in for its admins", async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('link', { name: 'Admin login' }).click()
+  await page.getByRole('link', { name: 'Login', exact: true }).click()
   await expect(page).toHaveURL(/\/admin$/)
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
 })
