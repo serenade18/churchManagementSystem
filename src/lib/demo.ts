@@ -539,12 +539,14 @@ const ROUTES: [RegExp, (params: Query, ids: string[]) => unknown][] = [
     const s = findOr404(db().services, id)
     return db().members.filter((m) => s.present.includes(m.id) || (p.all === 'true' ? true : m.status === 'active' && (!s.branch || m.branch === s.branch)))
       .sort((a, b) => a.first_name.localeCompare(b.first_name))
-      .map((m) => ({ id: m.id, membership_number: m.membership_number, full_name: m.full_name, phone_number: m.phone_number, branch_name: branchName(m.branch), status: m.status, present: s.present.includes(m.id) }))
+      .map((m) => ({ id: m.id, membership_number: m.membership_number, full_name: m.full_name, phone_number: m.phone_number, branch_name: branchName(m.branch), status: m.status, present: s.present.includes(m.id), checked_in_at: null, method: s.present.includes(m.id) ? 'manual' : null }))
   }],
   [/^\/cms\/services\/(\d+)\/export\/$/, (_p, [id]) => {
     const s = findOr404(db().services, id)
     return csv([['Membership No', 'Name', 'Phone', 'Present'], ...db().members.filter((m) => s.present.includes(m.id)).map((m) => [m.membership_number, m.full_name, m.phone_number, 'Yes'])])
   }],
+  [/^\/cms\/wallet\/$/, () => ({ balance: '184250', collections: '412500', fees: '8250', withdrawn: '220000', sending: '0', fee_percent: '2', min_withdrawal: '10000', max_withdrawal: '1000000', enabled: true })],
+  [/^\/cms\/check-in-points\/$/, (p) => page([{ id: 1, name: 'Sunday service', service_type: 'sunday_service', branch: null, branch_name: null, code: 'demoSunday', is_active: true, today: null, created_at: '2026-01-04T08:00:00Z' }], p)],
   [/^\/cms\/attendance\/stats\/$/, attendanceStats],
   [/^\/cms\/sms\/$/, (p) => page(db().sms.map(({ to, ...s }) => s), p)],
   [/^\/cms\/sms\/(\d+)\/recipients\/$/, (p, [id]) => {

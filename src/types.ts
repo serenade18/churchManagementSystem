@@ -24,7 +24,7 @@ export type Tone = 'green' | 'blue' | 'amber' | 'red' | 'purple' | 'slate'
 export type AccountStatus = 'active' | 'disabled' | 'unverified'
 
 export type Feature = 'dashboard' | 'members' | 'registrations' | 'giving' | 'paybill' | 'reconciliation'
-  | 'donation_types' | 'projects' | 'attendance' | 'sms' | 'branches'
+  | 'donation_types' | 'projects' | 'attendance' | 'sms' | 'branches' | 'wallet'
 export type RoleKey = 'branch_admin' | 'treasurer' | 'secretary' | 'communications' | 'pastor' | 'viewer'
 export interface RoleAssignment {
   role: RoleKey
@@ -504,6 +504,7 @@ export interface Service {
   visitor_count: number
   first_timers?: number
   notes: string
+  check_in_point: Id | null
   members_present: number
   total_attendance: number
   created_by_name: string
@@ -519,6 +520,21 @@ export interface RosterMember {
   branch_name: string | null
   status: MemberStatus
   present: boolean
+  checked_in_at: string | null
+  method: 'manual' | 'qr' | 'sms' | null
+}
+
+/** A QR code members scan to check in; each day's scans fill that day's service. */
+export interface CheckInPoint {
+  id: Id
+  name: string
+  service_type: string
+  branch: Id | null
+  branch_name: string | null
+  code: string
+  is_active: boolean
+  today: { id: Id; members_present: number } | null
+  created_at: string
 }
 
 export interface FollowUpMember {
@@ -787,4 +803,39 @@ export interface SmsPage {
   balance: { credits: number | null; days_left: number | null; low: boolean; sender_id: string }
   failures: { church: string; kind: string; count: number; text: string }[]
   churches: { id: Id; name: string; slug: string; receipts: number; bulk: number; failed: number; accepted_rate: number | null; last_bulk: { text: string; at: string } | null }[]
+}
+
+/** The church's wallet: gifts paid to mKanisa's SasaPay merchant code, less the platform's fee. */
+export interface WalletSummary {
+  balance: string
+  collections: string
+  fees: string
+  withdrawn: string
+  sending: string
+  fee_percent: string
+  min_withdrawal: string
+  max_withdrawal: string
+  enabled: boolean
+}
+
+export interface WalletEntry {
+  id: Id
+  kind: 'collection' | 'fee' | 'withdrawal' | 'reversal'
+  amount: string
+  description: string
+  withdrawal: Id | null
+  created_at: string
+}
+
+export interface Withdrawal {
+  id: Id
+  amount: string
+  phone_number: string
+  status: 'processing' | 'paid' | 'failed'
+  provider_code: string
+  recipient_name: string
+  result_description: string
+  requested_by_name: string | null
+  created_at: string
+  completed_at: string | null
 }

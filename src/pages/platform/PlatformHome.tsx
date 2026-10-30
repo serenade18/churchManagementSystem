@@ -1,6 +1,6 @@
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useState, type CSSProperties, type FormEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { type LucideIcon, ArrowRight, ChartLine, Check, Church, HeartHandshake, Menu, MessageSquare, RefreshCw, Search, ShieldCheck, Users, X } from 'lucide-react'
+import { type LucideIcon, ArrowRight, ChartLine, Check, Church, Globe, HeartHandshake, Menu, MessageSquare, QrCode, RefreshCw, Search, ShieldCheck, Users, X } from 'lucide-react'
 import { request } from '../../lib/api'
 import { BRAND } from '../../brand'
 import { branding } from '../../lib/theme'
@@ -22,6 +22,15 @@ const STEPS: [string, string][] = [
   ['mKanisa matches it', "By membership number or phone, never by guesswork. Anything unclear waits in the treasurer's review inbox."],
   ['Everyone can see it', "An SMS receipt goes out, the dashboard updates, and the gift appears on the member's statement. The M-PESA statement sync keeps the books true."],
 ]
+
+// How a member reaches their church's page: the directory is searched, never listed in full.
+const FIND_WAYS: [LucideIcon, string, string][] = [
+  [Search, 'Search by name or town', 'Matching churches appear as you type.'],
+  [Globe, "Go straight to its address", 'Every church has its own, like yourchurch.mkanisa.com.'],
+  [QrCode, 'Scan the code at church', 'Look for the mKanisa QR code on the notice board or bulletin.'],
+]
+const MIN_QUERY = 2
+const MAX_MATCHES = 5
 
 // The sample giving chart in the hero: a calm rise towards this month, which is highlighted.
 const BARS = [38, 46, 41, 52, 49, 58, 55, 63, 60, 70, 74, 86]
@@ -94,6 +103,7 @@ function Heading({ children, dark = false }: { children: ReactNode; dark?: boole
 export default function PlatformHome() {
   const [churches, setChurches] = useState<DirectoryChurch[] | null>(null)
   const [query, setQuery] = useState('')
+  const [address, setAddress] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const { scrolled, active } = useScrollState()
   useReveal()
@@ -106,7 +116,14 @@ export default function PlatformHome() {
   useEffect(() => { request<DirectoryChurch[]>('/platform/directory/', { auth: false }).then(setChurches).catch(() => setChurches([])) }, [])
   const contact = branding.raw?.contact_email
   const talk = contact ? `mailto:${contact}?subject=Bringing our church to mKanisa` : '/start'
-  const shown = (churches || []).filter((c) => `${c.name} ${c.location}`.toLowerCase().includes(query.trim().toLowerCase()))
+  const needle = query.trim().toLowerCase()
+  const searching = needle.length >= MIN_QUERY
+  const matches = searching ? (churches || []).filter((c) => `${c.name} ${c.location}`.toLowerCase().includes(needle)).slice(0, MAX_MATCHES) : []
+  const platformHost = window.location.host
+  const goToAddress = (e: FormEvent) => {
+    e.preventDefault()
+    if (address) window.location.href = `${window.location.protocol}//${address}.${platformHost}`
+  }
 
   return (
     <div className="mk-landing bg-mk-ivory font-body text-base leading-relaxed text-mk-slate">
@@ -279,43 +296,87 @@ export default function PlatformHome() {
         </div>
       </section>
 
-      {/* Find your church: the live directory */}
+      {/* Find your church: a lookup, not a list. Churches appear only once someone searches for theirs. */}
       <section id="directory" className="bg-mk-mist">
-        <div className="page-width flex flex-col gap-10 py-28">
-          <div data-reveal className="flex flex-wrap items-end justify-between gap-6">
-            <div className="flex max-w-2xl flex-col gap-4">
-              <Eyebrow>Find your church</Eyebrow>
-              <Heading>Every church has its own home here.</Heading>
-              <p>Its own address, colours and Paybill, with pages to give, register and see your giving. Its data is its own.</p>
-            </div>
-            <div className="relative w-full sm:w-80">
-              <label htmlFor="church-search" className="sr-only">Search churches</label>
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-mk-muted" aria-hidden="true" />
-              <input id="church-search" className="h-12 w-full rounded-xl border border-mk-border bg-white pl-11 pr-4 text-[15px] text-mk-forest outline-none focus:border-mk-green focus:ring-2 focus:ring-mk-mint"
-                placeholder="Search by name or place" value={query} onChange={(e) => setQuery(e.target.value)} />
-            </div>
+        <div className="page-width flex flex-wrap items-center gap-x-16 gap-y-12 py-28">
+          <div data-reveal className="flex min-w-0 flex-[1_1_380px] flex-col gap-6">
+            <Eyebrow>Find your church</Eyebrow>
+            <Heading>Every church has its own home here.</Heading>
+            <p className="max-w-xl">Its own address, colours and Paybill, with pages to give, register and see your giving. Its data is its own.</p>
+            <ul className="flex flex-col gap-4 pt-2">
+              {FIND_WAYS.map(([Icon, title, text]) => (
+                <li key={title} className="flex gap-4">
+                  <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-white text-mk-green shadow-[0_8px_20px_-14px_rgba(16,43,39,0.5)]"><Icon className="h-[18px] w-[18px]" aria-hidden="true" /></span>
+                  <span>
+                    <span className="block font-semibold text-mk-forest">{title}</span>
+                    <span className="block text-[15px] text-mk-muted">{text}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
-          {churches === null ? <p className="text-mk-muted">Loading…</p>
-            : shown.length === 0 ? (
-              <p className="rounded-[20px] border border-dashed border-mk-border bg-white p-8 text-center text-mk-muted">
-                {churches.length ? 'No church matches your search.' : 'Churches will appear here soon.'}
-              </p>
-            ) : (
-              <div data-reveal className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {shown.map((c) => (
-                  <a key={c.slug} href={c.url} className="group flex items-center gap-4 rounded-[20px] border border-mk-border bg-white p-5 transition hover:-translate-y-0.5 hover:border-mk-green/40 hover:shadow-[0_16px_32px_-20px_rgba(16,43,39,0.35)]">
-                    {c.logo_mark_url
-                      ? <img src={c.logo_mark_url} alt="" className="h-12 w-12 shrink-0 rounded-xl object-contain" />
-                      : <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-mk-mist text-mk-green"><Church className="h-5 w-5" aria-hidden="true" /></span>}
-                    <span className="min-w-0">
-                      <span className="block truncate font-semibold text-mk-forest">{c.name}</span>
-                      <span className="block truncate text-sm text-mk-muted">{c.location || c.url.replace(/^https?:\/\//, '')}</span>
-                    </span>
-                    <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-mk-muted transition group-hover:translate-x-0.5 group-hover:text-mk-green" aria-hidden="true" />
-                  </a>
-                ))}
+
+          <div data-reveal style={delay(120)} className="flex min-w-0 flex-[1_1_380px] flex-col gap-6 rounded-3xl border border-mk-border bg-white p-8 shadow-[0_2px_4px_rgba(16,43,39,0.04),0_24px_48px_-32px_rgba(16,43,39,0.3)] sm:p-10">
+            <form role="search" onSubmit={(e) => { e.preventDefault(); if (matches[0]) window.location.href = matches[0].url }} className="flex flex-col gap-3">
+              <label htmlFor="church-search" className="text-sm font-semibold text-mk-forest">Search for your church</label>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-mk-muted" aria-hidden="true" />
+                <input id="church-search" type="search" autoComplete="off" aria-describedby="church-search-help"
+                  className="h-[52px] w-full rounded-xl border border-mk-border bg-mk-ivory pl-11 pr-4 text-[15px] text-mk-forest outline-none transition focus:border-mk-green focus:bg-white focus:ring-2 focus:ring-mk-mint"
+                  placeholder="Church name or town" value={query} onChange={(e) => setQuery(e.target.value)} />
               </div>
-            )}
+              <p id="church-search-help" className="sr-only">Type at least {MIN_QUERY} letters to see matching churches.</p>
+              <div aria-live="polite" className="min-h-[148px]">
+                {!searching ? (
+                  <p className="flex h-[148px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-mk-border px-6 text-center text-sm text-mk-muted">
+                    <Church className="h-6 w-6 text-mk-green/60" aria-hidden="true" />
+                    Start typing your church's name or town.
+                  </p>
+                ) : churches === null ? <p className="px-1 py-4 text-sm text-mk-muted">Searching…</p>
+                  : matches.length === 0 ? (
+                    <p className="rounded-2xl bg-mk-ivory px-5 py-6 text-center text-sm text-mk-muted">
+                      No church matches “{query.trim()}”. Check the spelling, or ask your church for its mKanisa link.
+                    </p>
+                  ) : (
+                    <ul className="flex flex-col gap-1.5">
+                      {matches.map((c) => (
+                        <li key={c.slug}>
+                          <a href={c.url} className="group flex items-center gap-3.5 rounded-xl px-3 py-2.5 transition hover:bg-mk-mist focus-visible:bg-mk-mist focus-visible:outline-none">
+                            {c.logo_mark_url
+                              ? <img src={c.logo_mark_url} alt="" className="h-10 w-10 shrink-0 rounded-lg object-contain" />
+                              : <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-mk-mist text-mk-green"><Church className="h-[18px] w-[18px]" aria-hidden="true" /></span>}
+                            <span className="min-w-0">
+                              <span className="block truncate font-semibold text-mk-forest">{c.name}</span>
+                              <span className="block truncate text-sm text-mk-muted">{c.location || c.url.replace(/^https?:\/\//, '')}</span>
+                            </span>
+                            <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-mk-muted transition group-hover:translate-x-0.5 group-hover:text-mk-green" aria-hidden="true" />
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+              </div>
+            </form>
+
+            <div className="flex items-center gap-4 text-xs font-semibold uppercase tracking-[0.12em] text-mk-muted">
+              <span className="h-px flex-1 bg-mk-border" />or<span className="h-px flex-1 bg-mk-border" />
+            </div>
+
+            <form onSubmit={goToAddress} className="flex flex-col gap-3">
+              <label htmlFor="church-address" className="text-sm font-semibold text-mk-forest">Know your church's address?</label>
+              <div className="flex flex-wrap gap-3">
+                <div className="flex h-[52px] min-w-0 flex-[1_1_220px] items-center rounded-xl border border-mk-border bg-mk-ivory pl-4 transition focus-within:border-mk-green focus-within:bg-white focus-within:ring-2 focus-within:ring-mk-mint">
+                  <input id="church-address" autoComplete="off" autoCapitalize="none" spellCheck={false}
+                    className="h-full min-w-0 flex-1 bg-transparent text-right text-[15px] text-mk-forest outline-none"
+                    placeholder="yourchurch" value={address} onChange={(e) => setAddress(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} />
+                  <span className="pr-4 text-[15px] text-mk-muted">.{platformHost}</span>
+                </div>
+                <button type="submit" disabled={!address} className="inline-flex h-[52px] flex-none items-center gap-2 rounded-xl bg-mk-forest px-5 font-semibold text-mk-ivory transition hover:-translate-y-px hover:bg-mk-green disabled:pointer-events-none disabled:opacity-40">
+                  Go <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </section>
 

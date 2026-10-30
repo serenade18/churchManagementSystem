@@ -1,11 +1,12 @@
-import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Check, Download, Pencil, Search, Trash2, UserCheck } from 'lucide-react'
+import { ArrowLeft, Check, Download, MessageSquare, Pencil, Search, Trash2, UserCheck } from 'lucide-react'
 import ServiceForm from '../../components/ServiceForm'
-import { Alert, ConfirmDialog, Spinner } from '../../components/ui'
+import { Alert, ConfirmDialog, Modal, Spinner } from '../../components/ui'
 import { api, downloadCsv, errorMessage } from '../../lib/api'
 import { useApi, useDebounced } from '../../lib/hooks'
-import { SERVICE_TYPES, date } from '../../lib/format'
+import { useCan } from '../../lib/access'
+import { SERVICE_TYPES, date, today } from '../../lib/format'
 import type { Member, RosterMember, Service } from '../../types'
 
 function Stat({ label, value }: { label: string; value: ReactNode }) {
@@ -14,6 +15,57 @@ function Stat({ label, value }: { label: string; value: ReactNode }) {
       <p className="text-[13px] text-mk-muted">{label}</p>
       <p className="font-display text-[22px] font-semibold text-mk-forest">{value}</p>
     </div>
+  )
+}
+
+const CHECKED_IN_BY = { manual: '', qr: 'QR', sms: 'SMS' }
+const clock = (at: string) => new Date(at).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit', hour12: false })
+
+interface LinksPreview { recipient_count: number; skipped_count: number; sample: string }
+
+/** SMS each expected member who hasn't checked in their own link; tapping it marks them present. */
+function SendLinks({ service, onClose, onSent }: { service: Service; onClose: () => void; onSent: (text: string) => void }) {
+  const [preview, setPreview] = useState<LinksPreview | null>(null)
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+  const url = `/cms/services/${service.id}/send-links/`
+
+  useEffect(() => {
+    api.post<LinksPreview>(url, { preview: true }).then(setPreview).catch((e) => setError(errorMessage(e)))
+  }, [url])
+
+  const send = async () => {
+    setBusy(true)
+    try {
+      const res = await api.post<{ sent_count: number; failed_count: number }>(url, {})
+      onSent(`Check-in links sent to ${res.sent_count} member${res.sent_count === 1 ? '' : 's'}${res.failed_count ? `; ${res.failed_count} couldn’t be sent` : ''}.`)
+    } catch (e) { setError(errorMessage(e)); setBusy(false) }
+  }
+
+  const n = preview?.recipient_count ?? 0
+  return (
+    <Modal open onClose={onClose} title="Send check-in links"
+      footer={<><button className="btn-secondary" onClick={onClose}>Cancel</button>
+        <button className="btn-primary" onClick={send} disabled={busy || !n}>{busy ? 'Sending…' : `Send ${n} SMS`}</button></>}>
+      <Alert>{error}</Alert>
+      {!preview && !error && <Spinner className="mx-auto my-6" />}
+      {preview && (
+        <div className="flex flex-col gap-4 text-[15px]">
+          <p>
+            {n ? <>Each of the <strong>{n}</strong> active member{n === 1 ? '' : 's'} expected here who {n === 1 ? 'hasn’t' : 'haven’t'} checked in gets an SMS with their own link. Tapping it on {date(service.date)} marks them present.</>
+              : 'Everyone expected with a phone number has already checked in.'}
+            {preview.skipped_count > 0 && <> {preview.skipped_count} without a phone number will be left out.</>}
+          </p>
+          {preview.sample && (
+            <div>
+              <p className="label">The SMS</p>
+              <p className="rounded-xl bg-mk-ivory px-4 py-3 text-sm text-mk-slate">{preview.sample}</p>
+            </div>
+          )}
+          <p className="text-[13px] text-mk-muted">Sent from your SMS account and kept in Bulk SMS history. Sending again only reaches members still not checked in.</p>
+        </div>
+      )}
+    </Modal>
   )
 }
 
@@ -31,7 +83,9 @@ export default function ServiceDetail() {
   const [busy, setBusy] = useState(new Set<number>())
   const [editing, setEditing] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [sending, setSending] = useState(false)
   const [actionError, setActionError] = useState('')
+  const can = useCan()
 
   const members = roster.data || []
   const presentCount = members.filter((m) => m.present).length
@@ -110,6 +164,9 @@ export default function ServiceDetail() {
             {service.notes && <p className="mt-2 text-sm text-mk-slate">{service.notes}</p>}
           </div>
           <div className="flex flex-wrap gap-2">
+            {can('attendance', true) && can('sms', true) && service.date >= today() && (
+              <button className="btn-secondary" onClick={() => setSending(true)}><MessageSquare className="h-4 w-4" /> Send check-in links</button>
+            )}
             <button className="btn-secondary" onClick={() => downloadCsv(`/cms/services/${id}/export/`, {}, `attendance-${service.date}.csv`)}><Download className="h-4 w-4" /> Export</button>
             <button className="btn-secondary" onClick={() => setEditing(true)}><Pencil className="h-4 w-4" /> Edit</button>
             <button className="btn-secondary text-red-600" onClick={() => setDeleting(true)} aria-label="Delete service"><Trash2 className="h-4 w-4" /></button>
@@ -166,7 +223,7 @@ export default function ServiceDetail() {
                   </span>
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-medium text-mk-forest">{m.full_name}</span>
-                    <span className="block truncate text-xs text-mk-muted">{m.membership_number}{m.status !== 'active' && ` · ${m.status}`}{service.branch && m.branch_name && m.branch_name !== service.branch_name && ` · ${m.branch_name}`}</span>
+                    <span className="block truncate text-xs text-mk-muted">{m.membership_number}{m.status !== 'active' && ` · ${m.status}`}{m.present && m.checked_in_at && m.method && m.method !== 'manual' && ` · ${CHECKED_IN_BY[m.method]} ${clock(m.checked_in_at)}`}{service.branch && m.branch_name && m.branch_name !== service.branch_name && ` · ${m.branch_name}`}</span>
                   </span>
                 </button>
               </li>
@@ -176,6 +233,7 @@ export default function ServiceDetail() {
         )}
       </div>
 
+      {sending && <SendLinks service={service} onClose={() => setSending(false)} onSent={(text) => { setSending(false); setNotice({ tone: 'green', text }) }} />}
       {editing && <ServiceForm service={service} onClose={() => setEditing(false)} onSaved={() => { setEditing(false); reload(); roster.reload() }} />}
       <ConfirmDialog open={deleting} onClose={() => setDeleting(false)} onConfirm={remove} title="Delete service"
         message={`Delete ${service.name} on ${date(service.date)} and its attendance records?`} />

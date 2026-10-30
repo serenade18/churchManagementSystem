@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps } from 'recharts'
 import { CalendarCheck, CalendarDays, MessageSquare, Plus, UserX, Users } from 'lucide-react'
 import ServiceForm from '../../components/ServiceForm'
+import CheckInCodes from './CheckInCodes'
 import { Alert, PageHeader, Pagination, Select, StatCard, Table } from '../../components/ui'
 import { useApi, useOptions } from '../../lib/hooks'
 import { SERVICE_TYPES, date } from '../../lib/format'
@@ -99,6 +100,8 @@ export default function Attendance() {
           )}
         </div>
       </div>
+
+      <CheckInCodes />
 
       <div className="mb-3 mt-8 flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">Services</h2>

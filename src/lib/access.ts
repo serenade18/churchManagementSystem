@@ -4,7 +4,7 @@ import { useAuth } from './auth'
 /** The staff roles a church owner can give (mirrors apps/accounts/roles.py). */
 export const ROLES: { key: RoleKey; label: string; description: string }[] = [
   { key: 'branch_admin', label: 'Branch admin', description: 'Runs their branches day to day: members, registrations, giving, attendance, projects and SMS.' },
-  { key: 'treasurer', label: 'Treasurer / Finance', description: 'Giving, the Paybill inbox, matching payments, M-PESA reconciliation, donation types and statements.' },
+  { key: 'treasurer', label: 'Treasurer / Finance', description: 'Giving, the Paybill inbox, matching payments, M-PESA reconciliation, donation types, statements and the wallet.' },
   { key: 'secretary', label: 'Secretary / Membership', description: 'Members, approving registrations and attendance.' },
   { key: 'communications', label: 'Communications', description: 'Sends SMS to members.' },
   { key: 'pastor', label: 'Pastor', description: 'Sees members, attendance, registrations and giving; changes nothing.' },
@@ -27,7 +27,7 @@ export function can(user: User | null, feature: Feature, write = false) {
 export const PAGE_FEATURES: [string, Feature][] = [
   ['/dashboard', 'dashboard'], ['/members', 'members'], ['/registrations', 'registrations'], ['/donations', 'giving'],
   ['/paybill', 'paybill'], ['/donation-types', 'donation_types'], ['/attendance', 'attendance'], ['/branches', 'branches'],
-  ['/projects', 'projects'], ['/sms', 'sms'],
+  ['/projects', 'projects'], ['/sms', 'sms'], ['/payments', 'wallet'],
 ]
 
 /** Where a church admin lands: the first page their roles open, or the "no access yet" page. */

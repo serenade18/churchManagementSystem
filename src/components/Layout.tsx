@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { type LucideIcon, Building2, Church, CreditCard, Eye, Inbox, CalendarCheck, FolderKanban, HandCoins, KeyRound, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, UserPlus, Users, X } from 'lucide-react'
+import { type LucideIcon, Building2, Church, CreditCard, Eye, Inbox, CalendarCheck, FolderKanban, HandCoins, KeyRound, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, UserPlus, Users, Wallet, X } from 'lucide-react'
 import { api } from '../lib/api'
 import { can, isOwner, roleLabel } from '../lib/access'
 import { useAuth } from '../lib/auth'
@@ -23,6 +23,7 @@ const NAV: NavItem[] = [
   { to: '/registrations', label: 'Registrations', icon: UserPlus, badge: 'registrations', feature: 'registrations' },
   { to: '/donations', label: 'Donations', icon: HandCoins, feature: 'giving' },
   { to: '/paybill', label: 'Paybill', icon: Smartphone, badge: 'unallocated', feature: 'paybill' },
+  { to: '/payments', label: 'Payments', icon: Wallet, feature: 'wallet' },
   { to: '/donation-types', label: 'Donation types', icon: Tags, feature: 'donation_types' },
   { to: '/attendance', label: 'Attendance', icon: CalendarCheck, feature: 'attendance' },
   { to: '/branches', label: 'Branches', icon: Building2, feature: 'branches' },

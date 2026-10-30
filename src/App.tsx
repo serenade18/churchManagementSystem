@@ -10,6 +10,8 @@ import Donations from './pages/donations/Donations'
 import DonationTypes from './pages/donations/DonationTypes'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import ChurchHome from './pages/public/ChurchHome'
+import CheckIn from './pages/public/CheckIn'
+import ConfirmAttendance from './pages/public/ConfirmAttendance'
 import Give from './pages/give/Give'
 import Portal from './pages/public/Portal'
 import Register from './pages/public/Register'
@@ -20,6 +22,7 @@ import OpenOffice from './pages/auth/OpenOffice'
 import MemberDetail from './pages/members/MemberDetail'
 import Members from './pages/members/Members'
 import Paybill from './pages/donations/Paybill'
+import Payments from './pages/payments/Payments'
 import Projects from './pages/projects/Projects'
 import ReceiptPrint from './pages/print/ReceiptPrint'
 import ServiceDetail from './pages/attendance/ServiceDetail'
@@ -100,6 +103,9 @@ export default function App() {
           {/* The church's public site; church staff sign in at /admin */}
           <Route path="/" element={<ChurchHome />} />
           <Route path="/register" element={<Register />} />
+          {/* Members checking in: a check-in QR code, or their own link from an SMS */}
+          <Route path="/checkin/:code" element={<CheckIn />} />
+          <Route path="/a/:code" element={<ConfirmAttendance />} />
           <Route path="/me" element={<Portal />} />
           <Route path="/me/receipt/:id" element={<ReceiptPrint portal />} />
           <Route path="/me/statement" element={<StatementPrint portal />} />
@@ -125,6 +131,7 @@ export default function App() {
             <Route path="/projects" element={<RequireAuth feature="projects"><Projects /></RequireAuth>} />
             <Route path="/sms" element={<RequireAuth feature="sms"><Sms /></RequireAuth>} />
             <Route path="/paybill" element={<RequireAuth feature="paybill"><Paybill /></RequireAuth>} />
+            <Route path="/payments" element={<RequireAuth feature="wallet"><Payments /></RequireAuth>} />
             <Route path="/donation-types" element={<RequireAuth feature="donation_types"><DonationTypes /></RequireAuth>} />
             <Route path="/attendance" element={<RequireAuth feature="attendance">{lazyPage(<Attendance />)}</RequireAuth>} />
             <Route path="/attendance/:id" element={<RequireAuth feature="attendance"><ServiceDetail /></RequireAuth>} />
