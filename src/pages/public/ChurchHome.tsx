@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { type LucideIcon, ArrowRight, Church, Clock, FileText, Globe, HeartHandshake, Mail, MapPin, Phone, UserPlus } from 'lucide-react'
+import { type LucideIcon, ArrowRight, Church, Clock, FileText, Globe, HandHeart, HeartHandshake, Mail, MapPin, Phone, UserPlus } from 'lucide-react'
 import Logo from '../../components/Logo'
 import { request } from '../../lib/api'
 import { BRAND } from '../../brand'
@@ -39,7 +39,7 @@ function Heading({ children, light = false }: { children: ReactNode; light?: boo
 
 function ActionCard({ to, icon: Icon, title, text }: { to: string; icon: LucideIcon; title: string; text: string }) {
   return (
-    <Link to={to} className="group flex min-w-0 flex-[1_1_300px] items-center gap-[18px] rounded-[22px] border border-mk-border bg-white px-7 py-6 shadow-[0_2px_4px_rgba(16,43,39,0.05),0_24px_48px_-28px_rgba(16,43,39,0.35)] transition hover:border-brand-200">
+    <Link to={to} className="group flex min-w-0 flex-[1_1_240px] items-center gap-[18px] rounded-[22px] border border-mk-border bg-white px-7 py-6 shadow-[0_2px_4px_rgba(16,43,39,0.05),0_24px_48px_-28px_rgba(16,43,39,0.35)] transition hover:border-brand-200">
       <span className="flex h-[52px] w-[52px] flex-none items-center justify-center rounded-2xl bg-brand-50 text-brand-700"><Icon className="h-6 w-6" strokeWidth={1.9} aria-hidden="true" /></span>
       <span className="flex min-w-0 flex-col">
         <span className="font-display text-xl font-semibold text-mk-forest">{title}</span>
@@ -134,6 +134,7 @@ export default function ChurchHome() {
             </nav>
             <div className="ml-auto flex flex-wrap items-center gap-x-5 gap-y-3 text-[15px] font-medium lg:ml-0">
               <Link to="/me" className="hover:text-white/75">My giving</Link>
+              <Link to="/admin" className="inline-flex min-h-11 items-center rounded-full border border-white/50 px-[18px] font-semibold hover:bg-white/10">Admin login</Link>
               <Link to="/give" className="inline-flex min-h-11 items-center rounded-full bg-white px-[22px] font-semibold text-sidebar hover:bg-white/90">Give</Link>
             </div>
           </header>
@@ -171,12 +172,13 @@ export default function ChurchHome() {
         </div>
       </section>
 
-      {/* The three things people come to do */}
+      {/* The things people come to do */}
       <section aria-label="Quick actions" className="relative z-10">
         <div className="page-width -mt-[88px] flex flex-wrap gap-5">
           <ActionCard to="/give" icon={HeartHandshake} title="Give" text="M-PESA, Airtel Money or card" />
           <ActionCard to="/register" icon={UserPlus} title="Become a member" text="Register in two minutes" />
           <ActionCard to="/me" icon={FileText} title="My giving" text="Receipts and yearly statements" />
+          <ActionCard to="/pray" icon={HandHeart} title="Prayer request" text="We’ll pray with you" />
         </div>
       </section>
 
@@ -316,6 +318,7 @@ export default function ChurchHome() {
               <Link to="/give" className="hover:text-brand-700">Give</Link>
               <Link to="/register" className="hover:text-brand-700">Become a member</Link>
               <Link to="/me" className="hover:text-brand-700">My giving</Link>
+              <Link to="/pray" className="hover:text-brand-700">Prayer request</Link>
               {services.length > 0 && <a href="#visit" className="hover:text-brand-700">Services</a>}
               <Link to="/admin" className="hover:text-brand-700">Church admin</Link>
             </nav>

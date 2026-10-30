@@ -7,8 +7,8 @@ import { Alert, Spinner } from '../../components/ui'
 import { useCan } from '../../lib/access'
 import { useAuth } from '../../lib/auth'
 import { useApi, useOptions } from '../../lib/hooks'
-import { CHANNELS, compactMoney, currencyMoney, date, money } from '../../lib/format'
-import type { Branch, DashboardData, Donation } from '../../types'
+import { CHANNELS, PRAYER_STATUS, ago, compactMoney, currencyMoney, date, money } from '../../lib/format'
+import type { Branch, DashboardData, Donation, PrayerSummary } from '../../types'
 
 // The church office's first page: what needs someone today, the headline numbers, then giving,
 // attendance, projects and branches. Charts use the church's own colour (one hue), with a hover
@@ -233,6 +233,32 @@ function GivingChart({ trend: all }: { trend: DashboardData['trend'] }) {
       </figure>
       <button type="button" onClick={() => setTable(true)} className={more}>Show as a table</button>
     </>
+  )
+}
+
+// ------------------------------------------------------------------ prayer requests
+
+function PrayerCard() {
+  const { data } = useApi<PrayerSummary>('/cms/prayer-requests/summary/')
+  if (!data) return null
+  const waiting = data.new + data.praying
+  return (
+    <Card id="prayer-title" title="Prayer requests" subtitle={`${plural(data.new, 'new request')} · ${plural(data.this_week, 'request')} this week`}>
+      {data.latest.length ? (
+        <ul className="-mt-3">
+          {data.latest.map((r) => (
+            <li key={r.id} className="flex flex-col gap-1 border-t border-mk-mist py-3">
+              <span className="flex items-center justify-between gap-3 text-[13px] text-mk-muted">
+                <span><span className="font-semibold text-mk-forest">{r.member_name || r.name || 'Anonymous'}</span> · {ago(r.created_at)}</span>
+                <span>{PRAYER_STATUS[r.status]}{r.wants_contact && ' · would like a call'}</span>
+              </span>
+              <span className="line-clamp-2 text-[15px] text-mk-slate">{r.request}</span>
+            </li>
+          ))}
+        </ul>
+      ) : <p className="text-sm text-mk-muted">{waiting ? '' : 'No requests waiting. Share your prayer page so people can send them.'}</p>}
+      <Link to="/prayer-requests" className={`${more} mt-auto`}>{waiting ? `See all ${number(waiting)} open requests →` : 'Open prayer requests →'}</Link>
+    </Card>
   )
 }
 
@@ -498,6 +524,7 @@ export default function Dashboard() {
             <Link to="/projects" className={`${more} mt-auto`}>Open projects →</Link>
           </Card>
         )}
+        {can('prayer') && <PrayerCard />}
         {branchRows.length > 0 && (
           <Card id="branch-title" title="Branches" subtitle="This year">
             <table className="w-full text-[15px]">

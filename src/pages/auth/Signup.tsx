@@ -4,6 +4,7 @@ import { KeyRound, Lock, Smartphone } from 'lucide-react'
 import { PasswordInput } from '../../components/ui'
 import { AuthAlert, AuthField, AuthTitle, CodeInput, PlatformSteps, ResendCode, SignupSteps, StaffAuthLayout, authInput, authLabel, authPassword, authPrimary, maskPhone } from '../../components/AuthShell'
 import { errorMessage, request } from '../../lib/api'
+import { COUNTRIES, DEFAULT_COUNTRY } from '../../lib/countries'
 import { homeFor, useAuth } from '../../lib/auth'
 import { branding } from '../../lib/theme'
 import { useForm } from '../../lib/useForm'
@@ -79,6 +80,7 @@ export default function Signup({ superadmin = false }: { superadmin?: boolean })
 function DetailsStep({ onCreated, superadmin }: { onCreated: (res: SignupResponse) => void; superadmin: boolean }) {
   const { values, set, errors, error, busy, submit } = useForm<Record<string, string>>({
     first_name: '', last_name: '', username: '', email: '', phone_number: '', password: '', confirm_password: '',
+    country: branding.raw?.country || DEFAULT_COUNTRY,
     ...(superadmin ? { setup_key: '' } : {}),
   })
   const save = async (e: FormEvent) => {
@@ -113,7 +115,14 @@ function DetailsStep({ onCreated, superadmin }: { onCreated: (res: SignupRespons
         {input('first_name', 'First name', { autoComplete: 'given-name', autoFocus: !superadmin })}
         {input('last_name', 'Last name', { autoComplete: 'family-name' })}
         {input('email', 'Email', { type: 'email', autoComplete: 'email' })}
-        {input('phone_number', 'Phone number', { type: 'tel', inputMode: 'tel', placeholder: '0712 345 678', autoComplete: 'tel' })}
+        {input('phone_number', 'Phone number', { type: 'tel', inputMode: 'tel', placeholder: COUNTRIES[values.country]?.example, autoComplete: 'tel' })}
+        <div className="sm:col-span-2">
+        <AuthField label="Country" error={errors.country}>
+          <select className={authInput} value={values.country} onChange={set('country')} autoComplete="country">
+            {Object.entries(COUNTRIES).map(([code, c]) => <option key={code} value={code}>{c.name}</option>)}
+          </select>
+        </AuthField>
+        </div>
         <div className="sm:col-span-2">{input('username', 'Username', { autoComplete: 'username' })}</div>
         {input('password', 'Password', { type: 'password', autoComplete: 'new-password' }, 'At least 8 characters.')}
         {input('confirm_password', 'Confirm password', { type: 'password', autoComplete: 'new-password' })}

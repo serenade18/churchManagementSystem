@@ -6,8 +6,9 @@ import { Alert, Badge, ConfirmDialog, Field, Modal, Pagination, Spinner, StatCar
 import { api, errorMessage } from '../../lib/api'
 import { useApi } from '../../lib/hooks'
 import { CHANNELS, DONATION_STATUS, GENDERS, MARITAL, MEMBER_STATUS, ago, date, dateTime, money, today } from '../../lib/format'
-import type { AttendanceSummary, Donation, Member, Page } from '../../types'
-import { useCan } from '../../lib/access'
+import type { AttendanceSummary, Donation, Group, Member, Page } from '../../types'
+import { seesGroups, useCan } from '../../lib/access'
+import { useAuth } from '../../lib/auth'
 
 const SUNDAY = { came: 'came', missed: 'missed', none: 'no service recorded' }
 
@@ -27,6 +28,8 @@ export default function MemberDetail() {
   const seesGiving = can('giving')
   const donations = useApi<Page<Donation>>(seesGiving ? `/cms/members/${id}/donations/` : null, { page })
   const attendance = useApi<AttendanceSummary>(can('attendance') ? `/cms/members/${id}/attendance-summary/` : null)
+  const { user } = useAuth()
+  const groups = useApi<Page<Group>>(seesGroups(user) ? '/cms/groups/' : null, { member: id, page_size: 100 }).data?.results
 
   if (error) return <Alert>{error.message}</Alert>
   if (!member) return <div className="py-20"><Spinner className="mx-auto h-8 w-8" /></div>
@@ -49,6 +52,7 @@ export default function MemberDetail() {
     ['Marital status', member.marital_status && MARITAL[member.marital_status]], ['Branch', member.branch_name],
     ['Date joined', member.date_joined && date(member.date_joined)], ['Address', member.address],
     ['Baptized', member.is_baptized ? 'Yes' : 'No'], ['Confirmed', member.is_confirmed ? 'Yes' : 'No'],
+    ...(groups?.length ? [['Departments & groups', groups.map((g) => g.name).join(', ')]] : []),
   ]
 
   return (

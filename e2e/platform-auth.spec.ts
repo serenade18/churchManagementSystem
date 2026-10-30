@@ -26,6 +26,24 @@ test.describe('Platform admin sign-in', () => {
     await expect(page.getByRole('link', { name: 'Create a staff account' })).toHaveCount(0)
   })
 
+  test('church staff signing in here are taken to their own church office', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('link', { name: 'Admin login' }).first().click()
+    await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
+    // The platform answers a church's staff with a one-time link into their office (see test_handoff.py)
+    await page.route('**/api/auth/login/', (route) => route.fulfill({ status: 400, json: {
+      detail: "Church admins sign in at their church's address.", church_url: ['https://kikuyu.mkanisa.com'],
+      open_url: [new URL('/admin/open#e2e-token', page.url()).href],
+    } }))
+    await page.getByLabel('Username').fill('kikuyu-owner')
+    await page.getByLabel('Password', { exact: true }).fill('whatever-it-is')
+    await page.unroute('**/api/branding/') // the link leads to the church's own address
+    await page.getByRole('button', { name: 'Sign in' }).click()
+    await expect(page).toHaveURL(/\/admin\/open$/)
+    await expect(page.getByRole('heading', { name: 'Opening the church office' })).toBeVisible()
+    await expect(page.getByRole('alert')).toContainText("This link isn't valid.") // a made-up token, refused
+  })
+
   test('a wrong password is refused', async ({ page }) => {
     await page.goto('/admin')
     await page.getByLabel('Username').fill(ACCOUNTS.super.username)

@@ -545,9 +545,56 @@ const ROUTES: [RegExp, (params: Query, ids: string[]) => unknown][] = [
     const s = findOr404(db().services, id)
     return csv([['Membership No', 'Name', 'Phone', 'Present'], ...db().members.filter((m) => s.present.includes(m.id)).map((m) => [m.membership_number, m.full_name, m.phone_number, 'Yes'])])
   }],
+  [/^\/cms\/visitors\/$/, (p) => page(demoVisitors().filter((v) => (p.stage === 'joined' ? v.status === 'active' : v.status === 'visitor')
+    && (!p.repeat || (v.visits > 1) === (p.repeat === 'true')) && (!p.follow_up || v.follow_up === p.follow_up)
+    && (!p.branch || v.branch === Number(p.branch)) && matches(p.search, v.full_name, v.phone_number)), p)],
+  [/^\/cms\/visitors\/summary\/$/, () => {
+    const all = demoVisitors().filter((v) => v.status === 'visitor')
+    return { total: all.length, new_this_month: 3, repeat: all.filter((v) => v.visits > 1).length, this_week: 2, to_follow_up: all.filter((v) => v.follow_up === 'new').length, joined_this_year: 1 }
+  }],
+  [/^\/cms\/visitors\/(\d+)\/visits\/$/, (_p, [id]) => {
+    const v = findOr404(demoVisitors(), id)
+    return [...db().services].reverse().filter((s) => s.service_type === 'sunday_service').slice(0, v.visits)
+      .map((s) => ({ service: s.id, name: s.name, date: s.date, service_type: s.service_type, branch_name: branchName(s.branch), method: 'qr', checked_in_at: `${s.date}T07:42:00Z` }))
+  }],
+  [/^\/cms\/groups\/$/, (p) => page(demoGroups().filter((g) => (!p.kind || g.kind === p.kind) && matches(p.search, g.name)), p)],
+  [/^\/cms\/groups\/(\d+)\/$/, (_p, [id]) => findOr404(demoGroups(), id)],
+  [/^\/cms\/groups\/(\d+)\/members\/$/, (_p, [id]) => {
+    const g = findOr404(demoGroups(), id)
+    return db().members.filter((m) => m.status === 'active').slice(g.id * 7, g.id * 7 + g.member_count).map((m) => ({
+      id: m.id, membership_number: m.membership_number, full_name: m.full_name, phone_number: m.phone_number, status: m.status,
+      branch_name: branchName(m.branch), joined_at: m.created_at, added_by: 'secretary',
+    }))
+  }],
+  [/^\/cms\/prayer-requests\/$/, (p) => page(demoPrayer().filter((r) => (!p.status || r.status === p.status) && matches(p.search, r.name, r.request)), p)],
+  [/^\/cms\/prayer-requests\/summary\/$/, () => {
+    const all = demoPrayer()
+    return { new: all.filter((r) => r.status === 'new').length, praying: all.filter((r) => r.status === 'praying').length, answered: all.filter((r) => r.status === 'answered').length,
+      this_week: 3, wants_contact: all.filter((r) => r.wants_contact && r.status !== 'answered').length, latest: all.filter((r) => r.status === 'new' || r.status === 'praying').slice(0, 5) }
+  }],
+  [/^\/cms\/payroll\/staff\/$/, (p) => page(DEMO_STAFF.map(([name, title, phone, salary], i) => ({
+    id: i + 1, name, title, phone_number: phone, salary: amt(salary), is_active: true, notes: '', last_paid: ymd(new Date(db().now).setDate(1) - 20 * DAY).slice(0, 8) + '01', created_at: iso(db().now - 400 * DAY),
+  })), p)],
+  [/^\/cms\/payroll\/runs\/$/, (p) => page([1, 2].map((back) => {
+    const d = new Date(db().now); d.setDate(1); d.setMonth(d.getMonth() - back)
+    const payslips = DEMO_STAFF.map(([name, title, phone, salary], i) => ({ id: back * 10 + i, staff: i + 1, name, title, amount: amt(salary), phone_number: phone, status: 'paid', provider_code: `SPB2C${back}${i}`, problem: '' }))
+    return { id: back, period: ymd(d), status: 'paid', total: amt(DEMO_STAFF.reduce((t, x) => t + x[3], 0)), payslips, created_by_name: 'treasurer', created_at: iso(d.getTime() + 27 * DAY), paid_at: iso(d.getTime() + 27 * DAY) }
+  }), p)],
+  [/^\/cms\/payroll\/runs\/summary\/$/, () => ({ staff: DEMO_STAFF.length, monthly_salaries: amt(DEMO_STAFF.reduce((t, x) => t + x[3], 0)), paid_this_year: amt(DEMO_STAFF.reduce((t, x) => t + x[3], 0) * 9), last_run: null })],
   [/^\/cms\/wallet\/$/, () => ({ balance: '184250', collections: '412500', fees: '8250', withdrawn: '220000', sending: '0', fee_percent: '2', min_withdrawal: '10000', max_withdrawal: '1000000', enabled: true })],
   [/^\/cms\/check-in-points\/$/, (p) => page([{ id: 1, name: 'Sunday service', service_type: 'sunday_service', branch: null, branch_name: null, code: 'demoSunday', is_active: true, today: null, created_at: '2026-01-04T08:00:00Z' }], p)],
   [/^\/cms\/attendance\/stats\/$/, attendanceStats],
+  [/^\/cms\/attendance\/daily\/$/, () => {
+    const byDay = new Map<string, ReturnType<typeof serviceJson>[]>()
+    for (const svc of [...db().services].reverse().slice(0, 12)) byDay.set(svc.date, [...(byDay.get(svc.date) || []), serviceJson(svc)])
+    return { date_from: ymd(db().now - 29 * DAY), date_to: ymd(db().now), days: [...byDay].map(([day, list]) => {
+      const services = list.map((s) => ({ id: s.id, name: s.name, service_type: s.service_type, branch_name: s.branch_name, members: s.members_present,
+        visitors: 0, head_count: s.visitor_count, total: s.members_present + s.visitor_count, by_qr: Math.round(s.members_present * 0.6), by_sms: 0,
+        first_at: `${day}T06:41:00Z`, last_at: `${day}T07:58:00Z` }))
+      const sum = (k: 'members' | 'head_count' | 'total') => services.reduce((t, s) => t + s[k], 0)
+      return { date: day, services, members: sum('members'), visitors: 0, head_count: sum('head_count'), total: sum('total') }
+    }) }
+  }],
   [/^\/cms\/sms\/$/, (p) => page(db().sms.map(({ to, ...s }) => s), p)],
   [/^\/cms\/sms\/(\d+)\/recipients\/$/, (p, [id]) => {
     const s = findOr404(db().sms, id)
@@ -570,6 +617,61 @@ const ROUTES: [RegExp, (params: Query, ids: string[]) => unknown][] = [
   [/^\/cms\/users\/$/, (p) => page([], p)],
   [/^\/cms\/branding\/$/, () => ({ ...context.branding })],
 ]
+
+const DEMO_STAFF: [string, string, string, number][] = [
+  ['Rev. John Mwangi', 'Senior pastor', '254722100100', 65000], ['Esther Njoki', 'Church secretary', '254722100101', 28000],
+  ['Moses Kiprono', 'Caretaker', '254722100102', 15000], ['Ruth Achieng', 'Youth pastor', '254722100103', 35000],
+]
+
+/** Sample prayer requests. */
+function demoPrayer() {
+  const rows: [string, string, 'new' | 'praying' | 'answered', boolean, number][] = [
+    ['Faith Wanjiru', 'For my mother, who goes into surgery on Thursday. Pray for the doctors and for her peace.', 'new', true, 0.2],
+    ['', 'For a job. I have been looking for eight months and our savings are nearly gone.', 'new', false, 1],
+    ['Kevin Otieno', 'Thanksgiving: our daughter passed her KCSE exams. And guidance as she chooses a university.', 'praying', false, 2],
+    ['Grace Achieng', 'For healing in our marriage, and wisdom for us both.', 'praying', true, 4],
+    ['Samuel Mutua', 'For rain on our farm this season.', 'answered', false, 12],
+  ]
+  return rows.map(([name, request, status, call, days], i) => ({
+    id: i + 1, name, phone_number: name ? `2547110000${10 + i}` : '', member: null, member_name: null, branch: 1, branch_name: branchName(1), request,
+    confidential: false, wants_contact: call, status, note: status === 'answered' ? 'Prayed at the Wednesday meeting. Good rains came.' : '',
+    handled_by_name: status === 'new' ? null : 'pastor', handled_at: status === 'new' ? null : iso(db().now - days * DAY / 2), created_at: iso(db().now - days * DAY),
+  }))
+}
+
+/** Sample departments and groups. */
+function demoGroups() {
+  const rows: [string, 'department' | 'group', string, number, string][] = [
+    ['Choir', 'department', 'Leads worship at the main service. Practice on Thursdays at 6pm.', 24, 'Faith Wanjiru'],
+    ['Ushers', 'department', 'Welcome, seating, the offering and the check-in QR codes.', 16, 'Peter Mwangi'],
+    ['Youth fellowship', 'group', 'Ages 18 to 35. Saturdays at 3pm in the youth hall.', 38, 'Brian Otieno'],
+    ['Women’s guild', 'group', 'Prayer, welfare and the hospital visits rota.', 31, 'Mary Kamau'],
+    ['Sunday school', 'department', 'Teachers for the children’s classes.', 12, ''],
+  ]
+  return rows.map(([name, kind, description, count, lead], i) => ({
+    id: i + 1, name, kind, description, branch: null, branch_name: null, leads: lead ? [100 + i] : [], lead_names: lead ? [lead] : [],
+    is_active: true, member_count: count, i_lead: false, created_at: iso(db().now - (200 - i * 30) * DAY),
+  }))
+}
+
+/** Sample visitors: a few new faces, some who came back, one who has since joined. */
+function demoVisitors() {
+  const rows: [string, string, string, number, string, string, number, string][] = [
+    ['Lucy', 'Wairimu', '254733444555', 4, 'friend', 'contacted', 1, 'visitor'],
+    ['Tom', 'Okello', '254722100200', 1, 'walked_in', 'new', 2, 'visitor'],
+    ['Sharon', 'Akinyi', '254711300400', 2, 'online', 'new', 1, 'visitor'],
+    ['Eric', 'Mugo', '254700555666', 1, 'event', 'new', 3, 'visitor'],
+    ['Diana', 'Chepkoech', '254799888777', 3, 'friend', 'contacted', 2, 'visitor'],
+    ['Felix', 'Ndungu', '254712121212', 6, 'friend', 'contacted', 1, 'active'],
+  ]
+  return rows.map(([first, last, phone, visits, how, follow, branch, status], i) => ({
+    id: 9000 + i, membership_number: status === 'active' ? 'M0412' : `V${String(i + 1).padStart(4, '0')}`, first_name: first, last_name: last,
+    other_names: '', full_name: `${first} ${last}`, gender: '', phone_number: phone, email: '', address: '', branch, branch_name: branchName(branch),
+    status, first_visit: ymd(db().now - (visits * 7 + i) * DAY), how_heard: how, invited_by: null, invited_by_name: how === 'friend' ? db().members[i].full_name : null,
+    follow_up: follow, notes: '', visits, last_visit: ymd(db().now - (i % 3) * 7 * DAY), date_joined: status === 'active' ? ymd(db().now - 20 * DAY) : null,
+    created_at: iso(db().now - visits * 7 * DAY),
+  }))
+}
 
 function findOr404<T extends { id: number }>(list: T[], id: string | number): T {
   const found = list.find((x) => x.id === Number(id))

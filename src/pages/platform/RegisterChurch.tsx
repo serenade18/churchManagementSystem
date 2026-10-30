@@ -4,6 +4,7 @@ import { Smartphone } from 'lucide-react'
 import { PasswordInput } from '../../components/ui'
 import { AuthAlert, AuthField, AuthTitle, SignupSteps, StaffAuthLayout, authInput, authPassword, authPrimary } from '../../components/AuthShell'
 import { request } from '../../lib/api'
+import { COUNTRIES, DEFAULT_COUNTRY } from '../../lib/countries'
 import { useForm } from '../../lib/useForm'
 import { PhoneTile, VerifyStep, type Pending, type SignupResponse } from '../auth/Signup'
 
@@ -70,7 +71,7 @@ export default function RegisterChurch() {
 
 function DetailsStep({ onCreated }: { onCreated: (res: SignupResponse) => void }) {
   const { values, set, errors, error, busy, submit } = useForm<Record<string, string>>({
-    church_name: '', slug: '', location: '',
+    church_name: '', slug: '', location: '', country: DEFAULT_COUNTRY,
     first_name: '', last_name: '', username: '', email: '', phone_number: '', password: '', confirm_password: '',
   })
   const [slugEdited, setSlugEdited] = useState(false)
@@ -107,17 +108,20 @@ function DetailsStep({ onCreated }: { onCreated: (res: SignupResponse) => void }
             </div>
           </AuthField>
         </div>
-        <div className="sm:col-span-2">
-          <AuthField label="Location" optional error={errors.location}>
-            <input className={authInput} value={values.location} onChange={set('location')} placeholder="Kiambu town" />
-          </AuthField>
-        </div>
+        <AuthField label="Location" optional error={errors.location}>
+          <input className={authInput} value={values.location} onChange={set('location')} placeholder="Kiambu town" />
+        </AuthField>
+        <AuthField label="Country" error={errors.country}>
+          <select className={authInput} value={values.country} onChange={set('country')} autoComplete="country">
+            {Object.entries(COUNTRIES).map(([code, c]) => <option key={code} value={code}>{c.name}</option>)}
+          </select>
+        </AuthField>
 
         <p className="mt-2 text-[13px] font-semibold uppercase tracking-[0.12em] text-brand-700 sm:col-span-2">You, the church's owner</p>
         {input('first_name', 'First name', { autoComplete: 'given-name' })}
         {input('last_name', 'Last name', { autoComplete: 'family-name' })}
         {input('email', 'Email', { type: 'email', autoComplete: 'email' })}
-        {input('phone_number', 'Phone number', { type: 'tel', inputMode: 'tel', placeholder: '0712 345 678', autoComplete: 'tel' })}
+        {input('phone_number', 'Phone number', { type: 'tel', inputMode: 'tel', placeholder: COUNTRIES[values.country]?.example, autoComplete: 'tel' })}
         <div className="sm:col-span-2">{input('username', 'Username', { autoComplete: 'username' })}</div>
         {input('password', 'Password', { type: 'password', autoComplete: 'new-password' })}
         {input('confirm_password', 'Confirm password', { type: 'password', autoComplete: 'new-password' })}

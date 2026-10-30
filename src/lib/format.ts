@@ -1,5 +1,5 @@
 import { BRAND } from '../brand'
-import type { Channel, DonationStatus, Gender, MaritalStatus, MemberStatus, RegistrationStatus, ProjectStatus, Tone } from '../types'
+import type { Channel, DonationStatus, FollowUp, Gender, HowHeard, MaritalStatus, MemberStatus, PrayerStatus, RegistrationStatus, ProjectStatus, Tone } from '../types'
 
 const whole = new Intl.NumberFormat('en-KE', { maximumFractionDigits: 0 })
 type MoneyValue = string | number | null | undefined
@@ -42,6 +42,9 @@ export const PAYBILL_NUMBER = BRAND.paybill
 export const DONATION_STATUS: Record<DonationStatus, string> = { success: 'Success', pending: 'Pending', failed: 'Failed' }
 export const MEMBER_STATUS: Record<MemberStatus, string> = { active: 'Active', inactive: 'Inactive', transferred: 'Transferred', deceased: 'Deceased', visitor: 'Visitor' }
 export const REGISTRATION_STATUS: Record<RegistrationStatus, string> = { pending: 'Waiting', approved: 'Approved', rejected: 'Rejected' }
+export const HOW_HEARD: Record<HowHeard, string> = { friend: 'A friend or family member', walked_in: 'Walked in', event: 'An event or crusade', online: 'Online or social media', radio_tv: 'Radio or TV', other: 'Other' }
+export const FOLLOW_UP: Record<FollowUp, string> = { new: 'To follow up', contacted: 'Contacted', not_interested: 'Not interested' }
+export const PRAYER_STATUS: Record<PrayerStatus, string> = { new: 'New', praying: 'Praying', answered: 'Answered', closed: 'Closed' }
 export const GENDERS: Record<Gender, string> = { male: 'Male', female: 'Female' }
 export const MARITAL: Record<MaritalStatus, string> = { single: 'Single', married: 'Married', widowed: 'Widowed', divorced: 'Divorced' }
 export const PROJECT_STATUS: Record<ProjectStatus, string> = { planned: 'Planned', ongoing: 'Ongoing', on_hold: 'On Hold', completed: 'Completed' }
@@ -50,6 +53,7 @@ export const STATUS_TONES: Record<string, Tone> = {
   success: 'green', active: 'green', ongoing: 'blue', completed: 'green',
   pending: 'amber', planned: 'slate', on_hold: 'amber', inactive: 'slate',
   failed: 'red', transferred: 'purple', deceased: 'slate', visitor: 'blue', approved: 'green', rejected: 'red',
+  new: 'amber', contacted: 'green', not_interested: 'slate', praying: 'blue', answered: 'green', closed: 'slate',
 }
 
 export const SERVICE_TYPES: Record<string, string> = {
