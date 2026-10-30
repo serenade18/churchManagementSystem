@@ -24,8 +24,8 @@ export type Tone = 'green' | 'blue' | 'amber' | 'red' | 'purple' | 'slate'
 export type AccountStatus = 'active' | 'disabled' | 'unverified'
 
 export type Feature = 'dashboard' | 'members' | 'registrations' | 'giving' | 'paybill' | 'reconciliation'
-  | 'donation_types' | 'projects' | 'attendance' | 'sms' | 'branches' | 'wallet'
-export type RoleKey = 'branch_admin' | 'treasurer' | 'secretary' | 'communications' | 'pastor' | 'viewer'
+  | 'donation_types' | 'projects' | 'attendance' | 'sms' | 'branches' | 'wallet' | 'groups' | 'prayer' | 'payroll'
+export type RoleKey = 'branch_admin' | 'treasurer' | 'secretary' | 'communications' | 'pastor' | 'team_lead' | 'viewer'
 export interface RoleAssignment {
   role: RoleKey
   /** Empty: the whole church. */
@@ -58,6 +58,8 @@ export interface User {
   is_owner?: boolean
   /** Only from /auth/me: what this account may see and change. */
   access?: Partial<Record<Feature, FeatureAccess>>
+  /** Only from /auth/me: how many departments and groups this account leads (it manages them, whatever its roles). */
+  led_groups?: number
   /** The church this admin works for; null for platform admins. */
   church?: ChurchRef | null
   is_platform_admin?: boolean
@@ -130,6 +132,8 @@ export interface Branding extends PublicPage {
   cover_url?: string | null
   version?: number
   demo_enabled?: boolean
+  /** The church's country (ISO code), chosen when it signed up. */
+  country?: string
   /** True on the platform's own address (mkanisa.com): no church, just mKanisa. */
   platform?: boolean
   /** The church this address serves. */
@@ -216,6 +220,141 @@ export interface Member {
 
 export interface MemberSummary { total: number; active: number; new_this_month: number; gave_this_month: number | null; away: number; no_phone: number }
 
+// --- payroll ------------------------------------------------------------------------------------
+
+export interface StaffMember {
+  id: Id
+  name: string
+  title: string
+  phone_number: string
+  salary: Amount
+  is_active: boolean
+  notes: string
+  last_paid: string | null
+  created_at: string
+}
+
+export interface Payslip {
+  id: Id
+  staff: Id
+  name: string
+  title: string
+  amount: Amount
+  phone_number: string
+  status: 'awaiting_code' | 'processing' | 'paid' | 'failed'
+  provider_code: string
+  problem: string
+}
+
+export interface PayRun {
+  id: Id
+  period: string
+  status: 'awaiting_code' | 'paid'
+  total: Amount
+  payslips: Payslip[]
+  created_by_name: string | null
+  created_at: string
+  paid_at: string | null
+  failed?: number
+}
+
+export interface PayrollSummary { staff: number; monthly_salaries: Amount; paid_this_year: Amount; last_run: { period: string; total: Amount; paid_at: string } | null }
+
+// --- prayer requests -----------------------------------------------------------------------------
+
+export type PrayerStatus = 'new' | 'praying' | 'answered' | 'closed'
+
+export interface PrayerRequest {
+  id: Id
+  /** Empty: sent anonymously. */
+  name: string
+  phone_number: string
+  member: Id | null
+  member_name: string | null
+  branch: Id | null
+  branch_name: string | null
+  request: string
+  /** Only the owner and pastors see it. */
+  confidential: boolean
+  wants_contact: boolean
+  status: PrayerStatus
+  note: string
+  handled_by_name: string | null
+  handled_at: string | null
+  created_at: string
+}
+
+export interface PrayerSummary { new: number; praying: number; answered: number; this_week: number; wants_contact: number; latest: PrayerRequest[] }
+
+// --- departments and groups ---------------------------------------------------------------------
+
+export type GroupKind = 'department' | 'group'
+
+export interface Group {
+  id: Id
+  name: string
+  kind: GroupKind
+  description: string
+  branch: Id | null
+  branch_name: string | null
+  /** Team leads: staff accounts. */
+  leads: Id[]
+  lead_names: string[]
+  is_active: boolean
+  member_count: number
+  /** The signed-in account leads it. */
+  i_lead: boolean
+  created_at: string
+}
+
+export interface GroupMember {
+  id: Id
+  membership_number: string
+  full_name: string
+  phone_number: string
+  status: MemberStatus
+  branch_name: string | null
+  joined_at: string
+  added_by: string | null
+}
+
+export interface LeadOption { id: Id; name: string; username: string }
+
+// --- visitors (members with status "visitor", numbered V0001...) ---------------------------------
+
+export type HowHeard = 'friend' | 'walked_in' | 'event' | 'online' | 'radio_tv' | 'other'
+export type FollowUp = 'new' | 'contacted' | 'not_interested'
+
+export interface Visitor {
+  id: Id
+  membership_number: string
+  first_name: string
+  last_name: string
+  other_names: string
+  full_name: string
+  gender: Gender | ''
+  phone_number: string
+  email: string
+  address: string
+  branch: Id | null
+  branch_name: string | null
+  status: MemberStatus
+  first_visit: string | null
+  how_heard: HowHeard | ''
+  invited_by: Id | null
+  invited_by_name: string | null
+  follow_up: FollowUp | ''
+  notes: string
+  visits: number
+  last_visit: string | null
+  date_joined: string | null
+  created_at: string
+}
+
+export interface VisitorSummary { total: number; new_this_month: number; repeat: number; this_week: number; to_follow_up: number; joined_this_year: number }
+
+export interface Visit { service: Id; name: string; date: string; service_type: string; branch_name: string | null; method: 'manual' | 'qr' | 'sms'; checked_in_at: string }
+
 /** The fields a member picker needs; a full Member fits too. */
 export interface MemberRef {
   id: Id
@@ -266,6 +405,7 @@ export interface Registration {
   review_note: string
   possible_matches: PossibleMatch[]
   suggested_number: string | null
+  suggested_visitor_number?: string | null
   created_at: string
 }
 

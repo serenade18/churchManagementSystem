@@ -23,6 +23,7 @@ export default function Login() {
   const [error, setError] = useState('')
   const [churchUrl, setChurchUrl] = useState('')
   const [unverified, setUnverified] = useState(false)
+  const [opening, setOpening] = useState(false)
   const [busy, setBusy] = useState(false)
 
   // Where to go after signing in: the page that sent us here, else the dashboard for this role.
@@ -38,7 +39,9 @@ export default function Login() {
       await login(form.username, form.password) // the redirect above runs once the user is loaded
     } catch (e) {
       const err = e as ApiError
-      const data = err.data as { code?: string | string[]; detail?: string | string[]; church_url?: string[] } | null
+      const data = err.data as { code?: string | string[]; detail?: string | string[]; church_url?: string[]; open_url?: string[] } | null
+      // Church staff signing in on mkanisa.com: straight on to their church's office, already signed in.
+      if (data?.open_url?.[0]) { setChurchUrl(data.church_url?.[0] || ''); setOpening(true); window.location.assign(data.open_url[0]); return }
       setUnverified(([] as string[]).concat(data?.code || []).includes('unverified'))
       setChurchUrl(data?.church_url?.[0] || '') // a church's staff, signing in on the platform
       setError(err.status === 401 ? 'Incorrect username or password.' : data?.detail ? ([] as string[]).concat(data.detail).join(' ') : err.message)
@@ -60,7 +63,11 @@ export default function Login() {
     <StaffAuthLayout aside={aside}>
       <AuthTitle title="Sign in">{branding.platform ? "For church staff and mKanisa admins. We'll take you to your church." : "For the church's staff and admins."}</AuthTitle>
 
-      {churchUrl ? (
+      {churchUrl && opening ? (
+        <div role="status" className="rounded-2xl bg-brand-50 px-5 py-[18px] text-[15px] text-mk-forest">
+          Taking you to your church’s office at <span className="font-semibold">{churchUrl.replace(/^https?:\/\//, '')}</span>…
+        </div>
+      ) : churchUrl ? (
         <div role="status" className="flex flex-col gap-3 rounded-2xl bg-brand-50 px-5 py-[18px] text-[15px] text-mk-forest">
           <p>Your account is with your church. Sign in there, at <span className="font-semibold">{churchUrl.replace(/^https?:\/\//, '')}</span>.</p>
           <a href={`${churchUrl}/admin?username=${encodeURIComponent(form.username)}`} className={authPrimary}>Continue to your church</a>
@@ -85,7 +92,7 @@ export default function Login() {
           </div>
           <PasswordInput id="password" autoFocus={!!form.username} className={authPassword} aria-invalid={error ? true : undefined} autoComplete="current-password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
         </div>
-        <button className={`${authPrimary} mt-1`} disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
+        <button className={`${authPrimary} mt-1`} disabled={busy || opening}>{busy || opening ? 'Signing in…' : 'Sign in'}</button>
       </form>
 
       {demo && (

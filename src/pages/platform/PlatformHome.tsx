@@ -138,7 +138,7 @@ export default function PlatformHome() {
             ))}
           </nav>
           <div className="hidden items-center gap-x-5 text-[15px] font-medium lg:flex">
-            <Link to="/admin" className="hover:text-mk-mint">Sign in</Link>
+            <Link to="/admin" className="inline-flex min-h-11 items-center rounded-full border border-mk-ivory/45 px-5 font-semibold transition hover:border-mk-mint hover:text-mk-mint">Admin login</Link>
             <Link to="/start" className="inline-flex min-h-11 items-center rounded-full bg-mk-ivory px-5 font-semibold text-mk-forest transition hover:-translate-y-px hover:bg-white">Bring your church</Link>
           </div>
           {/* Phones and tablets: everything behind one button */}
@@ -155,7 +155,7 @@ export default function PlatformHome() {
                 ))}
               </nav>
               <div className="mt-2 flex flex-col gap-2 border-t border-mk-ivory/15 pt-3">
-                <Link to="/admin" className="flex min-h-12 items-center rounded-xl px-4 text-[17px] font-medium hover:bg-mk-ivory/10">Sign in</Link>
+                <Link to="/admin" className="flex min-h-12 items-center rounded-xl px-4 text-[17px] font-medium hover:bg-mk-ivory/10">Admin login</Link>
                 <Link to="/start" onClick={() => setMenuOpen(false)} className="inline-flex min-h-12 items-center justify-center rounded-full bg-mk-ivory px-5 font-semibold text-mk-forest hover:bg-white">Bring your church</Link>
               </div>
             </div>

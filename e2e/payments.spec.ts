@@ -44,3 +44,45 @@ test('gifts fill the wallet and the treasurer withdraws with a code', async ({ p
   const after = await (await request.get(`${API}/cms/wallet/`, { headers })).json()
   expect(Number(after.balance)).toBe(Number(wallet.balance) - 10000)
 })
+
+test('the treasurer pays salaries from the wallet', async ({ page, request }) => {
+  const headers = await authHeader(request, ACCOUNTS.super)
+  await request.post(SASAPAY_IPN, { data: {
+    MerchantCode: '600980', BusinessShortCode: '600980', TransID: `E2E${unique()}`, FullName: 'GRACE NJERI',
+    MSISDN: '254711000001', TransAmount: '30000.00', TransTime: '20261029100000', BillRefNumber: '0711000001',
+  } })
+  const before = Number((await (await request.get(`${API}/cms/wallet/`, { headers })).json()).balance)
+  const name = `Caretaker ${unique()}`
+
+  // The clerk is a treasurer (and gets their own code: the owner may have just had one)
+  await login(page, ACCOUNTS.clerk)
+  await expect(page).toHaveURL(/\/dashboard$/)
+  await page.goto('/payments')
+  await page.getByRole('button', { name: 'Payroll' }).click()
+  await page.getByRole('button', { name: 'Add staff' }).click()
+  const form = page.getByRole('dialog', { name: 'Add staff' })
+  await form.getByLabel('Name *').fill(name)
+  await form.getByLabel('M-PESA number *').fill('0722000009')
+  await form.getByLabel('Monthly salary (KES) *').fill('8000')
+  await form.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByRole('row', { name: new RegExp(name) })).toContainText('KES 8,000')
+
+  await page.getByRole('button', { name: 'Pay salaries' }).click()
+  const pay = page.getByRole('dialog', { name: 'Pay salaries' })
+  // Only this person: others may be on the payroll from earlier runs
+  for (const box of await pay.getByRole('checkbox').all()) await box.uncheck()
+  await pay.getByRole('listitem').filter({ hasText: name }).getByRole('checkbox').check()
+  await pay.getByLabel(`Pay ${name}`).fill('8500')
+  await pay.getByRole('button', { name: 'Send me a code' }).click()
+  let code = ''
+  await expect.poll(async () => {
+    code = (await smsTo(request, ACCOUNTS.clerk.phone)).at(-1)?.text.match(/^(\d{6}) is your code for paying KES 8,500 in salaries/)?.[1] || ''
+    return code
+  }).toBeTruthy()
+  await pay.getByLabel('Code').fill(code)
+  await pay.getByRole('button', { name: 'Pay KES 8,500' }).click()
+  await expect(page.getByText(/KES 8,500 in salaries for .* is on its way\./)).toBeVisible()
+  await expect(page.getByRole('row', { name: new RegExp(name) })).not.toContainText('Not yet')
+  const after = Number((await (await request.get(`${API}/cms/wallet/`, { headers })).json()).balance)
+  expect(before - after).toBe(8500)
+})

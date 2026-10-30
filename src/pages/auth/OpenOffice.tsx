@@ -7,7 +7,8 @@ import { homeFor, useAuth } from '../../lib/auth'
 import { branding } from '../../lib/theme'
 import type { Tokens } from '../../types'
 
-/** /admin/open#<token>: a platform admin arriving from the platform's "Open church office", signed in here. */
+/** /admin/open#<token>: a platform admin arriving from the platform's "Open church office", or church staff who
+ * signed in on mkanisa.com, signed in here. */
 export default function OpenOffice() {
   const { user, acceptTokens } = useAuth()
   const [error, setError] = useState('')
@@ -33,7 +34,7 @@ export default function OpenOffice() {
   )
   return (
     <StaffAuthLayout aside={aside}>
-      <AuthTitle title="Opening the church office">As an mKanisa platform admin.</AuthTitle>
+      <AuthTitle title="Opening the church office">Signing you in…</AuthTitle>
       {error ? (
         <>
           <AuthAlert>{error}</AuthAlert>

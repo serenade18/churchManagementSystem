@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { type LucideIcon, Building2, Church, CreditCard, Eye, Inbox, CalendarCheck, FolderKanban, HandCoins, KeyRound, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, UserPlus, Users, Wallet, X } from 'lucide-react'
+import { type LucideIcon, Boxes, Building2, Church, CreditCard, Eye, Inbox, CalendarCheck, FolderKanban, HandCoins, HandHeart, KeyRound, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Smartphone, Tags, UserPlus, UserRoundPlus, Users, Wallet, X } from 'lucide-react'
 import { api } from '../lib/api'
-import { can, isOwner, roleLabel } from '../lib/access'
+import { can, isOwner, roleLabel, seesGroups } from '../lib/access'
 import { useAuth } from '../lib/auth'
 import Logo from './Logo'
 import { branding } from '../lib/theme'
-import type { Feature, Page, PaybillPayment, Registration, User } from '../types'
+import type { Feature, Page, PaybillPayment, PrayerRequest, Registration, User } from '../types'
 
 interface NavItem {
   to: string
   label: string
   icon: LucideIcon
-  badge?: 'unallocated' | 'registrations'
+  badge?: 'unallocated' | 'registrations' | 'prayer'
   feature?: Feature
 }
 
@@ -20,12 +20,15 @@ interface NavItem {
 const NAV: NavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, feature: 'dashboard' },
   { to: '/members', label: 'Members', icon: Users, feature: 'members' },
+  { to: '/visitors', label: 'Visitors', icon: UserRoundPlus, feature: 'members' },
   { to: '/registrations', label: 'Registrations', icon: UserPlus, badge: 'registrations', feature: 'registrations' },
   { to: '/donations', label: 'Donations', icon: HandCoins, feature: 'giving' },
   { to: '/paybill', label: 'Paybill', icon: Smartphone, badge: 'unallocated', feature: 'paybill' },
   { to: '/payments', label: 'Payments', icon: Wallet, feature: 'wallet' },
   { to: '/donation-types', label: 'Donation types', icon: Tags, feature: 'donation_types' },
   { to: '/attendance', label: 'Attendance', icon: CalendarCheck, feature: 'attendance' },
+  { to: '/groups', label: 'Departments & groups', icon: Boxes, feature: 'groups' },
+  { to: '/prayer-requests', label: 'Prayer requests', icon: HandHeart, badge: 'prayer', feature: 'prayer' },
   { to: '/branches', label: 'Branches', icon: Building2, feature: 'branches' },
   { to: '/projects', label: 'Projects', icon: FolderKanban, feature: 'projects' },
   { to: '/sms', label: 'Bulk SMS', icon: MessageSquare, feature: 'sms' },
@@ -40,13 +43,13 @@ function roleSummary(user: User | null) {
   if (!user) return ''
   if (user.is_platform_admin) return 'mKanisa platform admin'
   if (user.is_owner) return 'Owner'
-  return user.roles?.length ? user.roles.map((r) => roleLabel(r.role)).join(' · ') : 'No role yet'
+  return user.roles?.length ? user.roles.map((r) => roleLabel(r.role)).join(' · ') : user.led_groups ? 'Team lead' : 'No role yet'
 }
 
 export default function Layout() {
   const { user, logout } = useAuth()
   const [open, setOpen] = useState(false)
-  const [counts, setCounts] = useState({ unallocated: 0, registrations: 0 })
+  const [counts, setCounts] = useState({ unallocated: 0, registrations: 0, prayer: 0 })
   const location = useLocation()
 
   // Badges: Paybill payments waiting to be allocated, sign-ups waiting for review; on the platform,
@@ -63,13 +66,18 @@ export default function Layout() {
       .then((d) => setCounts((c) => ({ ...c, unallocated: d.count }))).catch(() => {})
     const loadRegistrations = () => api.get<Page<Registration>>('/cms/registrations/', { status: 'pending', page_size: 1 })
       .then((d) => setCounts((c) => ({ ...c, registrations: d.count }))).catch(() => {})
+    const loadPrayer = () => api.get<Page<PrayerRequest>>('/cms/prayer-requests/', { status: 'new', page_size: 1 })
+      .then((d) => setCounts((c) => ({ ...c, prayer: d.count }))).catch(() => {})
     if (can(user, 'paybill')) loadPaybill()
     if (can(user, 'registrations')) loadRegistrations()
+    if (can(user, 'prayer')) loadPrayer()
     window.addEventListener('cms:paybill-changed', loadPaybill)
     window.addEventListener('cms:registrations-changed', loadRegistrations)
+    window.addEventListener('cms:prayer-changed', loadPrayer)
     return () => {
       window.removeEventListener('cms:paybill-changed', loadPaybill)
       window.removeEventListener('cms:registrations-changed', loadRegistrations)
+      window.removeEventListener('cms:prayer-changed', loadPrayer)
     }
   }, [location.pathname, user])
   const platform = branding.platform
@@ -81,7 +89,7 @@ export default function Layout() {
           { to: '/platform/integrations', label: 'Integrations', icon: KeyRound },
           { to: '/users', label: 'Platform admins', icon: ShieldCheck }]
       : [
-          ...NAV.filter((item) => !item.feature || can(user, item.feature)),
+          ...NAV.filter((item) => !item.feature || (item.feature === 'groups' ? seesGroups(user) : can(user, item.feature))),
           ...(isOwner(user) ? [{ to: '/users', label: 'Staff & roles', icon: ShieldCheck }] : []),
         ]),
     { to: '/settings', label: 'Settings', icon: Settings },
@@ -120,7 +128,7 @@ export default function Layout() {
             <Icon className="h-[18px] w-[18px]" /> {label}
             {badge && counts[badge] > 0 && (
               <span className={`ml-auto min-w-[22px] rounded-full px-[7px] text-center text-xs font-bold leading-[22px] ${platform ? 'bg-mk-gold text-mk-forest' : 'bg-white text-sidebar'}`}
-                title={platform ? 'Churches waiting on their owner' : badge === 'unallocated' ? 'Payments to allocate' : 'Sign-ups to review'}>{counts[badge]}</span>
+                title={platform ? 'Churches waiting on their owner' : badge === 'unallocated' ? 'Payments to allocate' : badge === 'prayer' ? 'New prayer requests' : 'Sign-ups to review'}>{counts[badge]}</span>
             )}
           </NavLink>
         ))}

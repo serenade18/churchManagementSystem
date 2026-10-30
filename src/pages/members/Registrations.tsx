@@ -20,7 +20,7 @@ function Review({ reg, onClose, onDone }: { reg: Registration; onClose: () => vo
   const pending = reg.status === 'pending'
   const [link, setLink] = useState<Id | ''>(reg.possible_matches.find((m) => m.reason === 'Same phone number')?.id || '')
   const [form, setForm] = useState<{ membership_number: string; branch: Id | string; status: string; notify: boolean }>({
-    membership_number: reg.suggested_number || '', branch: reg.branch || '',
+    membership_number: (reg.kind === 'visitor' ? reg.suggested_visitor_number : reg.suggested_number) || '', branch: reg.branch || '',
     status: reg.kind === 'visitor' ? 'visitor' : 'active', notify: true,
   })
   const [rejecting, setRejecting] = useState(false)
@@ -106,7 +106,12 @@ function Review({ reg, onClose, onDone }: { reg: Registration; onClose: () => vo
               </>
             )}
             <Field label="Add as">
-              <Select value={form.status} onChange={(v) => setForm({ ...form, status: v })} options={{ active: 'Member (active)', visitor: 'Visitor' }} />
+              <Select value={form.status} onChange={(v) => setForm({
+                ...form, status: v,
+                // Visitors are numbered in their own series: swap the suggestion unless it was typed over.
+                membership_number: [reg.suggested_number, reg.suggested_visitor_number].includes(form.membership_number)
+                  ? (v === 'visitor' ? reg.suggested_visitor_number : reg.suggested_number) || '' : form.membership_number,
+              })} options={{ active: 'Member (active)', visitor: 'Visitor' }} />
             </Field>
           </div>
           <label className="flex items-center gap-2 text-sm text-mk-slate">

@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { CalendarCheck, CalendarDays, MessageSquare, Plus, UserX, Users } from 'lucide-react'
 import ServiceForm from '../../components/ServiceForm'
 import CheckInCodes from './CheckInCodes'
+import DailyReport from './DailyReport'
 import { Alert, PageHeader, Pagination, Select, StatCard, Table } from '../../components/ui'
 import { useApi, useOptions } from '../../lib/hooks'
 import { SERVICE_TYPES, date } from '../../lib/format'
@@ -102,6 +103,7 @@ export default function Attendance() {
       </div>
 
       <CheckInCodes />
+      <DailyReport branch={branch} />
 
       <div className="mb-3 mt-8 flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">Services</h2>

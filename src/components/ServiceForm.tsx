@@ -50,7 +50,7 @@ export default function ServiceForm({ service, onClose, onSaved }: ServiceFormPr
         <Field label="Branch" error={errors.branch} hint="Members of this branch make up the attendance list.">
           <Select value={values.branch} onChange={set('branch')} options={branches.map((b) => ({ value: b.id, label: b.name }))} placeholder="Church-wide" />
         </Field>
-        <Field label="Visitors (head count)" error={errors.visitor_count}><input className="input" type="number" min="0" value={values.visitor_count} onChange={set('visitor_count')} /></Field>
+        <Field label="Other visitors (head count)" error={errors.visitor_count} hint="Visitors not added by name."><input className="input" type="number" min="0" value={values.visitor_count} onChange={set('visitor_count')} /></Field>
         <Field label="Of them, first-timers" error={errors.first_timers} hint="Visitors here for the first time.">
           <input className="input" type="number" min="0" value={values.first_timers} onChange={set('first_timers')} />
         </Field>

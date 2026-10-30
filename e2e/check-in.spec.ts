@@ -45,6 +45,11 @@ test('admins make check-in codes and members scan one to check in', async ({ pag
   await expect(page.getByRole('button', { name: new RegExp(MEMBER.name) })).toContainText(/QR \d\d:\d\d/)
   await phone.close()
 
+  // ...and in the day-by-day report
+  await page.goto('/attendance')
+  const daily = page.getByRole('region', { name: 'Daily attendance' })
+  await expect(daily.getByRole('row', { name: new RegExp(name) })).toContainText(/\d+ by QR/)
+
   const headers = await authHeader(request, ACCOUNTS.super)
   expect((await request.get(`${API}/cms/services/?search=${encodeURIComponent(name)}`, { headers })).ok()).toBeTruthy()
 })

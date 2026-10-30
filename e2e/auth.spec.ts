@@ -24,7 +24,8 @@ test.describe('Sign in', () => {
     await expect(page).toHaveURL(/\/dashboard$/)
     await expect(page.getByRole('heading', { level: 1, name: /^Good (morning|afternoon|evening)/ })).toBeVisible()
     await expect(sidebarLinks(page)).toHaveText(
-      ['Dashboard', 'Members', /^\s*Registrations\d*$/, 'Donations', 'Paybill', 'Payments', 'Donation types', 'Attendance', 'Branches', 'Projects', 'Bulk SMS', 'Settings'],
+      ['Dashboard', 'Members', 'Visitors', /^\s*Registrations\d*$/, 'Donations', 'Paybill', 'Payments', 'Donation types', 'Attendance',
+        'Departments & groups', /^\s*Prayer requests\d*$/, 'Branches', 'Projects', 'Bulk SMS', 'Settings'],
     )
     await page.getByRole('button', { name: 'Sign out' }).click()
     await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible()
@@ -33,8 +34,8 @@ test.describe('Sign in', () => {
   test('the church owner sees every page, plus staff and the system overview', async ({ page }) => {
     await login(page, ACCOUNTS.super)
     await expect(page).toHaveURL(/\/dashboard$/)
-    await expect(sidebarLinks(page)).toHaveText(['Dashboard', 'Members', /^\s*Registrations\d*$/, 'Donations', 'Paybill', 'Payments',
-      'Donation types', 'Attendance', 'Branches', 'Projects', 'Bulk SMS', 'Staff & roles', 'System', 'Settings'])
+    await expect(sidebarLinks(page)).toHaveText(['Dashboard', 'Members', 'Visitors', /^\s*Registrations\d*$/, 'Donations', 'Paybill', 'Payments',
+      'Donation types', 'Attendance', 'Departments & groups', /^\s*Prayer requests\d*$/, 'Branches', 'Projects', 'Bulk SMS', 'Staff & roles', 'System', 'Settings'])
     await page.getByRole('link', { name: 'System' }).click()
     await expect(page.getByRole('heading', { name: 'System overview' })).toBeVisible()
   })

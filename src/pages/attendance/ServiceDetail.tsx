@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Check, Download, MessageSquare, Pencil, Search, Trash2, UserCheck } from 'lucide-react'
+import { ArrowLeft, Check, Download, MessageSquare, Pencil, Search, Trash2, UserCheck, UserRoundPlus } from 'lucide-react'
 import ServiceForm from '../../components/ServiceForm'
+import VisitorForm from '../../components/VisitorForm'
 import { Alert, ConfirmDialog, Modal, Spinner } from '../../components/ui'
 import { api, downloadCsv, errorMessage } from '../../lib/api'
 import { useApi, useDebounced } from '../../lib/hooks'
@@ -84,11 +85,15 @@ export default function ServiceDetail() {
   const [editing, setEditing] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [sending, setSending] = useState(false)
+  const [addingVisitor, setAddingVisitor] = useState(false)
   const [actionError, setActionError] = useState('')
   const can = useCan()
 
   const members = roster.data || []
   const presentCount = members.filter((m) => m.present).length
+  // Registered visitors are on the list too; the head count is everyone else who came.
+  const visitorsPresent = members.filter((m) => m.present && m.status === 'visitor').length
+  const expected = members.filter((m) => m.status !== 'visitor').length
   const shown = useMemo(() => members.filter((m) =>
     (filter === 'all' || (filter === 'present') === m.present) &&
     (!term || m.full_name.toLowerCase().includes(term) || m.membership_number.toLowerCase().includes(term))), [members, filter, term])
@@ -173,10 +178,10 @@ export default function ServiceDetail() {
           </div>
         </div>
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Stat label="Members present" value={presentCount} />
-          <Stat label="Visitors" value={service.first_timers ? `${service.visitor_count} (${service.first_timers} new)` : service.visitor_count} />
+          <Stat label="Members present" value={presentCount - visitorsPresent} />
+          <Stat label="Visitors" value={`${visitorsPresent + service.visitor_count}${service.first_timers ? ` (${service.first_timers} new)` : ''}`} />
           <Stat label="Total attendance" value={presentCount + service.visitor_count} />
-          <Stat label="Of expected members" value={members.length ? `${Math.round((presentCount / members.length) * 100)}%` : '—'} />
+          <Stat label="Of expected members" value={expected ? `${Math.round(((presentCount - visitorsPresent) / expected) * 100)}%` : '—'} />
         </div>
       </div>
 
@@ -188,6 +193,9 @@ export default function ServiceDetail() {
             <input className="input pl-9" placeholder="Check in: type a membership number or a name, then Enter" aria-label="Check in" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
           </div>
           <button className="btn-primary">Check in</button>
+          {can('members', true) && can('attendance', true) && (
+            <button type="button" className="btn-secondary whitespace-nowrap" onClick={() => setAddingVisitor(true)}><UserRoundPlus className="h-4 w-4" /> Add visitor</button>
+          )}
         </form>
         {notice && <Alert tone={notice.tone}>{notice.text}</Alert>}
 
@@ -234,6 +242,10 @@ export default function ServiceDetail() {
       </div>
 
       {sending && <SendLinks service={service} onClose={() => setSending(false)} onSent={(text) => { setSending(false); setNotice({ tone: 'green', text }) }} />}
+      {addingVisitor && (
+        <VisitorForm service={service} onClose={() => setAddingVisitor(false)}
+          onSaved={(v) => { setAddingVisitor(false); roster.reload(); setNotice({ tone: 'green', text: `${v.full_name} added as a visitor and checked in.` }) }} />
+      )}
       {editing && <ServiceForm service={service} onClose={() => setEditing(false)} onSaved={() => { setEditing(false); reload(); roster.reload() }} />}
       <ConfirmDialog open={deleting} onClose={() => setDeleting(false)} onConfirm={remove} title="Delete service"
         message={`Delete ${service.name} on ${date(service.date)} and its attendance records?`} />

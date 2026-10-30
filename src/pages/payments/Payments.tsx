@@ -7,6 +7,7 @@ import { useAuth } from '../../lib/auth'
 import { dateTime } from '../../lib/format'
 import { useApi } from '../../lib/hooks'
 import type { Page, WalletEntry, WalletSummary, Withdrawal } from '../../types'
+import Payroll from './Payroll'
 
 // The church's wallet: gifts paid to mKanisa's SasaPay merchant code are held here, less the
 // platform's fee, and withdrawn to M-PESA. A withdrawal is confirmed with a code SMSed to whoever
@@ -72,7 +73,7 @@ function Withdraw({ wallet, onClose, onDone }: { wallet: WalletSummary; onClose:
 
 export default function Payments() {
   const can = useCan()
-  const [tab, setTab] = useState<'entries' | 'withdrawals'>('entries')
+  const [tab, setTab] = useState<'entries' | 'withdrawals' | 'payroll'>('entries')
   const [page, setPage] = useState(1)
   const [withdrawing, setWithdrawing] = useState(false)
   const [notice, setNotice] = useState('')
@@ -114,12 +115,14 @@ export default function Payments() {
       </div>
 
       <div className="mb-3 mt-8 flex border-b border-mk-border">
-        {([['entries', 'Transactions'], ['withdrawals', 'Withdrawals']] as const).map(([k, label]) => (
+        {([['entries', 'Transactions'], ['withdrawals', 'Withdrawals'], ...(can('payroll') ? [['payroll', 'Payroll']] as const : [])] as const).map(([k, label]) => (
           <button key={k} onClick={() => { setTab(k); setPage(1) }}
             className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${tab === k ? 'border-brand-700 text-brand-800' : 'border-transparent text-mk-muted hover:text-mk-slate'}`}>{label}</button>
         ))}
       </div>
-      {tab === 'entries' ? (
+      {tab === 'payroll' ? (
+        <Payroll wallet={w || null} onPaid={() => { wallet.reload(); entries.reload() }} />
+      ) : tab === 'entries' ? (
         <>
           <Table columns={entryColumns} rows={entries.data?.results} loading={entries.loading} empty="Nothing yet. Gifts paid to mKanisa’s SasaPay account show here as they arrive." />
           <Pagination page={page} count={entries.data?.count} onChange={setPage} />

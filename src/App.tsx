@@ -2,9 +2,9 @@ import { lazy, Suspense, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Layout from './components/Layout'
 import { Spinner } from './components/ui'
-import { can, isOwner } from './lib/access'
+import { can, isOwner, seesGroups } from './lib/access'
 import { AuthProvider, homeFor, useAuth } from './lib/auth'
-import type { Feature } from './types'
+import type { Feature, User } from './types'
 import Branches from './pages/branches/Branches'
 import Donations from './pages/donations/Donations'
 import DonationTypes from './pages/donations/DonationTypes'
@@ -12,6 +12,8 @@ import ForgotPassword from './pages/auth/ForgotPassword'
 import ChurchHome from './pages/public/ChurchHome'
 import CheckIn from './pages/public/CheckIn'
 import ConfirmAttendance from './pages/public/ConfirmAttendance'
+import Pray from './pages/public/Pray'
+import PrayerRequests from './pages/prayer/PrayerRequests'
 import Give from './pages/give/Give'
 import Portal from './pages/public/Portal'
 import Register from './pages/public/Register'
@@ -31,6 +33,9 @@ import Signup from './pages/auth/Signup'
 import Sms from './pages/sms/Sms'
 import StatementPrint from './pages/print/StatementPrint'
 import Users from './pages/admin/Users'
+import Visitors from './pages/visitors/Visitors'
+import Groups from './pages/groups/Groups'
+import GroupDetail from './pages/groups/GroupDetail'
 import NoAccess from './pages/admin/NoAccess'
 import NoChurch from './pages/platform/NoChurch'
 import PlatformChurches from './pages/platform/PlatformChurches'
@@ -47,13 +52,14 @@ import { branding } from './lib/theme'
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'))
 const Attendance = lazy(() => import('./pages/attendance/Attendance'))
 
-/** Signed in, and (``owner``) the church owner or a platform admin, or (``feature``) a role that opens it. */
-function RequireAuth({ children, owner = false, feature }: { children: ReactNode; owner?: boolean; feature?: Feature }) {
+/** Signed in, and (``owner``) the church owner or a platform admin, or (``feature``) a role that opens it,
+ * or (``allow``) whatever else lets this account in. */
+function RequireAuth({ children, owner = false, feature, allow }: { children: ReactNode; owner?: boolean; feature?: Feature; allow?: (user: User) => boolean }) {
   const { user, loading } = useAuth()
   const location = useLocation()
   if (loading) return <div className="flex h-screen items-center justify-center"><Spinner className="h-8 w-8" /></div>
   if (!user) return <Navigate to="/admin" replace state={{ from: location }} />
-  if ((owner && !isOwner(user)) || (feature && !can(user, feature))) return <Navigate to={homeFor(user)} replace />
+  if ((owner && !isOwner(user)) || (feature && !can(user, feature)) || (allow && !allow(user))) return <Navigate to={homeFor(user)} replace />
   return children
 }
 
@@ -103,6 +109,7 @@ export default function App() {
           {/* The church's public site; church staff sign in at /admin */}
           <Route path="/" element={<ChurchHome />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/pray" element={<Pray />} />
           {/* Members checking in: a check-in QR code, or their own link from an SMS */}
           <Route path="/checkin/:code" element={<CheckIn />} />
           <Route path="/a/:code" element={<ConfirmAttendance />} />
@@ -125,6 +132,7 @@ export default function App() {
             <Route path="/dashboard" element={<RequireAuth feature="dashboard">{lazyPage(<Dashboard />)}</RequireAuth>} />
             <Route path="/members" element={<RequireAuth feature="members"><Members /></RequireAuth>} />
             <Route path="/members/:id" element={<RequireAuth feature="members"><MemberDetail /></RequireAuth>} />
+            <Route path="/visitors" element={<RequireAuth feature="members"><Visitors /></RequireAuth>} />
             <Route path="/registrations" element={<RequireAuth feature="registrations"><Registrations /></RequireAuth>} />
             <Route path="/donations" element={<RequireAuth feature="giving"><Donations /></RequireAuth>} />
             <Route path="/branches" element={<RequireAuth feature="branches"><Branches /></RequireAuth>} />
@@ -135,6 +143,9 @@ export default function App() {
             <Route path="/donation-types" element={<RequireAuth feature="donation_types"><DonationTypes /></RequireAuth>} />
             <Route path="/attendance" element={<RequireAuth feature="attendance">{lazyPage(<Attendance />)}</RequireAuth>} />
             <Route path="/attendance/:id" element={<RequireAuth feature="attendance"><ServiceDetail /></RequireAuth>} />
+            <Route path="/prayer-requests" element={<RequireAuth feature="prayer"><PrayerRequests /></RequireAuth>} />
+            <Route path="/groups" element={<RequireAuth allow={seesGroups}><Groups /></RequireAuth>} />
+            <Route path="/groups/:id" element={<RequireAuth allow={seesGroups}><GroupDetail /></RequireAuth>} />
             <Route path="/users" element={<RequireAuth owner><Users /></RequireAuth>} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
