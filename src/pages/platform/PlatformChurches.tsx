@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ExternalLink, KeyRound, LogIn, Pencil, Plus, UserPlus } from 'lucide-react'
+import { ExternalLink, KeyRound, LogIn, Pencil, Plus, Trash2, UserPlus } from 'lucide-react'
 import { Alert, Badge, Field, Modal, PageHeader, Table, type Column } from '../../components/ui'
-import { api, errorMessage } from '../../lib/api'
+import { api, errorMessage, request } from '../../lib/api'
 import { useApi } from '../../lib/hooks'
 import { date } from '../../lib/format'
 import { useForm } from '../../lib/useForm'
@@ -102,12 +102,55 @@ function FirstAdmin({ church, onClose, onDone }: { church: PlatformChurch; onClo
   )
 }
 
+/** Deleting a church for good: they type its address first, so it can't be done by a slip of the mouse. */
+function DeleteChurch({ church, onClose, onDeleted }: { church: PlatformChurch; onClose: () => void; onDeleted: () => void }) {
+  const [typed, setTyped] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const matches = typed.trim().toLowerCase() === church.slug
+  const remove = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!matches) return
+    setBusy(true)
+    setError('')
+    try {
+      await request(`/platform/churches/${church.id}/`, { method: 'DELETE', params: { confirm: church.slug } })
+      onDeleted()
+    } catch (err) {
+      setError(errorMessage(err))
+      setBusy(false)
+    }
+  }
+  return (
+    <Modal open onClose={onClose} title={`Delete ${church.name}?`}
+      footer={<><button className="btn-secondary" onClick={onClose}>Cancel</button><button className="btn-danger" form="delete-church" disabled={!matches || busy}>{busy ? 'Deleting…' : 'Delete for good'}</button></>}>
+      <Alert>{error}</Alert>
+      <form id="delete-church" onSubmit={remove} className="grid gap-4">
+        <p className="text-[15px] text-mk-slate">
+          This removes the church and everything in it straight away: its {church.member_count} {church.member_count === 1 ? 'member' : 'members'},
+          giving records, attendance, groups, payroll, messages and branding, and its {church.admin_count} {church.admin_count === 1 ? "admin's account" : "admins' accounts"}.
+          {' '}<span className="font-medium">{church.domain || church.slug}</span> stops working. It can't be undone.
+        </p>
+        {church.is_active && (
+          <p className="rounded-lg bg-[#FBF4E4] px-3 py-2 text-[13px] text-[#8A5A00]">
+            To keep its records instead, close it: edit the church and untick "Open".
+          </p>
+        )}
+        <Field label={<>Type <span className="font-mono">{church.slug}</span> to confirm</>}>
+          <input className="input font-mono" autoFocus autoComplete="off" spellCheck={false} value={typed} onChange={(e) => setTyped(e.target.value)} />
+        </Field>
+      </form>
+    </Modal>
+  )
+}
+
 /** Platform admins: every church on mKanisa. */
 export default function PlatformChurches() {
   const { data, loading, error, reload } = useApi<Page<PlatformChurch> | PlatformChurch[]>('/platform/churches/', { page_size: 500 })
   const rows = Array.isArray(data) ? data : data?.results
   const [editing, setEditing] = useState<PlatformChurch | 'new' | null>(null)
   const [adding, setAdding] = useState<PlatformChurch | null>(null)
+  const [deleting, setDeleting] = useState<PlatformChurch | null>(null)
   const [notice, setNotice] = useState('')
   const [failed, setFailed] = useState('')
   // From the overview: ?new=1 opens "Add a church", ?edit=<id> that church (e.g. to fix its M-PESA keys).
@@ -150,6 +193,7 @@ export default function PlatformChurches() {
         <button className="btn-secondary px-2 py-1 text-xs" onClick={() => openOffice(c)} title="Open church office (signed in as you)"><LogIn className="h-4 w-4" /></button>
         <button className="btn-secondary px-2 py-1 text-xs" onClick={() => setAdding(c)} title="Add an admin"><UserPlus className="h-4 w-4" /></button>
         <button className="btn-secondary px-2 py-1 text-xs" onClick={() => setEditing(c)} title="Edit"><Pencil className="h-4 w-4" /></button>
+        <button className="btn-secondary px-2 py-1 text-xs text-[#8E2F22]" onClick={() => setDeleting(c)} title="Delete" aria-label={`Delete ${c.name}`}><Trash2 className="h-4 w-4" /></button>
       </span>
     ) },
   ]
@@ -167,6 +211,11 @@ export default function PlatformChurches() {
         setNotice(editing === 'new' ? `${c.name} is live at ${c.url}. Next, add its first admin.` : `${c.name} saved.`)
         reload()
         if (editing === 'new') setAdding(c)
+      }} />}
+      {deleting && <DeleteChurch church={deleting} onClose={() => setDeleting(null)} onDeleted={() => {
+        setNotice(`${deleting.name} was deleted.`)
+        setDeleting(null)
+        reload()
       }} />}
       {adding && <FirstAdmin church={adding} onClose={() => setAdding(null)} onDone={(signIn) => {
         setAdding(null)
