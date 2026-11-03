@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent, type InputHTMLAttributes } from 'react'
 import { Link } from 'react-router-dom'
-import { type LucideIcon, Check, ChevronDown, Clock, FileText } from 'lucide-react'
-import { AuthAlert, AuthField, MemberAuthLayout, MemberFooter, authInput, authLabel, authPrimary, churchPhoto, shade } from '../../components/AuthShell'
-import { request } from '../../lib/api'
+import { type LucideIcon, Check, ChevronDown, Clock, FileText, MessageSquareMore } from 'lucide-react'
+import { AuthAlert, AuthField, CodeInput, MemberAuthLayout, MemberFooter, ResendCode, authInput, authLabel, authPrimary, churchPhoto, maskPhone, shade, useCountdown } from '../../components/AuthShell'
+import { errorMessage, request } from '../../lib/api'
 import { GENDERS, MARITAL } from '../../lib/format'
 import { branding } from '../../lib/theme'
 import { useForm } from '../../lib/useForm'
@@ -12,27 +12,55 @@ const EMPTY = {
   kind: 'member', first_name: '', last_name: '', other_names: '', phone_number: '', email: '', gender: '',
   date_of_birth: '', marital_status: '', address: '', branch: '', previous_church: '', message: '', consent: false,
 }
+const RESEND_SECONDS = 60
 
-/** The church's /register page: members and visitors send their details for the church office to review. */
+/** The church's /register page: members and visitors sign up, confirm their phone with an SMS code, and are welcomed straight away. */
 export default function Register() {
   const [branches, setBranches] = useState<RegisterPage['branches']>([])
   const [done, setDone] = useState<{ name: string; detail: string } | null>(null)
   const { values, setValues, set, errors, error, busy, submit } = useForm(EMPTY)
+  const [sentTo, setSentTo] = useState<string | null>(null)
+  const [note, setNote] = useState('')
+  const [code, setCode] = useState('')
+  const [codeError, setCodeError] = useState('')
+  const [checking, setChecking] = useState(false)
+  const [wait, restartWait] = useCountdown(RESEND_SECONDS)
   const more = errors.marital_status || errors.address || errors.previous_church || errors.message // open the extras when one needs fixing
 
   useEffect(() => {
     request<RegisterPage>('/public/register/', { auth: false }).then((d) => setBranches(d.branches)).catch(() => {})
   }, [])
 
-  const send = async (e: FormEvent) => {
-    e.preventDefault()
+  // Sending the details (again, to resend) texts a code to the phone.
+  const send = async (e?: FormEvent) => {
+    e?.preventDefault()
+    setCodeError('')
     const body = Object.fromEntries(Object.entries(values).filter(([, v]) => v !== ''))
-    const res = await submit(() => request<{ detail: string }>('/public/register/', { method: 'POST', body, auth: false })).catch(() => null)
+    const res = await submit(() => request<{ detail: string; phone_number: string }>('/public/register/', { method: 'POST', body, auth: false })).catch(() => null)
     if (res) {
-      setDone({ name: values.first_name.trim(), detail: res.detail.replace(/^Thank you, [^!]*!\s*/, '') }) // the heading says thank you
+      setSentTo(res.phone_number)
+      setNote(res.detail)
+      restartWait()
       window.scrollTo(0, 0)
     }
   }
+
+  const verify = async (e: FormEvent) => {
+    e.preventDefault()
+    setChecking(true)
+    setCodeError('')
+    try {
+      const res = await request<{ detail: string }>('/public/register/verify/', { method: 'POST', body: { phone_number: sentTo, code }, auth: false })
+      setDone({ name: values.first_name.trim(), detail: res.detail.replace(/^Thank you, [^!]*!\s*/, '') }) // the heading says thank you
+      window.scrollTo(0, 0)
+    } catch (err) {
+      setCodeError(errorMessage(err))
+    } finally {
+      setChecking(false)
+    }
+  }
+
+  const editDetails = () => { setSentTo(null); setCode(''); setCodeError('') }
 
   if (done) {
     const services = (branding.raw?.service_times || '').split('\n').map((line) => line.trim()).filter(Boolean)
@@ -52,13 +80,34 @@ export default function Register() {
               <p className="text-sm font-semibold text-mk-forest">While you wait</p>
               <WaitLink to="/me" icon={FileText} title="See your giving" text="Sign in with this phone, any time" />
               {services.length > 0 && <WaitLink to="/" icon={Clock} title="Service times" text={services.slice(0, 2).join(' · ')} />}
-              <button type="button" onClick={() => { setValues(EMPTY); setDone(null) }} className="min-h-11 self-start text-[15px] font-semibold text-brand-700 hover:underline">Register someone else</button>
+              <button type="button" onClick={() => { setValues(EMPTY); editDetails(); setDone(null) }} className="min-h-11 self-start text-[15px] font-semibold text-brand-700 hover:underline">Register someone else</button>
             </div>
           </div>
         </div>
       </div>
     )
   }
+
+  if (sentTo) return (
+    <MemberAuthLayout photo={churchPhoto('/landing/community.jpg')} compact back={editDetails}>
+      <span className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-brand-50 text-brand-700"><MessageSquareMore className="h-6 w-6" aria-hidden="true" /></span>
+      <div className="flex flex-col gap-1.5">
+        <h1 className="font-display text-[32px] font-semibold leading-[1.1] tracking-[-0.015em] text-mk-forest">Enter the code</h1>
+        <p className="text-mk-muted">To confirm your phone, we sent a 6-digit code by SMS to <span className="whitespace-nowrap font-semibold text-mk-forest">{maskPhone(sentTo)}</span>.</p>
+      </div>
+      {note && <p role="status" className="sr-only">{note}</p>}
+      <AuthAlert>{codeError || error}</AuthAlert>
+      <form onSubmit={verify} className="flex flex-col gap-[18px]">
+        <CodeInput id="register-code" label="6-digit code" value={code} onChange={setCode} autoFocus invalid={!!codeError} />
+        <button className={authPrimary} disabled={checking || code.length !== 6}>{checking ? 'Checking…' : 'Confirm and join'}</button>
+      </form>
+      <div className="flex flex-col items-center gap-1">
+        <ResendCode seconds={wait} onResend={() => { setCode(''); send() }} busy={busy} />
+        <button type="button" className="min-h-11 text-[15px] font-semibold text-brand-700 hover:underline" onClick={editDetails}>Change my details</button>
+      </div>
+      <p className="mt-auto rounded-[14px] border border-mk-border bg-white px-4 py-3.5 text-[13px] text-mk-muted">The code works once and expires in 10 minutes. The church will never ask you for it.</p>
+    </MemberAuthLayout>
+  )
 
   const member = values.kind === 'member'
   const field = (key: keyof typeof EMPTY & string, label: string, props: InputHTMLAttributes<HTMLInputElement> = {}, hint?: string) => (
@@ -70,7 +119,7 @@ export default function Register() {
     <MemberAuthLayout photo={churchPhoto('/landing/community.jpg')} compact back="/">
       <div className="flex flex-col gap-1.5">
         <h1 className="font-display text-[32px] font-semibold leading-[1.1] tracking-[-0.015em] text-mk-forest">Join the church</h1>
-        <p className="text-mk-muted">Two minutes. The church office reviews your details and sends you an SMS.</p>
+        <p className="text-mk-muted">Two minutes. We'll SMS a code to confirm your phone.</p>
       </div>
 
       <AuthAlert>{error}</AuthAlert>
