@@ -5,6 +5,7 @@ import { request } from '../../lib/api'
 import { BRAND } from '../../brand'
 import { branding } from '../../lib/theme'
 import type { DirectoryChurch } from '../../types'
+import { LANDING } from '../../lib/landingPhotos'
 
 const FEATURES: [LucideIcon, string, string, string][] = [
   [HeartHandshake, 'Digital giving', 'M-PESA, Airtel Money and PayPal, an SMS receipt for every gift, and projects that show their progress.', 'bg-mk-amber'],
@@ -191,7 +192,7 @@ export default function PlatformHome() {
 
       {/* Hero: the congregation, full width, with the words resting in its quiet left side */}
       <section id="top" className="relative overflow-hidden bg-mk-midnight text-mk-ivory">
-        <img src="/landing/hero-congregation.jpg" alt="" className="mk-settle absolute inset-0 h-full w-full object-cover object-[62%_35%]" />
+        <img src={LANDING.heroCongregation} alt="" className="mk-settle absolute inset-0 h-full w-full object-cover object-[62%_35%]" />
         <div className="absolute inset-0" style={{ background: HERO_VEIL }} />
         <div className="absolute inset-0 bg-mk-midnight/45 sm:hidden" />{/* on phones the words cover the whole photo */}
         <div className="page-width relative flex min-h-[760px] sm:min-h-[860px] flex-col justify-end pb-14 pt-32">
@@ -263,7 +264,7 @@ export default function PlatformHome() {
           </div>
           <div className="flex flex-wrap gap-6">
             <div data-reveal className="flex min-w-0 flex-[1_1_420px] flex-col gap-5 rounded-[28px] border border-mk-border bg-mk-ivory p-3 pb-10">
-              <img src="/landing/treasurer.jpg" alt="A smiling man working on a laptop at a wooden desk" className="h-[300px] w-full rounded-[20px] object-cover object-[50%_40%]" />
+              <img src={LANDING.treasurer} alt="A smiling man working on a laptop at a wooden desk" className="h-[300px] w-full rounded-[20px] object-cover object-[50%_40%]" />
               <div className="flex flex-col gap-5 px-7 pt-2">
                 <h3 className="font-display text-[28px] font-semibold text-mk-forest">For church leaders</h3>
                 <p>The church office, treasurer and pastors work from one place, each seeing what their role needs, for the whole church or their own branch.</p>
@@ -276,7 +277,7 @@ export default function PlatformHome() {
               </div>
             </div>
             <div data-reveal style={delay(120)} className="flex min-w-0 flex-[1_1_420px] flex-col gap-5 rounded-[28px] bg-mk-forest p-3 pb-10 text-mk-mist">
-              <img src="/landing/member-giving.jpg" alt="A smiling woman in a headscarf using her phone on a sofa" className="h-[300px] w-full rounded-[20px] object-cover object-[50%_30%]" />
+              <img src={LANDING.memberGiving} alt="A smiling woman in a headscarf using her phone on a sofa" className="h-[300px] w-full rounded-[20px] object-cover object-[50%_30%]" />
               <div className="flex flex-col gap-5 px-7 pt-2">
                 <h3 className="font-display text-[28px] font-semibold text-mk-ivory">For every member</h3>
                 <p className="text-[#C9D6D0]">One mKanisa account, signed in with your phone. No password to remember.</p>
@@ -457,7 +458,7 @@ export default function PlatformHome() {
 
       {/* Closing call: the congregation gathering after the service */}
       <section className="relative overflow-hidden bg-mk-forest text-mk-mist">
-        <img src="/landing/community.jpg" alt="" className="absolute inset-0 h-full w-full object-cover object-[50%_45%]" />
+        <img src={LANDING.community} alt="" className="absolute inset-0 h-full w-full object-cover object-[50%_45%]" />
         <div className="absolute inset-0" style={{ background: CLOSING_VEIL }} />
         <div data-reveal className="page-width relative flex flex-col items-center gap-6 py-36 text-center">
           <img src={BRAND.logoMark} alt="" className="h-14 w-14" />

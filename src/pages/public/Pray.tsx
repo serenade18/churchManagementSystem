@@ -4,6 +4,7 @@ import { request } from '../../lib/api'
 import { branding } from '../../lib/theme'
 import { useForm } from '../../lib/useForm'
 import { Done } from './CheckIn'
+import { LANDING } from '../../lib/landingPhotos'
 
 // The church's /pray page: anyone sends a prayer request to its leaders, with their name or without.
 
@@ -26,7 +27,7 @@ export default function Pray() {
   }
 
   return (
-    <MemberAuthLayout photo={churchPhoto('/landing/community.jpg')} compact back="/">
+    <MemberAuthLayout photo={churchPhoto(LANDING.community)} compact back="/">
       {done ? (
         <Done title="Your request is with us">
           <p>{done}</p>

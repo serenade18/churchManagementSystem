@@ -7,6 +7,7 @@ import { errorMessage, request } from '../../lib/api'
 import { currencyMoney, money } from '../../lib/format'
 import { assetUrl, branding } from '../../lib/theme'
 import type { MobileMoneyConfig, MpesaPayment, PaypalConfig, PublicDonationType, PublicProject } from '../../types'
+import { LANDING } from '../../lib/landingPhotos'
 
 type GiveState = 'form' | 'sending' | 'waiting' | 'success' | 'failed'
 
@@ -417,7 +418,7 @@ function PaybillBox({ types }: { types: PublicDonationType[] }) {
  * the Paybill on the left, the gift on a white card on the right; on phones a photo header and a sheet.
  */
 export function GiveLayout({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
-  const photo = churchPhoto('/landing/church-cover.jpg')
+  const photo = churchPhoto(LANDING.churchCover)
   return (
     <div className="min-h-screen bg-mk-ivory font-body text-base leading-relaxed text-mk-slate">
       <header className="hidden border-b border-mk-border bg-white lg:block">

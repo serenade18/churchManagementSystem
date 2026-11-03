@@ -7,9 +7,10 @@ import { BRAND } from '../../brand'
 import { money } from '../../lib/format'
 import { assetUrl, branding } from '../../lib/theme'
 import type { DonationType, PublicProject } from '../../types'
+import { LANDING } from '../../lib/landingPhotos'
 
 const DEFAULT_ABOUT = 'A community of faith, fellowship, and service. Connect with our church, support our mission, and grow together.'
-const DEFAULT_COVER = '/landing/church-cover.jpg'
+const DEFAULT_COVER = LANDING.churchCover
 
 // The church's own dark colour (Settings > Branding) over its photographs: deepest where the words sit.
 const shade = (percent: number) => `color-mix(in srgb, var(--color-sidebar) ${percent}%, transparent)`

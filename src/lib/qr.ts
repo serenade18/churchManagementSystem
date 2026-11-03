@@ -1,12 +1,41 @@
 import QRCode from 'qrcode'
+import { BRAND } from '../brand'
 
-// QR codes in the church's darkest colour: small ones for the screen, and posters to print or post.
+// QR codes in the church's darkest colour, with the dove in the middle: small ones for the screen,
+// and posters to print or post.
 
 const ink = () => getComputedStyle(document.documentElement).getPropertyValue('--color-sidebar').trim() || '#111613'
 
-/** Draws ``link`` on ``canvas``; the margin is the white border scanners need. */
+let dove: Promise<HTMLImageElement | null> | undefined
+const loadDove = () => dove ??= new Promise((resolve) => {
+  const img = new Image()
+  img.onload = () => resolve(img)
+  img.onerror = () => resolve(null)
+  img.src = BRAND.logoMark
+})
+
+/**
+ * Draws ``link`` on ``canvas`` (``width`` px square) with the dove on a white tile in the middle.
+ * Error correction "H" rebuilds up to 30% of the code, far more than the tile covers.
+ * The margin is the white border scanners need.
+ */
+async function render(canvas: HTMLCanvasElement, link: string, width: number) {
+  await QRCode.toCanvas(canvas, link, { width, margin: 3, errorCorrectionLevel: 'H', color: { dark: ink(), light: '#ffffff' } })
+  const img = await loadDove()
+  if (!img) return
+  const ctx = canvas.getContext('2d')!
+  const size = canvas.width
+  const tile = Math.round(size * 0.2), at = (size - tile) / 2, pad = tile * 0.12
+  ctx.fillStyle = '#ffffff'
+  ctx.beginPath()
+  ctx.roundRect(at, at, tile, tile, tile * 0.2)
+  ctx.fill()
+  ctx.drawImage(img, at + pad, at + pad, tile - pad * 2, tile - pad * 2)
+}
+
+/** Draws ``link`` on ``canvas``. */
 export const drawQr = (canvas: HTMLCanvasElement, link: string, width: number) =>
-  QRCode.toCanvas(canvas, link, { width, margin: 3, color: { dark: ink(), light: '#ffffff' } }).catch(() => {})
+  render(canvas, link, width).catch(() => {})
 
 /** Splits text into lines no wider than ``width`` on the canvas. */
 function wrap(ctx: CanvasRenderingContext2D, text: string, width: number) {
@@ -23,7 +52,7 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, width: number) {
 async function poster(link: string, { title, subtitle, shown }: { title: string; subtitle: string; shown: string }) {
   const W = 1200, pad = 100, qr = W - pad * 2
   const code = document.createElement('canvas')
-  await QRCode.toCanvas(code, link, { width: qr, margin: 3, errorCorrectionLevel: 'M', color: { dark: ink(), light: '#ffffff' } })
+  await render(code, link, qr)
   await document.fonts.ready
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')!

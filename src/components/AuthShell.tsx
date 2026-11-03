@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, CircleAlert, ShieldCheck } from 'lucide-react'
 import Logo, { PoweredBy } from './Logo'
 import { assetUrl, branding } from '../lib/theme'
+import { LANDING } from '../lib/landingPhotos'
 
 /** The church's dark colour (Settings > Branding) at a strength, for veils over photographs. */
 export const shade = (percent: number) => `color-mix(in srgb, var(--color-sidebar) ${percent}%, transparent)`
 
 /** The church's own cover photo, else one of mKanisa's (the platform uses its congregation). */
 export function churchPhoto(fallback: string) {
-  if (branding.platform) return '/landing/hero-congregation.jpg'
+  if (branding.platform) return LANDING.heroCongregation
   return assetUrl(branding.raw?.cover_url) || fallback
 }
 
@@ -34,12 +35,12 @@ export function StaffAuthLayout({ aside, children, width = 'max-w-[400px]', badg
       <aside className={`relative flex min-h-[300px] flex-[1_1_520px] overflow-hidden ${platform ? 'bg-mk-midnight text-mk-ivory' : 'bg-sidebar text-white'}`}>
         {platform ? (
           <>
-            <img src="/landing/hero-congregation.jpg" alt="" className="absolute inset-0 h-full w-full object-cover object-[62%_35%]" />
+            <img src={LANDING.heroCongregation} alt="" className="absolute inset-0 h-full w-full object-cover object-[62%_35%]" />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,29,27,0.82)_0%,rgba(16,43,39,0.66)_40%,rgba(11,29,27,0.96)_100%)]" />
           </>
         ) : (
           <>
-            <img src={churchPhoto('/landing/church-cover.jpg')} alt="" className="absolute inset-0 h-full w-full object-cover object-[55%_45%]" />
+            <img src={churchPhoto(LANDING.churchCover)} alt="" className="absolute inset-0 h-full w-full object-cover object-[55%_45%]" />
             <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${shade(55)} 0%, ${shade(20)} 40%, ${shade(88)} 100%)` }} />
           </>
         )}

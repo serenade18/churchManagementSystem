@@ -7,6 +7,7 @@ import { GENDERS, MARITAL } from '../../lib/format'
 import { branding } from '../../lib/theme'
 import { useForm } from '../../lib/useForm'
 import type { RegisterPage } from '../../types'
+import { LANDING } from '../../lib/landingPhotos'
 
 const EMPTY = {
   kind: 'member', first_name: '', last_name: '', other_names: '', phone_number: '', email: '', gender: '',
@@ -67,7 +68,7 @@ export default function Register() {
     return (
       <div className="min-h-screen bg-mk-ivory font-body leading-relaxed sm:flex sm:items-start sm:justify-center sm:bg-mk-mist sm:px-4 sm:py-10">
         <div className="relative flex min-h-screen w-full flex-col overflow-hidden bg-sidebar text-white sm:min-h-[760px] sm:max-w-[440px] sm:rounded-[28px]">
-          <img src={churchPhoto('/landing/hero-congregation.jpg')} alt="" className="absolute inset-0 h-full w-full object-cover object-[40%_50%]" />
+          <img src={churchPhoto(LANDING.heroCongregation)} alt="" className="absolute inset-0 h-full w-full object-cover object-[40%_50%]" />
           <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${shade(55)} 0%, ${shade(35)} 30%, ${shade(94)} 75%)` }} />
           <div className="relative flex flex-1 flex-col gap-6 px-[22px] pb-7 pt-[22px]">
             <Link to="/" className="font-display font-semibold">{branding.name}</Link>
@@ -89,7 +90,7 @@ export default function Register() {
   }
 
   if (sentTo) return (
-    <MemberAuthLayout photo={churchPhoto('/landing/community.jpg')} compact back={editDetails}>
+    <MemberAuthLayout photo={churchPhoto(LANDING.community)} compact back={editDetails}>
       <span className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-brand-50 text-brand-700"><MessageSquareMore className="h-6 w-6" aria-hidden="true" /></span>
       <div className="flex flex-col gap-1.5">
         <h1 className="font-display text-[32px] font-semibold leading-[1.1] tracking-[-0.015em] text-mk-forest">Enter the code</h1>
@@ -116,7 +117,7 @@ export default function Register() {
     </AuthField>
   )
   return (
-    <MemberAuthLayout photo={churchPhoto('/landing/community.jpg')} compact back="/">
+    <MemberAuthLayout photo={churchPhoto(LANDING.community)} compact back="/">
       <div className="flex flex-col gap-1.5">
         <h1 className="font-display text-[32px] font-semibold leading-[1.1] tracking-[-0.015em] text-mk-forest">Join the church</h1>
         <p className="text-mk-muted">Two minutes. We'll SMS a code to confirm your phone.</p>

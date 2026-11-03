@@ -4,6 +4,7 @@ import { AuthAlert, MemberAuthLayout, MemberFooter, churchPhoto } from '../../co
 import { Spinner } from '../../components/ui'
 import { ApiError, errorMessage, request } from '../../lib/api'
 import { Done } from './CheckIn'
+import { LANDING } from '../../lib/landingPhotos'
 
 // A member's own link from the church's SMS (/a/<code>): opening it on the service's day marks
 // them present. Nothing to type; opening it again just says so.
@@ -28,7 +29,7 @@ export default function ConfirmAttendance() {
 
   const day = reply && new Date(reply.date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
   return (
-    <MemberAuthLayout photo={churchPhoto('/landing/community.jpg')} compact back="/">
+    <MemberAuthLayout photo={churchPhoto(LANDING.community)} compact back="/">
       {error ? <AuthAlert>{error}</AuthAlert>
         : !reply ? <Spinner className="mx-auto my-16 h-8 w-8" />
           : reply.state === 'done' ? (

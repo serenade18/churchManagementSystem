@@ -8,6 +8,7 @@ import { currencyMoney, date, money } from '../../lib/format'
 import { portalGet, portalRequest, portalToken } from '../../lib/portal'
 import PublicLayout from './PublicLayout'
 import type { PortalChurch, PortalGift, PortalGiving, PortalMe } from '../../types'
+import { LANDING } from '../../lib/landingPhotos'
 
 type QuickAction = [LucideIcon, string, { to: string; target?: string; onClick?: undefined } | { onClick: () => void; to?: undefined; target?: undefined }]
 
@@ -47,7 +48,7 @@ function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
   }
 
   const changeNumber = () => { setSentTo(null); setCode(''); setError('') }
-  const photo = churchPhoto('/landing/member-giving.jpg')
+  const photo = churchPhoto(LANDING.memberGiving)
 
   if (sentTo) return (
     <MemberAuthLayout photo={photo} compact back={changeNumber}>

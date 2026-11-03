@@ -5,6 +5,7 @@ import { AuthAlert, AuthField, MemberAuthLayout, MemberFooter, authInput, authLa
 import { Spinner } from '../../components/ui'
 import { ApiError, errorMessage, request } from '../../lib/api'
 import { HOW_HEARD } from '../../lib/format'
+import { LANDING } from '../../lib/landingPhotos'
 
 // What members see after scanning a check-in QR code (/checkin/<code>): their phone number, then
 // they're marked present. The number is remembered on the phone, so next time it's one tap.
@@ -134,7 +135,7 @@ export default function CheckIn() {
   }
 
   return (
-    <MemberAuthLayout photo={churchPhoto('/landing/community.jpg')} compact back="/">
+    <MemberAuthLayout photo={churchPhoto(LANDING.community)} compact back="/">
       {body}
       <div className="mt-auto pt-4"><MemberFooter /></div>
     </MemberAuthLayout>
