@@ -66,7 +66,7 @@ function Review({ reg, onClose, onDone }: { reg: Registration; onClose: () => vo
       {!pending && (
         <p className="mt-4 text-sm text-mk-slate">
           {reg.status === 'approved'
-            ? <>Approved by {reg.reviewed_by_name} on {dateTime(reg.reviewed_at)}{reg.member && <> · <Link className="font-medium text-brand-700 hover:underline" to={`/members/${reg.member}`}>member {reg.member_number}</Link></>}</>
+            ? <>{reg.reviewed_by_name ? `Approved by ${reg.reviewed_by_name}` : 'Approved automatically'} on {dateTime(reg.reviewed_at)}{reg.member && <> · <Link className="font-medium text-brand-700 hover:underline" to={`/members/${reg.member}`}>member {reg.member_number}</Link></>}</>
             : <>Rejected by {reg.reviewed_by_name} on {dateTime(reg.reviewed_at)}{reg.review_note && `: ${reg.review_note}`}</>}
         </p>
       )}
@@ -125,7 +125,7 @@ function Review({ reg, onClose, onDone }: { reg: Registration; onClose: () => vo
 }
 
 export default function Registrations() {
-  const [tab, setTab] = useState('pending')
+  const [tab, setTab] = useState('approved')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [open, setOpen] = useState<Registration | null>(null)

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { ACCOUNTS, latestCode, login, randomPhone, smsTo, unique } from './fixtures.js'
 
-test('someone registers on the public site, an admin approves them, and they sign in to the member portal', async ({ page, request }) => {
+test('someone registers on the public site, confirms their phone, and they sign in to the member portal', async ({ page, request }) => {
   const [phone, normalised] = randomPhone()
   const last = `Tester${unique()}`
 
@@ -18,19 +18,16 @@ test('someone registers on the public site, an admin approves them, and they sig
   await page.getByLabel('Anything you would like us to know?').fill('New to the area.')
   await page.getByRole('checkbox').check()
   await page.getByRole('button', { name: 'Send my details' }).click()
-  await expect(page.getByRole('heading', { name: 'Thank you, Amani!' })).toBeVisible()
-  await expect(page.getByText('The church office will review your details')).toBeVisible()
 
-  // An admin reviews and approves the sign-up.
+  // They confirm their phone with the SMS code.
+  await expect(page.getByRole('heading', { name: 'Enter the code' })).toBeVisible()
+  await page.getByLabel('6-digit code').fill(await latestCode(request, normalised))
+  await page.getByRole('button', { name: 'Confirm and join' }).click()
+  await expect(page.getByRole('heading', { name: 'Thank you, Amani!' })).toBeVisible()
+  // The sign-up is approved straight away: they get their membership number on screen and by SMS.
+  const thanks = await page.getByText(/Your membership number is \S+\./).textContent()
+  const number = thanks!.match(/Your membership number is (\S+)\./)![1]
   await login(page, ACCOUNTS.clerk)
-  await page.getByRole('link', { name: /Registrations/ }).click()
-  await page.getByPlaceholder('Search name or phone').fill(last)
-  await page.getByRole('row', { name: new RegExp(last) }).click()
-  const numberInput = page.getByRole('textbox', { name: /^Membership number/ })
-  await expect(numberInput).not.toHaveValue('')
-  const number = await numberInput.inputValue()
-  await page.getByRole('button', { name: 'Approve as member' }).click()
-  await expect(page.getByText(`Amani ${last} is now member ${number}.`)).toBeVisible()
 
   // They are welcomed by SMS with their membership number, and are on the member list.
   await expect.poll(async () => (await smsTo(request, normalised)).at(-1)?.text || '').toContain(`Your membership number is ${number}`)
