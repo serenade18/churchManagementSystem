@@ -37,8 +37,8 @@ const BARS = [38, 46, 41, 52, 49, 58, 55, 63, 60, 70, 74, 86]
 
 // Darkest where the words sit (top for the menu, left and bottom for the headline), clear over the faces.
 const HERO_VEIL = 'linear-gradient(180deg, rgba(11,29,27,.55) 0%, rgba(11,29,27,0) 22%), '
-  + 'linear-gradient(90deg, rgba(11,29,27,.86) 0%, rgba(11,29,27,.55) 45%, rgba(11,29,27,.05) 80%), '
-  + 'linear-gradient(0deg, rgba(11,29,27,.7) 0%, rgba(11,29,27,0) 45%)'
+  + 'linear-gradient(90deg, rgba(11,29,27,.92) 0%, rgba(11,29,27,.8) 40%, rgba(11,29,27,.3) 68%, rgba(11,29,27,.08) 85%), '
+  + 'linear-gradient(0deg, rgba(11,29,27,.75) 0%, rgba(11,29,27,0) 45%)'
 const CLOSING_VEIL = 'linear-gradient(180deg, rgba(11,29,27,.72) 0%, rgba(16,43,39,.84) 100%)'
 
 /** When an animated element starts (see .mk-rise and [data-reveal] in index.css). */
@@ -167,6 +167,7 @@ export default function PlatformHome() {
       <section id="top" className="relative overflow-hidden bg-mk-midnight text-mk-ivory">
         <img src="/landing/hero-congregation.jpg" alt="" className="mk-settle absolute inset-0 h-full w-full object-cover object-[62%_35%]" />
         <div className="absolute inset-0" style={{ background: HERO_VEIL }} />
+        <div className="absolute inset-0 bg-mk-midnight/45 sm:hidden" />{/* on phones the words cover the whole photo */}
         <div className="page-width relative flex min-h-[760px] sm:min-h-[860px] flex-col justify-end pb-14 pt-32">
 
           <div className="flex flex-wrap items-end justify-between gap-10">
@@ -225,7 +226,7 @@ export default function PlatformHome() {
           </div>
           <div className="flex flex-wrap gap-6">
             <div data-reveal className="flex min-w-0 flex-[1_1_420px] flex-col gap-5 rounded-[28px] border border-mk-border bg-mk-ivory p-3 pb-10">
-              <img src="/landing/treasurer.jpg" alt="A church treasurer working calmly at his desk with a ledger and a laptop" className="h-[300px] w-full rounded-[20px] object-cover object-[50%_40%]" />
+              <img src="/landing/treasurer.jpg" alt="A smiling man working on a laptop at a wooden desk" className="h-[300px] w-full rounded-[20px] object-cover object-[50%_40%]" />
               <div className="flex flex-col gap-5 px-7 pt-2">
                 <h3 className="font-display text-[28px] font-semibold text-mk-forest">For church leaders</h3>
                 <p>The church office, treasurer and pastors work from one place, each seeing what their role needs, for the whole church or their own branch.</p>
@@ -238,7 +239,7 @@ export default function PlatformHome() {
               </div>
             </div>
             <div data-reveal style={delay(120)} className="flex min-w-0 flex-[1_1_420px] flex-col gap-5 rounded-[28px] bg-mk-forest p-3 pb-10 text-mk-mist">
-              <img src="/landing/member-giving.jpg" alt="A smiling church member giving from her phone on a wooden bench" className="h-[300px] w-full rounded-[20px] object-cover object-[50%_30%]" />
+              <img src="/landing/member-giving.jpg" alt="A smiling woman in a headscarf using her phone on a sofa" className="h-[300px] w-full rounded-[20px] object-cover object-[50%_30%]" />
               <div className="flex flex-col gap-5 px-7 pt-2">
                 <h3 className="font-display text-[28px] font-semibold text-mk-ivory">For every member</h3>
                 <p className="text-[#C9D6D0]">One mKanisa account, signed in with your phone. No password to remember.</p>
