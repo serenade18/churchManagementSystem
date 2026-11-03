@@ -35,6 +35,32 @@ const MAX_MATCHES = 5
 // The sample giving chart in the hero: a calm rise towards this month, which is highlighted.
 const BARS = [38, 46, 41, 52, 49, 58, 55, 63, 60, 70, 74, 86]
 
+// Payment partners: each logo's width/height ratio, so wide wordmarks and square marks look the same size
+// (scale nudges logos whose artwork leaves their letters small).
+const PARTNERS = [
+  { name: 'M-PESA', file: 'mpesa', ratio: 2.74, scale: 1.3 },
+  { name: 'SasaPay', file: 'sasapay', ratio: 4.16, scale: 1.2 },
+  { name: 'Google Pay', file: 'google-pay', ratio: 2.6 },
+  { name: 'Visa', file: 'visa', ratio: 3.1 },
+  { name: 'Mastercard', file: 'mastercard', ratio: 1.29 },
+  { name: 'PayPal', file: 'paypal', ratio: 4.1 },
+  { name: 'Stripe', file: 'stripe', ratio: 2.4 },
+  { name: 'Paystack', file: 'paystack', ratio: 5.61 },
+]
+const logoHeight = (ratio: number, scale = 1) => Math.min(40, Math.round(Math.sqrt(3136 / ratio) * scale)) // equal area, capped
+
+function PartnerLogos({ copy = false }: { copy?: boolean }) {
+  return (
+    <ul className={`flex items-center ${copy ? 'mk-marquee-copy' : 'flex-wrap justify-center'}`} aria-hidden={copy || undefined}>
+      {PARTNERS.map((p) => (
+        <li key={p.file} className="flex h-16 shrink-0 items-center px-6 sm:px-9">
+          <img src={`/partners/${p.file}.svg`} alt={copy ? '' : p.name} style={{ height: logoHeight(p.ratio, p.scale) }} className="w-auto" loading="lazy" />
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 // Darkest where the words sit (top for the menu, left and bottom for the headline), clear over the faces.
 const HERO_VEIL = 'linear-gradient(180deg, rgba(11,29,27,.55) 0%, rgba(11,29,27,0) 22%), '
   + 'linear-gradient(90deg, rgba(11,29,27,.92) 0%, rgba(11,29,27,.8) 40%, rgba(11,29,27,.3) 68%, rgba(11,29,27,.08) 85%), '
@@ -213,6 +239,17 @@ export default function PlatformHome() {
                 <span className="font-semibold text-mk-amber">3 payments to match</span>
               </figcaption>
             </figure>
+          </div>
+        </div>
+      </section>
+
+      {/* Payment partners, scrolling past (still, for people who prefer less motion) */}
+      <section aria-labelledby="partners-title" className="bg-mk-ivory py-12">
+        <p id="partners-title" className="page-width mb-6 text-center text-[13px] font-semibold uppercase tracking-[0.12em] text-mk-muted">Payments powered by</p>
+        <div className="mk-marquee-window overflow-hidden">
+          <div className="mk-marquee">
+            <PartnerLogos />
+            <PartnerLogos copy />
           </div>
         </div>
       </section>

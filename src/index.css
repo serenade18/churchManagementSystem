@@ -129,6 +129,31 @@ html:has(.mk-landing) {
     opacity: 1;
     transform: none;
   }
+  /* Payment partners: two copies of the logos slide left by one copy's width, then repeat. */
+  .mk-marquee {
+    display: flex;
+    width: max-content;
+    animation: mk-marquee 36s linear infinite;
+  }
+  .mk-marquee:hover {
+    animation-play-state: paused;
+  }
+  .mk-marquee > ul {
+    flex-wrap: nowrap;
+  }
+  .mk-marquee-copy {
+    display: flex !important;
+  }
+  .mk-marquee-window {
+    mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+  }
+}
+/* Without motion the logos simply sit in a row (wrapping on small screens). */
+.mk-marquee-copy {
+  display: none;
+}
+@keyframes mk-marquee {
+  to { transform: translateX(-50%); }
 }
 @keyframes mk-rise {
   from { opacity: 0; transform: translateY(24px); }
