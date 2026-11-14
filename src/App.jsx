@@ -8,6 +8,7 @@ import Donations from './pages/donations/Donations'
 import DonationTypes from './pages/donations/DonationTypes'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import Give from './pages/give/Give'
+import Home from './pages/home/Home'
 import Portal from './pages/portal/Portal'
 import PaypalReturn from './pages/give/PaypalReturn'
 import Login from './pages/auth/Login'
@@ -32,7 +33,7 @@ function RequireAuth({ children, superuser }) {
   const { user, loading } = useAuth()
   const location = useLocation()
   if (loading) return <div className="flex h-screen items-center justify-center"><Spinner className="h-8 w-8" /></div>
-  if (!user) return <Navigate to="/" replace state={{ from: location }} />
+  if (!user) return <Navigate to="/login" replace state={{ from: location }} />
   if (superuser && !user.is_superuser) return <Navigate to="/dashboard" replace />
   return children
 }
@@ -42,9 +43,10 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* The site opens on the admin login; the public giving page lives at /give */}
-          <Route path="/" element={<Login />} />
-          <Route path="/login" element={<Navigate to="/" replace />} />
+          {/* The parish's homepage; staff sign in at /login, the public giving page lives at /give */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<Navigate to="/login" replace />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/signup/superadmin" element={<Signup superadmin />} />

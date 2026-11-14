@@ -24,21 +24,21 @@ function ColorField({ label, value, onChange, fallback, hint }) {
   )
 }
 
-function LogoField({ label, hint, current, file, onFile, removed, onRemove }) {
+function LogoField({ label, hint, current, file, onFile, removed, onRemove, photo = false }) {
   const preview = file ? URL.createObjectURL(file) : removed ? null : current
   return (
     <Field label={label} hint={hint}>
       <div className="flex items-center gap-3">
         <span className="flex h-16 w-28 shrink-0 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white p-1">
-          {preview ? <img src={preview} alt="" className="max-h-full max-w-full object-contain" /> : <span className="text-xs text-slate-400">Default</span>}
+          {preview ? <img src={preview} alt="" className={photo ? 'h-full w-full rounded object-cover' : 'max-h-full max-w-full object-contain'} /> : <span className="text-xs text-slate-400">{photo ? 'None' : 'Default'}</span>}
         </span>
         <div className="flex flex-col gap-1.5">
           <label className="btn-secondary cursor-pointer px-3 py-1.5">
             <ImageUp className="h-4 w-4" /> Upload
-            <input type="file" className="sr-only" accept="image/png,image/jpeg,image/webp,image/svg+xml"
+            <input type="file" className="sr-only" accept={photo ? 'image/png,image/jpeg,image/webp' : 'image/png,image/jpeg,image/webp,image/svg+xml'}
               onChange={(e) => { if (e.target.files[0]) onFile(e.target.files[0]); e.target.value = '' }} />
           </label>
-          {(preview) && <button type="button" className="text-left text-xs text-slate-500 hover:text-red-600" onClick={onRemove}>Use the default</button>}
+          {(preview) && <button type="button" className="text-left text-xs text-slate-500 hover:text-red-600" onClick={onRemove}>{photo ? 'Remove' : 'Use the default'}</button>}
         </div>
       </div>
     </Field>
@@ -97,7 +97,7 @@ export default function BrandingSettings() {
   return (
     <div className="card p-6">
       <h2 className="font-semibold">Branding</h2>
-      <p className="mb-4 text-sm text-slate-500">Your name, logo and colours, used across the app, the sign-in and give pages, receipts and SMS.</p>
+      <p className="mb-4 text-sm text-slate-500">Your name, logo, colours and homepage photo, used across the app, the homepage, the sign-in and give pages, receipts and SMS.</p>
       <Alert>{error}</Alert>
       {readOnly && <Alert tone="amber">View-only accounts can't change the branding.</Alert>}
       <form onSubmit={save}>
@@ -121,6 +121,10 @@ export default function BrandingSettings() {
               current={assetUrl(current.logo_mark_url)} file={files.logo_mark} removed={removed.logo_mark}
               onFile={(f) => { setFiles((x) => ({ ...x, logo_mark: f })); setRemoved((r) => ({ ...r, logo_mark: false })) }}
               onRemove={() => { setFiles((x) => ({ ...x, logo_mark: undefined })); setRemoved((r) => ({ ...r, logo_mark: true })) }} />
+            <LogoField photo label="Homepage photo (optional)" hint={errors.cover || 'The big picture on your homepage, e.g. the church building. JPG, PNG or WebP, under 4 MB.'}
+              current={assetUrl(current.cover_url)} file={files.cover} removed={removed.cover}
+              onFile={(f) => { setFiles((x) => ({ ...x, cover: f })); setRemoved((r) => ({ ...r, cover: false })) }}
+              onRemove={() => { setFiles((x) => ({ ...x, cover: undefined })); setRemoved((r) => ({ ...r, cover: true })) }} />
           </div>
 
           <div>

@@ -212,7 +212,7 @@ export function GiveLayout({ children }) {
         <span className="flex items-center gap-3 font-semibold"><Logo tile className="h-11 w-11" /> {branding.name}</span>
         <nav className="flex items-center gap-4 text-sm">
           <Link to="/me" className="text-brand-100 hover:text-white">My giving</Link>
-          <Link to="/" className="text-brand-100 hover:text-white">Admin login</Link>
+          <Link to="/login" className="text-brand-100 hover:text-white">Admin login</Link>
         </nav>
       </header>
       <main className="flex flex-1 items-center justify-center p-4">

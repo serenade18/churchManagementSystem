@@ -16,7 +16,7 @@ function MemberLayout({ children }) {
         <span className="flex items-center gap-3 font-semibold"><Logo tile className="h-11 w-11" /> {branding.name}</span>
         <nav className="flex items-center gap-4 text-sm">
           <Link to="/give" className="text-brand-100 hover:text-white">Give</Link>
-          <Link to="/" className="text-brand-100 hover:text-white">Admin login</Link>
+          <Link to="/login" className="text-brand-100 hover:text-white">Admin login</Link>
         </nav>
       </header>
       <main className="flex flex-1 justify-center p-4 sm:items-start sm:pt-8">
