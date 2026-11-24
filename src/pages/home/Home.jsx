@@ -208,8 +208,9 @@ export default function Home() {
               {[
                 'Open M-PESA and choose Lipa na M-PESA, then Pay Bill.',
                 <>Business number <strong className={`${mono} text-white`}>{groupDigits(paybill)}</strong>.</>,
-                <>Account: your member number and a code, e.g. <strong className={`${mono} text-white`}>M0142 {exampleCode}</strong>.</>,
-                'A receipt from the parish arrives by SMS.',
+                <>Account: your member number or phone number, then a code, e.g. <strong className={`${mono} text-white`}>M0142 {exampleCode}</strong> or <strong className={`${mono} text-white`}>0712345678 {exampleCode}</strong>.</>,
+                // Safaricom hides the payer's number, so the receipt can only go to a number we can work out from the account.
+                'The receipt SMS goes to the phone number you typed, or to the one the parish has for your member number. With a code alone, the gift still counts, but no SMS can be sent.',
               ].map((step, i) => (
                 <li key={i} className="flex items-baseline gap-4"><span className={`${display} min-w-[22px] text-[26px] text-[#F2C46B]`}>{i + 1}</span><span className="text-[17px] leading-normal text-white/90">{step}</span></li>
               ))}
